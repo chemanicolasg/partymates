@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { sfx } from '../core/audio'
 import { fmtNum, OP_SYMBOL } from '../core/format'
 import { fuse, genArenaRound, type ArenaRound } from '../core/generators'
+import { setMusicTempo } from '../core/music'
 import type { ArenaCfg } from '../core/types'
 import { useT } from '../i18n'
 import { Feedback, Hud, useTimeouts } from '../ui/kit'
@@ -43,6 +44,13 @@ export function ArenaGame({ cfg, profile, hints, onFinish, onExit }: GameProps<A
       later(() => run.finish(), 1800)
     }
   })
+
+  // The music hurries up with the storm when time is running out.
+  const hurry = left < cfg.seconds * 250
+  useEffect(() => {
+    setMusicTempo(hurry ? 1.18 : 1)
+    return () => setMusicTempo(1)
+  }, [hurry])
 
   const tap = (i: number) => {
     if (phase !== 'play') return

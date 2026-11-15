@@ -4,7 +4,7 @@ import { DOJO } from '../core/curriculum'
 import { factLabel } from '../core/format'
 import { back, go } from '../core/nav'
 import { memoryStats } from '../core/srs'
-import { deleteProfile, setBand, setSound, totalStars, useApp, useProfile, worldStars } from '../core/store'
+import { deleteProfile, setBand, setMusic, setSound, totalStars, useApp, useProfile, worldStars } from '../core/store'
 import { BANDS, LEVELS_PER_WORLD, WORLDS } from '../core/types'
 import { useT } from '../i18n'
 import { Modal, ProfileAvatar, TopBar } from '../ui/kit'
@@ -61,6 +61,7 @@ function Report() {
   const { t, lang } = useT()
   const p = useProfile()
   const sound = useApp((s) => s.sound)
+  const music = useApp((s) => s.music)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const memory = memoryStats(p.facts)
   const minutes = Math.round(p.stats.playMs / 60000)
@@ -156,6 +157,10 @@ function Report() {
         <label className="toggle">
           <input type="checkbox" checked={sound} onChange={(e) => setSound(e.target.checked)} />
           <span>🔊 {t('gu.sound')}</span>
+        </label>
+        <label className="toggle">
+          <input type="checkbox" checked={music} onChange={(e) => setMusic(e.target.checked)} />
+          <span>🎵 {t('music')}</span>
         </label>
         <p className="privacy">🔐 {t(cloudConfig() ? 'gu.privacyCloud' : 'gu.privacyLocal')}</p>
         <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>

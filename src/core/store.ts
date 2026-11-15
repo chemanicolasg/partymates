@@ -2,6 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { setSoundEnabled } from './audio'
 import { getBackend, type Member } from './backend'
 import { DOJO, DOJO_START, levelKey } from './curriculum'
+import { setMusicEnabled } from './music'
 import { ITEM_BY_ID, itemValue } from './items'
 import { dayKey, dojoPassed, rewardsFor, weekStart, type Rewards } from './scoring'
 import { review, type Memory } from './srs'
@@ -42,6 +43,7 @@ export interface AppState {
   v: 1
   lang: Lang
   sound: boolean
+  music: boolean
   profiles: Profile[]
   activeId: string | null
 }
@@ -63,16 +65,18 @@ function load(): AppState {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const s = JSON.parse(raw) as AppState
-      if (s.v === 1 && Array.isArray(s.profiles)) return s
+      // `music` arrived after the first players had saved games: default it on for them.
+      if (s.v === 1 && Array.isArray(s.profiles)) return { ...s, music: s.music ?? true }
     }
   } catch {
     /* corrupted or unavailable storage: start fresh */
   }
-  return { v: 1, lang: detectLang(), sound: true, profiles: [], activeId: null }
+  return { v: 1, lang: detectLang(), sound: true, music: true, profiles: [], activeId: null }
 }
 
 let state: AppState = load()
 setSoundEnabled(state.sound)
+setMusicEnabled(state.music)
 const listeners = new Set<() => void>()
 
 function set(next: AppState) {
@@ -126,6 +130,11 @@ export const setLang = (lang: Lang) => set({ ...state, lang })
 export const setSound = (sound: boolean) => {
   setSoundEnabled(sound)
   set({ ...state, sound })
+}
+
+export const setMusic = (music: boolean) => {
+  setMusicEnabled(music)
+  set({ ...state, music })
 }
 
 export function createProfile(name: string, skin: string, color: string, band: Band): Profile {

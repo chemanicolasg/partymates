@@ -5,6 +5,7 @@ export const en: Dict = {
   back: 'Back',
   no: 'No',
   say: 'Listen',
+  music: 'Music',
 
   'welcome.tagline': 'Adventure worlds where numbers are your superpower',
   'welcome.who': 'Who is playing?',
@@ -211,7 +212,7 @@ export const en: Dict = {
   'gu.m.play.text':
     'There are no worksheets in disguise with a prize at the end: to build the bridge, land on the square or break the shield you have to do the maths. Stars reward getting it right first time, not rushing.',
   'gu.settings': 'Settings',
-  'gu.sound': 'Sound',
+  'gu.sound': 'Sound effects and voice',
   'gu.privacyLocal': 'Privacy: no accounts, no ads, no purchases. Everything stays on this device.',
   'gu.privacyCloud': 'Privacy: no accounts, no ads, no purchases. A class only shares nicknames, avatars and scores.',
   'gu.delete': 'Delete player',

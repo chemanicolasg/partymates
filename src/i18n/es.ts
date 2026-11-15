@@ -5,6 +5,7 @@ export const es: Dict = {
   back: 'Atrás',
   no: 'No',
   say: 'Escuchar',
+  music: 'Música',
 
   'welcome.tagline': 'Mundos de aventuras donde los números son tu superpoder',
   'welcome.who': '¿Quién juega?',
@@ -212,7 +213,7 @@ export const es: Dict = {
   'gu.m.play.text':
     'No hay ejercicios disfrazados con un premio al final: para construir el puente, aterrizar en la casilla o romper el escudo hay que hacer el cálculo. Las estrellas premian acertar a la primera, no ir deprisa.',
   'gu.settings': 'Ajustes',
-  'gu.sound': 'Sonido',
+  'gu.sound': 'Efectos de sonido y voz',
   'gu.privacyLocal': 'Privacidad: no hay cuentas, anuncios ni compras. Todo se guarda solo en este dispositivo.',
   'gu.privacyCloud':
     'Privacidad: no hay cuentas, anuncios ni compras. En la clase solo se comparten el apodo, el avatar y las puntuaciones.',

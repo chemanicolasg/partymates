@@ -36,13 +36,25 @@ const SOUNDS = {
 
 export type Sound = keyof typeof SOUNDS
 
-export function sfx(name: Sound) {
-  if (!enabled || typeof window === 'undefined') return
+/** One shared audio context for effects and music; created on first use (browsers require a tap first). */
+export function audioContext(): AudioContext | null {
+  if (typeof window === 'undefined') return null
   try {
     const Ctor = window.AudioContext ?? (window as unknown as { webkitAudioContext?: typeof AudioContext }).webkitAudioContext
-    if (!Ctor) return
+    if (!Ctor) return null
     ctx ??= new Ctor()
-    if (ctx.state === 'suspended') void ctx.resume()
+    return ctx
+  } catch {
+    return null
+  }
+}
+
+export function sfx(name: Sound) {
+  if (!enabled) return
+  try {
+    const audio = audioContext()
+    if (!audio) return
+    if (audio.state === 'suspended') void audio.resume()
     SOUNDS[name]()
   } catch {
     /* sound is a nice-to-have */

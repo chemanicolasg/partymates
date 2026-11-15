@@ -1,7 +1,7 @@
 import { sfx } from '../core/audio'
 import { go } from '../core/nav'
 import { dayKey, levelProgress, playerLevel } from '../core/scoring'
-import { selectProfile, totalStars, useProfile, worldStars } from '../core/store'
+import { selectProfile, setMusic, totalStars, useApp, useProfile, worldStars } from '../core/store'
 import { LEVELS_PER_WORLD, WORLDS } from '../core/types'
 import { useT } from '../i18n'
 import { Chip, ProfileAvatar } from '../ui/kit'
@@ -10,6 +10,7 @@ import { WORLD_ART } from './worlds'
 export function HubScreen() {
   const { t } = useT()
   const p = useProfile()
+  const music = useApp((s) => s.music)
   const dojoDue = p.dojo.lastDay !== dayKey()
   const open = (fn: () => void) => () => {
     sfx('tap')
@@ -39,6 +40,9 @@ export function HubScreen() {
           <Chip icon="🔥" label={t('hub.streak')}>
             {p.dojo.streak}
           </Chip>
+          <button className={`chip music-toggle${music ? '' : ' off'}`} onClick={() => setMusic(!music)} aria-pressed={music} aria-label={t('music')}>
+            {music ? '🎵' : '🔇'}
+          </button>
         </div>
       </header>
 

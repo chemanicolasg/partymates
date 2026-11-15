@@ -14,6 +14,7 @@ import {
   moveFor,
   partyStart,
 } from '../src/core/generators'
+import { midi, parseTrack, TRACKS, type TrackId } from '../src/core/music'
 import { dojoPassed, rewardsFor, starsFor, weekStart } from '../src/core/scoring'
 import { INTERVALS, isDue, memoryStats, review } from '../src/core/srs'
 import { BANDS, LEVELS_PER_WORLD, WORLDS } from '../src/core/types'
@@ -193,6 +194,55 @@ describe('scoring', () => {
   it('weeks start on Monday', () => {
     expect(weekStart(new Date(2026, 10, 15, 10).getTime())).toBe('2026-11-09') // a Sunday
     expect(weekStart(new Date(2026, 10, 16, 10).getTime())).toBe('2026-11-16') // a Monday
+  })
+})
+
+describe('music', () => {
+  it('reads note names', () => {
+    expect(midi('A4')).toBe(69)
+    expect(midi('C4')).toBe(60)
+    expect(midi('Bb4')).toBe(70)
+    expect(midi('G#5')).toBe(80)
+  })
+
+  it('every loop is well formed and stays in a comfortable range', () => {
+    for (const id of Object.keys(TRACKS) as TrackId[]) {
+      const track = parseTrack(TRACKS[id])
+      expect(track.steps, id).toBe(TRACKS[id].chords.length * 8)
+      expect(TRACKS[id].drums?.length ?? 8, id).toBe(8)
+      expect(TRACKS[id].arp?.length ?? 8, id).toBe(8)
+      const notes = track.notes.filter((n) => n !== null)
+      expect(notes.length, id).toBeGreaterThan(8)
+      // Between C4 and C7: clear on small tablet speakers, never shrill.
+      for (const n of notes) {
+        expect(n.midi, id).toBeGreaterThanOrEqual(60)
+        expect(n.midi, id).toBeLessThanOrEqual(96)
+        expect(n.len, id).toBeGreaterThanOrEqual(1)
+      }
+      for (const chord of track.chords) {
+        expect(chord.root, id).toBeGreaterThanOrEqual(36)
+        expect(chord.root, id).toBeLessThan(48)
+      }
+    }
+  })
+
+  it('melodies only use notes of their key (no accidental wrong notes)', () => {
+    // Pitch classes of each loop's scale; the arena adds G# for its E major turnaround.
+    const scales: Record<TrackId, number[]> = {
+      hub: [0, 2, 4, 5, 7, 9, 11],
+      blocks: [7, 9, 11, 2, 4],
+      party: [5, 7, 9, 10, 0, 2, 4],
+      arena: [9, 11, 0, 2, 4, 5, 7, 8],
+      bay: [2, 4, 6, 7, 9, 11, 1],
+      dojo: [4, 7, 9, 11, 2],
+    }
+    for (const id of Object.keys(TRACKS) as TrackId[])
+      for (const n of parseTrack(TRACKS[id]).notes) if (n) expect(scales[id], `${id} ${n.midi}`).toContain(n.midi % 12)
+  })
+
+  it('rejects malformed bars', () => {
+    expect(() => parseTrack({ ...TRACKS.dojo, melody: 'E5 - - G5' })).toThrow()
+    expect(() => parseTrack({ ...TRACKS.dojo, chords: ['Em'] })).toThrow()
   })
 })
 

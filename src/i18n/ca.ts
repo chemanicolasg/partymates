@@ -3,6 +3,7 @@ export const ca = {
   back: 'Enrere',
   no: 'No',
   say: 'Escolta',
+  music: 'Música',
 
   'welcome.tagline': 'Mons d’aventures on els números són el teu superpoder',
   'welcome.who': 'Qui juga?',
@@ -210,7 +211,7 @@ export const ca = {
   'gu.m.play.text':
     'No hi ha exercicis disfressats amb un premi al final: per construir el pont, aterrar a la casella o trencar l’escut cal fer el càlcul. Les estrelles premien encertar a la primera, no anar de pressa.',
   'gu.settings': 'Configuració',
-  'gu.sound': 'So',
+  'gu.sound': 'Efectes de so i veu',
   'gu.privacyLocal': 'Privadesa: no hi ha comptes, anuncis ni compres. Tot es guarda només en aquest dispositiu.',
   'gu.privacyCloud':
     'Privadesa: no hi ha comptes, anuncis ni compres. A la classe només es comparteixen el sobrenom, l’avatar i les puntuacions.',

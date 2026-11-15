@@ -240,6 +240,15 @@
   gap: 6px;
 }
 
+.music-toggle {
+  cursor: pointer;
+  min-width: 46px;
+  justify-content: center;
+}
+.music-toggle.off {
+  background: #e4dff5;
+}
+
 .sea {
   position: relative;
   flex: 1;
