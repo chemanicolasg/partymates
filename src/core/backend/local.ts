@@ -1,14 +1,15 @@
-import { newCode, type Backend, type ClassRoom, type Member, type Team } from './index'
+import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert } from './index'
 
-const KEY = 'partymates.classes.v1'
+const KEY = 'matty.classes.v2'
 
 interface Stored {
   name: string
-  teams: Team[]
-  members: Record<string, Member>
+  teacherKey: string
+  homework: Homework | null
+  members: Record<string, MemberReport>
 }
 
-/** Classes kept on this device: perfect for a shared tablet or siblings, no internet needed. */
+/** Classes kept on this device: for a shared tablet or for trying things out with no internet. */
 export class LocalBackend implements Backend {
   mode = 'local' as const
 
@@ -22,22 +23,30 @@ export class LocalBackend implements Backend {
   private write(all: Record<string, Stored>) {
     localStorage.setItem(KEY, JSON.stringify(all))
   }
+  private teacher(code: string, teacherKey: string) {
+    const all = this.read()
+    if (!all[code] || all[code].teacherKey !== teacherKey) throw new Error('bad-key')
+    return all
+  }
 
   async createClass(name: string) {
     const all = this.read()
     let code = newCode()
     while (all[code]) code = newCode()
-    all[code] = { name, teams: [], members: {} }
+    const teacherKey = newCode(8)
+    all[code] = { name, teacherKey, homework: null, members: {} }
     this.write(all)
-    return code
+    return { code, teacherKey }
   }
 
-  async getClass(code: string): Promise<ClassRoom | null> {
+  async getClass(code: string): Promise<ClassInfo | null> {
     const c = this.read()[code]
-    return c ? { code, name: c.name, teams: c.teams, members: Object.values(c.members) } : null
+    if (!c) return null
+    const members = Object.values(c.members)
+    return { code, name: c.name, homework: c.homework, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
   }
 
-  async upsertMember(code: string, member: Omit<Member, 'updatedAt'>) {
+  async upsertMember(code: string, member: MemberUpsert) {
     const all = this.read()
     if (!all[code]) throw new Error('class-not-found')
     all[code].members[member.id] = { ...member, updatedAt: Date.now() }
@@ -50,12 +59,25 @@ export class LocalBackend implements Backend {
     this.write(all)
   }
 
-  async createTeam(code: string, name: string, emoji: string) {
-    const all = this.read()
-    if (!all[code]) throw new Error('class-not-found')
-    const team = { id: crypto.randomUUID(), name, emoji }
-    all[code].teams.push(team)
+  async report(code: string, teacherKey: string) {
+    return Object.values(this.teacher(code, teacherKey)[code].members)
+  }
+
+  async setHomework(code: string, teacherKey: string, homework: Homework | null) {
+    const all = this.teacher(code, teacherKey)
+    all[code].homework = homework
     this.write(all)
-    return team
+  }
+
+  async removeMember(code: string, teacherKey: string, memberId: string) {
+    const all = this.teacher(code, teacherKey)
+    delete all[code].members[memberId]
+    this.write(all)
+  }
+
+  async deleteClass(code: string, teacherKey: string) {
+    const all = this.teacher(code, teacherKey)
+    delete all[code]
+    this.write(all)
   }
 }

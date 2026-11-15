@@ -1,21 +1,14 @@
 import { useEffect } from 'react'
-import { playMusic, type TrackId } from './core/music'
-import { useScreen, type Screen } from './core/nav'
+import { playMusic } from './core/music'
+import { useScreen } from './core/nav'
 import { activeProfile, useApp } from './core/store'
 import { ClassScreen } from './screens/ClassScreen'
 import { DojoScreen } from './screens/DojoScreen'
 import { GrownUpsScreen } from './screens/GrownUpsScreen'
-import { HubScreen } from './screens/HubScreen'
-import { PlayScreen } from './screens/PlayScreen'
+import { MapScreen } from './screens/MapScreen'
+import { HomeworkScreen, StopScreen } from './screens/PlayScreen'
 import { ShopScreen } from './screens/ShopScreen'
 import { WelcomeScreen } from './screens/WelcomeScreen'
-import { WorldScreen } from './screens/WorldScreen'
-
-/** Each world has its own tune; everything else shares the map theme. */
-function trackFor(screen: Screen): TrackId {
-  if (screen.id === 'world' || screen.id === 'play') return screen.world
-  return screen.id === 'dojo' ? 'dojo' : 'hub'
-}
 
 export function App() {
   const screen = useScreen()
@@ -26,20 +19,20 @@ export function App() {
     document.documentElement.lang = lang
   }, [lang])
 
-  const tune = trackFor(screen)
+  // Activities choose their own tune; everywhere else it is the map theme (or the gym's).
   useEffect(() => {
-    playMusic(tune)
-  }, [tune])
+    if (screen.id !== 'play' && screen.id !== 'homework') playMusic(screen.id === 'dojo' ? 'dojo' : 'hub')
+  }, [screen.id])
 
   // Every screen except the welcome one needs a player.
   if (!profile || screen.id === 'welcome') return <WelcomeScreen />
   switch (screen.id) {
     case 'hub':
-      return <HubScreen />
-    case 'world':
-      return <WorldScreen world={screen.world} />
+      return <MapScreen />
     case 'play':
-      return <PlayScreen key={`${screen.world}-${screen.index}`} world={screen.world} index={screen.index} />
+      return <StopScreen key={screen.stop} index={screen.stop} />
+    case 'homework':
+      return <HomeworkScreen />
     case 'dojo':
       return <DojoScreen />
     case 'shop':

@@ -1,80 +1,102 @@
-# PartyMates 🎲
+# Matty 🎲
 
-Mundos de aventuras donde las matemáticas son la mecánica del juego, para niños y niñas de 5 a 12 años.
+Un viaje de aventuras donde las matemáticas son la mecánica del juego, para niños y niñas de 5 a 12 años.
 En **catalán, castellano e inglés**. Web app instalable (PWA) pensada para móvil, tableta y ordenador.
 
-> El niño no «hace ejercicios»: construye puentes, corre en un tablero de dados, rompe escudos y reparte
-> tesoros. Para conseguirlo tiene que contar, componer números, calcular y memorizar.
+> El niño no «hace ejercicios»: construye puentes, cruza ríos, rompe escudos y reparte tesoros.
+> Para conseguirlo tiene que contar, ordenar, componer números, calcular y memorizar.
 
-## Qué incluye
+## El viaje
 
-| Mundo | Mecánica | Matemáticas | Método |
+Cuatro zonas seguidas —**Playa Sol → Selva Eco → Montaña Trueno → Estación Estelar**— con diez paradas cada
+una. En cada zona se mezclan las seis actividades, así que nunca hay dos paradas iguales seguidas, y de vez en
+cuando irrumpe una sorpresa (una ola, un coco, una roca gigante, un meteorito) que solo se esquiva con una
+respuesta rápida.
+
+| Actividad | Qué hace el niño | Matemáticas | Método |
 | --- | --- | --- | --- |
-| ⛏️ **Valle de Bloques** | Elegir las piezas justas para que el puente cruce el río | Sentido numérico, valor posicional, decimales, fracciones, porcentajes, «lo que falta» | Montessori (material dorado, error visible) |
-| 🎲 **Isla de la Fiesta** | Tirar dados y tocar la casilla donde aterrizas, contra tres rivales | Suma y resta en la recta numérica, productos, jerarquía de operaciones, números negativos | CPA: tablero completo → plataformas → fórmula |
-| ⚡ **Arena Tormenta** | Fusionar dos cartas para igualar el escudo del robot, contra el reloj | Cálculo mental, tablas, divisiones, complementos a 100 | Fluidez + repaso espaciado |
-| 💎 **Bahía del Tesoro** | Repartir el botín de forma justa | División, restos, fracción de una cantidad, porcentajes, proporciones | Montessori (repartir una a una) → modelo de barras (Singapur) |
-| ⚡ **Gimnasio Rayo** | Ficha diaria de 12 cálculos con tiempo objetivo | 26 fichas encadenadas, de «+1» a complementos a 100 | Kumon (pasos pequeños, precisión + tiempo para avanzar) |
+| 🧱 **Construye el puente** | Elige las piezas justas para cruzar el río | Valor posicional, decimales, fracciones, porcentajes, «lo que falta» | Montessori (material dorado, error visible) |
+| 🎲 **Carrera de dados** | Tira dados y toca la casilla donde aterriza | Suma y resta en la recta numérica, productos, jerarquía, negativos | Concreto → pictórico → abstracto |
+| 👣 **Cruza el río** | Salta por las piedras en orden | Ordenar y comparar enteros, decimales, fracciones, negativos y operaciones | Sentido numérico |
+| ⚡ **Rompe el escudo** | Fusiona dos cartas para igualar el escudo, contra el reloj | Cálculo mental y tablas | Fluidez + repaso espaciado |
+| 💎 **Reparte el tesoro** | Reparte el botín o resuelve un problema con enunciado | División, restos, fracción de una cantidad, porcentajes, problemas | Montessori → modelo de barras (Singapur) |
+| 🃏 **Parejas** | Une cada operación con su resultado | Memorización de operaciones | Repaso espaciado |
+| ⚡ **Gimnasio Rayo** | Ficha diaria de 12 cálculos con tiempo objetivo | 26 fichas encadenadas | Kumon (precisión + tiempo para avanzar) |
 
 Además:
 
-- **4 itinerarios por edad** (5–6, 7–8, 9–10, 11–12): cada mundo tiene 8 niveles por itinerario → 128 niveles.
-- **Repaso espaciado (Leitner)**: cada suma o tabla fallada vuelve a aparecer; al acertarla se espacia 1, 2, 4, 7 y 15 días.
-- **Pistas que retroceden una etapa** (concreto → pictórico → abstracto) en lugar de dar la respuesta.
-- **Estrellas por acertar a la primera**, monedas, niveles de jugador y tienda de personajes/mascotas (sin dinero real).
-- **Clases y equipos**: código de 6 letras, ranking semanal e histórico, equipos dentro de la clase.
-- **Zona de adultos**: informe por mundo, hechos numéricos memorizados y los que más cuestan, cambio de itinerario.
-- **Privacidad**: sin cuentas, sin anuncios, sin compras. Solo un apodo y un avatar.
+- **4 itinerarios por edad** (5–6, 7–8, 9–10, 11–12): 40 paradas por itinerario.
+- **Enunciados grandes** con los números resaltados, botón de lectura en voz alta y tres pictogramas de «cómo se
+  juega» antes de cada actividad. La primera vez, una mano señala dónde tocar.
+- **Bloc de notas cuadriculado** dentro de cada juego para hacer las cuentas a mano; pausa el reloj mientras está abierto.
+- **Personajes dibujados** (niños y animales) con peinados, sombreros, gafas, ropa y mascotas. Se consiguen con
+  puntos de juego o se desbloquean con estrellas. No hay dinero real.
+- **Sin rankings**: no hay posiciones ni comparación entre niños; solo estrellas y puntos propios.
+- **Nadie se queda atascado**: una parada se abre con una estrella en la anterior o tras tres intentos.
+- **Repaso espaciado (Leitner)** de las operaciones falladas y **pistas que retroceden una etapa** en vez de dar la respuesta.
+- **Música** con un tema por actividad, generada por la propia app (sin archivos de audio).
+
+## Zona de profes
+
+En «Adultos → Profes» (no hacen falta cuentas):
+
+- **Crear una clase**: se obtiene un código de 6 letras para los alumnos y una clave de profe.
+- **Deberes / tema de la semana**: 24 temas (sumas llevando, restas llevando, tablas, fracciones…) con un objetivo
+  de estrellas y fecha. Cada tema se practica con actividades distintas que se van alternando.
+- **Informe por alumno**: estrellas, minutos de la semana, porcentaje de acierto, deberes hechos y las operaciones
+  que más le cuestan.
+- **Identificación sin datos personales**: el alumno entra con el código y su **número de lista**. El profe puede
+  escribir el nombre junto al número, pero ese nombre se guarda solo en su dispositivo.
 
 ## Ponerlo en marcha
 
 ```bash
 npm install
 npm run dev      # http://localhost:5173
-npm test         # 143 pruebas del motor pedagógico
+npm test         # pruebas del motor pedagógico
 npm run build    # genera dist/ (PWA con funcionamiento sin conexión)
 ```
 
 ## Clases en línea
 
-Sin configurar nada, las clases funcionan en **modo tableta**: se guardan en el dispositivo y las comparten
-los jugadores de ese dispositivo (útil para tabletas de aula compartidas o hermanos).
-
-Con las dos variables de `.env.example` definidas, las clases se comparten entre dispositivos a través de
-[Supabase](https://supabase.com). El proyecto **Partymaths** ya tiene aplicado el esquema de
-`supabase/migrations/`; para usar otro proyecto, ejecuta esas migraciones en él y cambia las variables.
+Sin configurar nada, las clases funcionan solo dentro del dispositivo. Con las dos variables de `.env.example`
+definidas se comparten entre dispositivos a través de [Supabase](https://supabase.com); las migraciones están en
+`supabase/migrations/` y hay que aplicarlas en orden.
 
 Las tablas están cerradas (RLS sin políticas y sin permisos para la API); la app solo puede llamar a las
-funciones `pm_*`, que únicamente exponen apodo, avatar y puntuaciones. Cada jugador se identifica con un
+funciones `pm_*`. El dispositivo de un niño solo puede leer el nombre de su clase, los deberes y las estrellas
+que suma la clase entera; el informe por alumno exige la clave de profe. Cada jugador se identifica con un
 secreto que nunca sale de su dispositivo.
 
 ## Publicación
 
-`netlify.toml` define la compilación (`npm run build` → `dist/`). El sitio de Netlify **partymaths** ya tiene
-las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (ambas públicas por diseño: viajan al navegador).
+`netlify.toml` define la compilación (`npm run build` → `dist/`). El sitio de Netlify publica la rama `main` y
+necesita `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (ambas públicas por diseño: viajan al navegador).
 
 ## Estructura
 
 ```
-src/core/         motor sin interfaz: currículo, generadores de problemas, repaso espaciado, puntuación, guardado
-src/core/backend/ clases y equipos (local o Supabase)
-src/games/        los cuatro minijuegos y el Gimnasio Rayo
-src/screens/      mapa, mundos, tienda, clase, zona de adultos
+src/core/         motor sin interfaz: currículo, viaje, generadores, temas de deberes, repaso espaciado, guardado
+src/core/backend/ clases (local o Supabase)
+src/games/        las seis actividades, el evento sorpresa y el Gimnasio Rayo
+src/screens/      mapa, armario, clase, zona de adultos y profes
+src/ui/           personajes dibujados, bloc de notas y componentes comunes
 src/i18n/         textos en ca / es / en
-tests/            pruebas del motor (todos los niveles generan problemas resolubles)
+tests/            pruebas del motor (todas las paradas y temas generan problemas resolubles)
 supabase/         esquema SQL de las clases en línea
 ```
 
-Para añadir o ajustar niveles basta con editar `src/core/curriculum.ts`: cada nivel es una línea de configuración.
+Para añadir o ajustar niveles basta con editar `src/core/curriculum.ts` (cada nivel es una línea) y, para los
+temas de deberes, `src/core/topics.ts`.
 
-## Siguiente paso: apps de móvil y iPad
+## Apps de móvil y iPad
 
 La web ya es instalable desde el navegador («Añadir a pantalla de inicio») y funciona sin conexión.
 Para publicarla en App Store y Google Play se envuelve con [Capacitor](https://capacitorjs.com) sin reescribir nada:
 
 ```bash
 npm i @capacitor/core @capacitor/cli @capacitor/ios @capacitor/android
-npx cap init PartyMates com.partymates.app --web-dir dist
+npx cap init Matty com.matty.app --web-dir dist
 npm run build && npx cap add ios && npx cap add android && npx cap sync
 ```
 

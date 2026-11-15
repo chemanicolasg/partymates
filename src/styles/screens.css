@@ -4,22 +4,6 @@
   text-align: center;
   color: #fff;
 }
-.logo-die {
-  display: inline-block;
-  font-size: 4.2rem;
-  animation: bob 3s ease-in-out infinite;
-}
-.logo h1 {
-  font-size: 3.1rem;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  text-shadow: 0 5px 0 var(--ink);
-  -webkit-text-stroke: 2px var(--ink);
-  paint-order: stroke fill;
-}
-.logo h1 span {
-  color: var(--sun);
-}
 .logo p {
   margin-top: 6px;
   max-width: 22rem;
@@ -249,106 +233,6 @@
   background: #e4dff5;
 }
 
-.sea {
-  position: relative;
-  flex: 1;
-  overflow-y: auto;
-  display: grid;
-  place-items: center;
-  padding: 14px 16px 22px;
-}
-.cloud {
-  position: absolute;
-  font-size: 3rem;
-  opacity: 0.9;
-  pointer-events: none;
-  animation: bob 6s ease-in-out infinite;
-}
-.cloud.c1 {
-  top: 2%;
-  left: 6%;
-}
-.cloud.c2 {
-  top: 40%;
-  right: 4%;
-  font-size: 2.2rem;
-  animation-delay: -2s;
-}
-.islands {
-  position: relative;
-  width: 100%;
-  max-width: 640px;
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 22px 18px;
-}
-.island {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 2px;
-  min-height: 178px;
-  padding: 16px 12px 20px;
-  overflow: hidden;
-  border: 4px solid var(--ink);
-  border-radius: 46% 54% 48% 52% / 58% 54% 46% 42%;
-  box-shadow:
-    0 9px 0 #e9c46a,
-    0 9px 0 4px var(--ink),
-    0 22px 18px rgba(12, 43, 99, 0.35);
-  color: var(--ink);
-  animation: bob 5s ease-in-out infinite;
-}
-.island:active {
-  filter: brightness(0.94);
-}
-.island-blocks {
-  background: linear-gradient(#a8ec7a, #58c45a);
-}
-.island-party {
-  background: linear-gradient(#ffc2e2, #ff7ac3);
-}
-.island-arena {
-  background: linear-gradient(#b99bff, #7c4dff);
-  color: #fff;
-}
-.island-bay {
-  background: linear-gradient(#fff1c2, #ffd27a);
-}
-.island-scene {
-  display: flex;
-  align-items: flex-end;
-  font-size: 1.35rem;
-  line-height: 1;
-}
-.island-scene span:nth-child(2),
-.island-scene span:nth-child(3) {
-  font-size: 2.1rem;
-}
-.island strong {
-  font-size: 1.08rem;
-  text-align: center;
-  line-height: 1.1;
-}
-.island small {
-  font-weight: 500;
-  font-size: 0.82rem;
-  opacity: 0.85;
-  text-align: center;
-}
-.island-stars {
-  margin-top: 5px;
-  padding: 1px 12px;
-  border: 3px solid var(--ink);
-  border-radius: 999px;
-  background: #fff;
-  color: var(--ink);
-  font-weight: 700;
-  font-size: 0.9rem;
-}
-
 .dock {
   flex: none;
   display: grid;
@@ -389,89 +273,7 @@
 
 /* ───────────── World trail ───────────── */
 
-.trail-scroll {
-  flex: 1;
-  overflow-y: auto;
-  padding-bottom: var(--safe-bottom);
-}
-.trail {
-  position: relative;
-  width: 100%;
-  max-width: 520px;
-  margin: 0 auto;
-}
-.trail svg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-.trail polyline {
-  fill: none;
-  stroke: rgba(255, 255, 255, 0.85);
-  stroke-width: 12px;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  stroke-dasharray: 2 22;
-  vector-effect: non-scaling-stroke;
-}
-.trail-deco {
-  position: absolute;
-  font-size: 2.6rem;
-  opacity: 0.9;
-  pointer-events: none;
-}
-.node {
-  position: absolute;
-  transform: translate(-50%, -50%);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 2px;
-}
-.node-disc {
-  display: grid;
-  place-items: center;
-  width: 70px;
-  height: 70px;
-  border: 4px solid var(--ink);
-  border-radius: 50%;
-  background: #fff;
-  box-shadow: 0 6px 0 var(--ink);
-  font-size: 1.7rem;
-  font-weight: 700;
-  color: var(--ink);
-}
-.node.done .node-disc {
-  background: var(--mint);
-}
-.node.current .node-disc {
-  background: var(--sun);
-  animation: pulse 1.6s infinite;
-}
-.node.boss .node-disc {
-  width: 86px;
-  height: 86px;
-  font-size: 2.2rem;
-}
-.node.locked .node-disc {
-  background: #cfc9e6;
-  box-shadow: 0 6px 0 rgba(35, 22, 79, 0.5);
-  font-size: 1.4rem;
-}
-.node.locked .stars {
-  visibility: hidden;
-}
-.node:active:not(:disabled) .node-disc {
-  transform: translateY(5px);
-  box-shadow: 0 1px 0 var(--ink);
-}
-.node-hero {
-  position: absolute;
-  top: -40px;
-  z-index: 1;
-  pointer-events: none;
-}
+
 
 /* ───────────── Intro & results ───────────── */
 
@@ -613,12 +415,6 @@
   font-size: 2.3rem;
   line-height: 1.1;
 }
-.shop-swatch {
-  width: 44px;
-  height: 44px;
-  border: 3px solid var(--ink);
-  border-radius: 50%;
-}
 
 /* ───────────── Class ───────────── */
 
@@ -649,31 +445,6 @@
   font-size: 1.6rem !important;
   text-transform: uppercase;
 }
-.class-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
-.class-head small {
-  color: var(--ink-soft);
-  font-weight: 500;
-}
-.class-code {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding: 4px 14px;
-  border: 3px dashed var(--ink);
-  border-radius: 14px;
-  background: var(--sun);
-}
-.class-code strong {
-  font-size: 1.5rem;
-  letter-spacing: 0.14em;
-  -webkit-user-select: all;
-  user-select: all;
-}
 .ranking {
   list-style: none;
   margin: 0;
@@ -681,46 +452,6 @@
   display: flex;
   flex-direction: column;
   gap: 10px;
-}
-.rank-row,
-.team-head,
-.team-members {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-.rank-row,
-.team-row {
-  padding: 8px 12px;
-}
-.rank-row.me,
-.team-row.me {
-  background: #fff3c4;
-}
-.rank-row strong,
-.team-head strong {
-  flex: 1;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.rank-pos {
-  width: 30px;
-  text-align: center;
-  font-size: 1.25rem;
-  font-weight: 700;
-}
-.rank-score {
-  font-weight: 700;
-  font-variant-numeric: tabular-nums;
-}
-.team-emoji {
-  font-size: 1.7rem;
-}
-.team-members {
-  margin-top: 8px;
-  flex-wrap: wrap;
-  gap: 6px;
 }
 
 /* ───────────── Grown-ups ───────────── */
@@ -847,4 +578,450 @@
   .island {
     min-height: 160px;
   }
+}
+
+/* ───────────── Logo ───────────── */
+
+.logo-word {
+  font-size: 4.2rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 6px 0 var(--ink);
+  -webkit-text-stroke: 2.5px var(--ink);
+  paint-order: stroke fill;
+}
+.logo-word span {
+  color: var(--sun);
+}
+.pick.face {
+  width: 58px;
+  height: 58px;
+  padding: 0;
+}
+.kid-style {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px;
+}
+.new-card .kid-style {
+  border-width: 2px;
+  box-shadow: none;
+}
+
+/* ───────────── The journey map ───────────── */
+
+.hw-banner {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 14px 8px;
+  padding: 8px 14px;
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: var(--sun);
+  box-shadow: 0 4px 0 var(--ink);
+  font-size: 1.05rem;
+  text-align: left;
+}
+.hw-banner strong {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.hw-count {
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.map {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  border-top: 3px solid var(--ink);
+}
+.zone {
+  position: relative;
+  overflow: hidden;
+}
+.zone-inner {
+  position: relative;
+  max-width: 560px;
+  height: 100%;
+  margin: 0 auto;
+}
+.zone.far .node,
+.zone.far .zone-sign {
+  filter: saturate(0.6);
+}
+.zone-beach {
+  background: linear-gradient(to top, #2f9fd6 0%, #5cc8ff 9%, #fff3c9 13%, #ffe39a 60%, #d9eaa0 100%);
+}
+.zone-jungle {
+  background: linear-gradient(to top, #d9eaa0 0%, #8fdc7c 12%, #4fb86a 60%, #3f9f6a 100%);
+}
+.zone-mountain {
+  background: linear-gradient(to top, #3f9f6a 0%, #7fae8d 22%, #a9b4c6 55%, #e9f1fa 82%, #bfe3ff 100%);
+}
+.zone-space {
+  background: linear-gradient(to top, #bfe3ff 0%, #6f8ff0 18%, #3b3a8f 45%, #1a1442 100%);
+}
+.zone-decor {
+  position: absolute;
+  pointer-events: none;
+  opacity: 0.95;
+}
+.zone-path {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.zone-path polyline {
+  fill: none;
+  stroke: rgba(255, 255, 255, 0.9);
+  stroke-width: 14px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 2 24;
+  vector-effect: non-scaling-stroke;
+}
+.zone-sign {
+  position: absolute;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 18px;
+  border: 3px solid var(--ink);
+  border-radius: 999px;
+  background: var(--paper);
+  box-shadow: 0 4px 0 var(--ink);
+  white-space: nowrap;
+  z-index: 2;
+}
+.zone-sign span {
+  font-size: 1.5rem;
+}
+.zone-sign strong {
+  font-size: 1.15rem;
+}
+.zone-sign small {
+  font-weight: 700;
+}
+.node {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  z-index: 1;
+}
+.node-disc {
+  display: grid;
+  place-items: center;
+  width: 74px;
+  height: 74px;
+  border: 4px solid var(--ink);
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 6px 0 var(--ink);
+  font-size: 2rem;
+  line-height: 1;
+}
+.node.done .node-disc {
+  background: var(--mint);
+}
+.node.current .node-disc {
+  background: var(--sun);
+  animation: pulse 1.6s infinite;
+}
+.node.boss .node-disc {
+  width: 90px;
+  height: 90px;
+  font-size: 2.5rem;
+}
+.node.locked .node-disc {
+  background: #d8d3ea;
+  box-shadow: 0 6px 0 rgba(35, 22, 79, 0.45);
+  font-size: 1.4rem;
+}
+.node.locked .stars {
+  visibility: hidden;
+}
+.node:active:not(:disabled) .node-disc {
+  transform: translateY(5px);
+  box-shadow: 0 1px 0 var(--ink);
+}
+.node-hero {
+  position: absolute;
+  top: -42px;
+  z-index: 2;
+  pointer-events: none;
+}
+.node-crown {
+  position: absolute;
+  top: -16px;
+  right: -6px;
+  font-size: 1.6rem;
+}
+.node .stars {
+  padding: 1px 6px;
+  border-radius: 999px;
+  background: rgba(255, 253, 247, 0.85);
+}
+
+/* ───────────── How to play ───────────── */
+
+.how-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  counter-reset: step;
+}
+.how-steps li {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 12px 4px 8px;
+  border-radius: 16px;
+  background: #f3effc;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  counter-increment: step;
+}
+.how-steps li::before {
+  content: counter(step);
+  position: absolute;
+  top: -8px;
+  left: -4px;
+  width: 24px;
+  height: 24px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.85rem;
+}
+.how-icon {
+  font-size: 2.2rem;
+  line-height: 1.1;
+}
+.intro-card h1 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ───────────── Wardrobe ───────────── */
+
+.shop-none {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+  font-size: 2rem;
+  opacity: 0.6;
+}
+.shop-item .shop-emoji {
+  display: grid;
+  place-items: center;
+  width: 72px;
+  height: 72px;
+}
+
+/* ───────────── Class & teachers ───────────── */
+
+.class-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.class-head small {
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.class-together {
+  background: var(--mint) !important;
+}
+.class-together,
+.class-code {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 4px 14px;
+  border: 3px dashed var(--ink);
+  border-radius: 14px;
+  background: var(--sun);
+}
+.class-together strong,
+.class-code strong {
+  font-size: 1.5rem;
+  letter-spacing: 0.04em;
+  font-variant-numeric: tabular-nums;
+}
+.class-code strong {
+  letter-spacing: 0.14em;
+  -webkit-user-select: all;
+  user-select: all;
+}
+.class-code.key {
+  background: #e4dff5;
+}
+.hw-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+.hw-card small {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+.hw-progress .stars {
+  flex-wrap: wrap;
+  justify-content: center;
+  font-size: 2rem;
+}
+.num-input {
+  max-width: 120px;
+  align-self: center;
+}
+.gu-tabs {
+  flex: none;
+  margin: 0 14px 10px;
+  max-width: 600px;
+  align-self: center;
+  width: calc(100% - 28px);
+}
+.class-pick {
+  justify-content: space-between;
+  width: 100%;
+}
+.class-pick span {
+  letter-spacing: 0.12em;
+  color: var(--ink-soft);
+}
+.teacher-head {
+  align-items: flex-start;
+}
+.teacher-head .btn-small {
+  margin-left: 0;
+}
+.teacher-codes {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.teacher-row-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.hw-current {
+  color: var(--ink) !important;
+}
+.student {
+  border-top: 2px solid #ebe6f8;
+}
+.student summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 0;
+  list-style: none;
+}
+.student summary::-webkit-details-marker {
+  display: none;
+}
+.student-num {
+  flex: none;
+  width: 34px;
+  height: 34px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+}
+.student-num.dup {
+  background: var(--ko);
+}
+.student-name {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+.student-name strong {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.student-name small {
+  color: var(--ink-soft);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+}
+.student-hw {
+  flex: none;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: #e4dff5;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.student-hw.done {
+  background: var(--ok-soft);
+  color: var(--ok);
+}
+.student-more {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 4px 0 12px 44px;
+}
+.student-more .btn-small {
+  margin-left: 0;
+  align-self: flex-start;
+}
+.topic-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 34vh;
+  overflow-y: auto;
+  padding: 2px;
+}
+.topic {
+  min-height: 44px;
+  padding: 6px 12px;
+  border: 2px solid var(--ink);
+  border-radius: 12px;
+  background: #fff;
+  font-weight: 600;
+  text-align: left;
+}
+.topic.on {
+  background: var(--sun);
+}
+.modal .field-label {
+  text-align: center;
 }

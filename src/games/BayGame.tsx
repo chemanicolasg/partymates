@@ -2,16 +2,16 @@ import { useRef, useState } from 'react'
 import { sfx } from '../core/audio'
 import { fmtNum } from '../core/format'
 import { bayId, genBayRound, shuffle, type BayRound } from '../core/generators'
-import { BOTS } from '../core/items'
+import { FRIENDS } from '../core/look'
 import type { BayCfg } from '../core/types'
 import { useT } from '../i18n'
-import { Feedback, Frac, Hud, Numpad, SayButton, useTimeouts } from '../ui/kit'
+import { Feedback, Frac, Hud, Numpad, Prompt, useTimeouts } from '../ui/kit'
 import { useRun, type GameProps } from './run'
 
 type Phase = 'play' | 'good' | 'bad' | 'reveal'
 const MAX_TRIES = 3
 
-export function BayGame({ cfg, hints, onFinish, onExit }: GameProps<BayCfg>) {
+export function BayGame({ cfg, hints, firstTime, onFinish, onExit }: GameProps<BayCfg>) {
   const { t, lang } = useT()
   const run = useRun(cfg.rounds, onFinish)
   const later = useTimeouts()
@@ -28,7 +28,7 @@ export function BayGame({ cfg, hints, onFinish, onExit }: GameProps<BayCfg>) {
   const [focus, setFocus] = useState(0)
   const [chests, setChests] = useState<number[]>(() => new Array(round.k).fill(0))
   const [message, setMessage] = useState<'unfair' | 'more' | 'wrong'>('wrong')
-  const [friends] = useState(() => shuffle(BOTS))
+  const [friends] = useState(() => shuffle(FRIENDS))
 
   const two = round.answer2 !== undefined
   const pile = round.total - chests.reduce((a, b) => a + b, 0)
@@ -104,38 +104,30 @@ export function BayGame({ cfg, hints, onFinish, onExit }: GameProps<BayCfg>) {
 
   const n = (v: number) => fmtNum(v, lang)
   const params = { total: n(round.total), k: n(round.k), pct: n(round.pct), a: n(round.n), b: n(round.d) }
-  const prompt =
-    round.t === 'share' ? (
-      t(two ? 'bay.shareRem' : 'bay.share', params)
-    ) : round.t === 'groups' ? (
-      t('bay.groups', params)
-    ) : round.t === 'frac' ? (
-      <>
-        {t('bay.fracA')} <Frac n={round.n} d={round.d} /> {t('bay.fracB', params)}
-      </>
-    ) : round.t === 'pct' ? (
-      t('bay.pct', params)
-    ) : (
-      t('bay.ratio', params)
-    )
+  const prompt = (
+    <>
+      {t('bay.fracA')} <Frac n={round.n} d={round.d} /> {t('bay.fracB', params)}
+    </>
+  )
   const spoken =
     round.t === 'frac'
       ? `${t('bay.fracA')} ${round.n}/${round.d} ${t('bay.fracB', params)}`
-      : t(round.t === 'share' ? (two ? 'bay.shareRem' : 'bay.share') : (`bay.${round.t}` as 'bay.groups'), params)
+      : round.t === 'calc'
+        ? t(`bay.calc.${round.op ?? 'add'}`, params)
+        : t(round.t === 'share' ? (two ? 'bay.shareRem' : 'bay.share') : (`bay.${round.t}` as 'bay.groups'), params)
   const labels: [string, string] =
     round.t === 'ratio'
       ? [`🧑‍✈️ ${t('bay.captain')}`, `⚓ ${t('bay.sailor')}`]
       : round.t === 'groups'
         ? [`⛵ ${t('bay.boats')}`, '']
-        : [`🎁 ${t(round.t === 'share' ? 'bay.each' : 'bay.take')}`, `🪙 ${t('bay.left')}`]
+        : round.t === 'calc' && round.op !== 'div'
+          ? [`🪙 ${t('bay.total')}`, '']
+          : [`🎁 ${t(round.t === 'share' || round.t === 'calc' ? 'bay.each' : 'bay.take')}`, `🪙 ${t('bay.left')}`]
 
   return (
     <div className={`game game-bay phase-${phase}`}>
       <Hud onExit={onExit} results={run.results} total={cfg.rounds} />
-      <p className="prompt">
-        {prompt}
-        <SayButton text={spoken} />
-      </p>
+      <Prompt text={spoken}>{round.t === 'frac' ? prompt : undefined}</Prompt>
 
       {round.concrete ? (
         <>
@@ -162,7 +154,7 @@ export function BayGame({ cfg, hints, onFinish, onExit }: GameProps<BayCfg>) {
           </div>
           <StatusLine phase={phase} message={message} round={round} />
           <div className="btn-row">
-            <button className="btn" onClick={dealRound} disabled={phase !== 'play' || pile < round.k}>
+            <button className={`btn${firstTime && run.results.length === 0 && pile === round.total && phase === 'play' ? ' nudge' : ''}`} onClick={dealRound} disabled={phase !== 'play' || pile < round.k}>
               🔄 {t('bay.deal')}
             </button>
             <button className="btn btn-primary" onClick={checkChests} disabled={phase !== 'play' || pile === round.total}>
@@ -211,16 +203,29 @@ function StatusLine({ phase, message, round }: { phase: Phase; message: 'unfair'
 
 /** Story picture shown before any hint: the loot and who it is for. */
 function Scene({ round }: { round: BayRound }) {
-  const who = round.t === 'share' ? '🧒'.repeat(Math.min(round.k, 10)) : round.t === 'groups' ? '⛵' : round.t === 'pct' ? '🦜' : '🏴‍☠️'
+  if (round.t === 'calc' && round.op !== 'div')
+    return (
+      <div className="bay-scene">
+        <span className="loot">
+          {round.op === 'mul' ? '🧰' : '🪙'} <b>{round.total}</b>
+        </span>
+        <span className="arrow">{round.op === 'add' ? '➕' : round.op === 'sub' ? '➖' : '✖️'}</span>
+        <span className="loot">
+          {round.op === 'sub' ? '🦜' : '🪙'} <b>{round.k}</b>
+        </span>
+      </div>
+    )
+  const sharing = round.t === 'share' || round.t === 'calc'
+  const who = sharing ? '🧒'.repeat(Math.min(round.k, 10)) : round.t === 'groups' ? '⛵' : round.t === 'pct' ? '🦜' : '🏴‍☠️'
   return (
     <div className="bay-scene">
       <span className="loot">
-        {round.t === 'share' || round.t === 'groups' ? '💎' : '🪙'} <b>{round.total}</b>
+        {sharing || round.t === 'groups' ? '💎' : '🪙'} <b>{round.total}</b>
       </span>
       <span className="arrow">➜</span>
       <span className="who">
         {who}
-        {round.t === 'share' && round.k > 10 ? <b> ×{round.k}</b> : null}
+        {sharing && round.k > 10 ? <b> ×{round.k}</b> : null}
         {round.t === 'groups' ? <b> ×{round.k}💎</b> : null}
       </span>
     </div>
@@ -229,8 +234,42 @@ function Scene({ round }: { round: BayRound }) {
 
 /** Singapore-style bar model: the whole on top, equal parts below. */
 function BarModel({ round, reveal, lang }: { round: BayRound; reveal: boolean; lang: 'ca' | 'es' | 'en' }) {
+  if (round.t === 'calc' && round.op !== 'div') {
+    // Part–whole picture of a one-step problem: the unknown box is the one to find.
+    const n = (v: number) => fmtNum(v, lang)
+    const ask = reveal ? n(round.answer) : '?'
+    const many = round.op === 'mul' && round.total <= 12
+    return (
+      <div className="bar-model">
+        <div className="bar-total">{round.op === 'sub' ? n(round.total) : ask}</div>
+        <div className="bar-parts">
+          {round.op === 'add' ? (
+            <>
+              <span className="marked">{n(round.total)}</span>
+              <span className="other">{n(round.k)}</span>
+            </>
+          ) : round.op === 'sub' ? (
+            <>
+              <span className="other">{n(round.k)}</span>
+              <span>{ask}</span>
+            </>
+          ) : many ? (
+            Array.from({ length: round.total }, (_, i) => (
+              <span key={i} className="marked">
+                {n(round.k)}
+              </span>
+            ))
+          ) : (
+            <span className="marked">
+              {n(round.total)} × {n(round.k)}
+            </span>
+          )}
+        </div>
+      </div>
+    )
+  }
   const parts =
-    round.t === 'share' ? round.k : round.t === 'groups' ? round.answer : round.t === 'frac' ? round.d : round.t === 'pct' ? 100 / gcd(round.pct, 100) : round.n + round.d
+    round.t === 'share' || round.t === 'calc' ? round.k : round.t === 'groups' ? round.answer : round.t === 'frac' ? round.d : round.t === 'pct' ? 100 / gcd(round.pct, 100) : round.n + round.d
   const marked = round.t === 'frac' ? round.n : round.t === 'pct' ? round.pct / gcd(round.pct, 100) : round.t === 'ratio' ? round.n : 0
   const each = round.t === 'groups' ? round.k : Math.floor((round.total - (round.t === 'share' ? (round.answer2 ?? 0) : 0)) / parts)
   // In "how many boats" problems the number of boxes is the answer, so it stays hidden until revealed.

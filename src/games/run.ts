@@ -7,6 +7,8 @@ export interface GameProps<C> {
   profile: Profile
   /** Extra scaffolding: switched on with the 💡 button or after a failed attempt at the level. */
   hints: boolean
+  /** The child has never played this kind of activity: point at the first thing to tap. */
+  firstTime: boolean
   onFinish: (result: GameResult) => void
   onExit: () => void
 }

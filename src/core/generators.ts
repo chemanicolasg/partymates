@@ -1,6 +1,6 @@
 import { DOJO_SHEET } from './curriculum'
 import { isDue, type Memory } from './srs'
-import type { ArenaCfg, BayCfg, BayTask, BlocksCfg, DojoStep, Fact, FactSpec, Op, PartyCfg, Rule } from './types'
+import type { ArenaCfg, BayCfg, BayTask, BlocksCfg, DojoStep, Fact, FactSpec, Op, PairsCfg, PartyCfg, Rule, StonesCfg } from './types'
 
 export type Rnd = () => number
 
@@ -285,6 +285,8 @@ export interface BayRound {
   answer2?: number
   /** Concrete stage: the child deals the gems by hand instead of typing a number. */
   concrete: boolean
+  /** Word problems: which operation the story is about. */
+  op?: Op
   fact?: Fact
 }
 
@@ -332,12 +334,98 @@ function bayOnce(cfg: BayCfg, rnd: Rnd): BayRound {
         if ((p * total) % 100 === 0) return { ...base, total, pct: p, answer: (p * total) / 100 }
       }
     }
+    case 'calc': {
+      const fact = genFact(task.specs, undefined, rnd)
+      // The story always reads "first number, then second": total and k carry the two operands.
+      return { ...base, total: fact.a, k: fact.b, answer: fact.answer, op: fact.op, fact }
+    }
     case 'ratio': {
       const [a, b] = pick(task.ratios, rnd)
       const q = int(task.q[0], task.q[1], rnd)
       return { ...base, total: (a + b) * q, n: a, d: b, answer: a * q, answer2: b * q }
     }
   }
+}
+
+// ───────────── Stepping stones ─────────────
+
+export interface Stone {
+  /** What decides the order (in the level's internal units). */
+  value: number
+  /** Set when the stone shows an operation instead of a plain number. */
+  fact?: Fact
+}
+
+/** A handful of stones with different values, in the scrambled order they appear on the river. */
+export function genStonesRound(cfg: StonesCfg, rnd: Rnd = Math.random): Stone[] {
+  const out: Stone[] = []
+  const used = new Set<number>()
+  if (cfg.specs) {
+    const pool = shuffle(cfg.specs.flatMap((s) => factPool(s)), rnd)
+    for (const fact of pool) {
+      if (out.length >= cfg.count) break
+      if (used.has(fact.answer)) continue
+      used.add(fact.answer)
+      out.push({ value: fact.answer, fact })
+    }
+    return out
+  }
+  for (let guard = 0; out.length < cfg.count && guard < 500; guard++) {
+    const value = int(cfg.min, cfg.max, rnd)
+    if (used.has(value)) continue
+    used.add(value)
+    out.push({ value })
+  }
+  return out
+}
+
+// ───────────── Pairs ─────────────
+
+/** Facts for one board: every result is different, so each operation has exactly one partner. */
+export function genPairsBoard(cfg: PairsCfg, memory?: Memory, rnd: Rnd = Math.random, avoid?: Set<string>, now = Date.now()): Fact[] {
+  const pool = shuffle(cfg.specs.flatMap((s) => factPool(s)), rnd)
+  // Facts due for review go first, then ones not seen in this game.
+  const rank = (f: Fact) => (memory?.[f.key] && isDue(memory[f.key], now) ? 0 : avoid?.has(f.key) ? 2 : 1)
+  const sorted = [...pool].sort((a, b) => rank(a) - rank(b))
+  const out: Fact[] = []
+  const answers = new Set<number>()
+  const keys = new Set<string>()
+  for (const f of sorted) {
+    if (out.length >= cfg.pairs) break
+    if (answers.has(f.answer) || keys.has(f.key)) continue
+    answers.add(f.answer)
+    keys.add(f.key)
+    out.push(f)
+  }
+  return shuffle(out, rnd)
+}
+
+// ───────────── Surprise events ─────────────
+
+export interface Choice {
+  fact: Fact
+  /** Three possible answers in random order, exactly one of them right. */
+  options: number[]
+}
+
+/** A quick three-way question; the wrong options are the slips children really make. */
+export function genChoice(specs: FactSpec[], memory?: Memory, rnd: Rnd = Math.random, avoid?: Set<string>): Choice {
+  const fact = genFact(specs, memory, rnd, avoid)
+  const { a, b, answer, op } = fact
+  const slips = [
+    answer + 1,
+    answer - 1,
+    answer + 10,
+    answer - 10,
+    answer + 2,
+    op === 'mul' ? round2(a * (b + 1)) : answer + 5,
+    op === 'mul' ? round2(a * (b - 1)) : answer - 2,
+    op === 'mul' ? a + b : op === 'add' ? Math.abs(a - b) : op === 'sub' ? a + b : answer * 2,
+  ].filter((v) => v !== answer && v >= 0)
+  const wrong: number[] = []
+  for (const v of shuffle(slips, rnd)) if (wrong.length < 2 && !wrong.includes(v)) wrong.push(v)
+  for (let v = answer + 3; wrong.length < 2; v++) if (!wrong.includes(v)) wrong.push(v)
+  return { fact, options: shuffle([answer, ...wrong], rnd) }
 }
 
 // ───────────── Lightning Gym ─────────────

@@ -6,12 +6,16 @@ import type {
   BlocksCfg,
   DojoStep,
   FactSpec,
+  Kind,
   LevelCfg,
+  PairsCfg,
   PartyCfg,
   Rule,
+  StonesCfg,
   Unit,
-  WorldId,
+  ZoneId,
 } from './types'
+import { ZONES } from './types'
 
 /** Inclusive integer range. */
 export const R = (lo: number, hi: number, step = 1): number[] => {
@@ -19,7 +23,7 @@ export const R = (lo: number, hi: number, step = 1): number[] => {
   for (let v = lo; v <= hi; v += step) out.push(v)
   return out
 }
-const signed = (lo: number, hi: number) => [...R(lo, hi).map((v) => -v), ...R(lo, hi)]
+export const signed = (lo: number, hi: number) => [...R(lo, hi).map((v) => -v), ...R(lo, hi)]
 
 // ───────────── Fact pools ─────────────
 
@@ -37,7 +41,7 @@ export const div = (as: number[], bs: number[]): FactSpec => ({ op: 'div', as, b
 
 // ───────────── Block Valley ─────────────
 
-const blocks = (
+export const blocks = (
   pieces: number[],
   min: number,
   max: number,
@@ -100,7 +104,7 @@ const BLOCKS: Record<Band, BlocksCfg[]> = {
 
 // ───────────── Party Island ─────────────
 
-const party = (min: number, max: number, dice: number[][], rules: Rule[], rounds = 8): PartyCfg => ({
+export const party = (min: number, max: number, dice: number[][], rules: Rule[], rounds = 8): PartyCfg => ({
   kind: 'party',
   min,
   max,
@@ -155,7 +159,7 @@ const PARTY: Record<Band, PartyCfg[]> = {
 
 // ───────────── Storm Arena ─────────────
 
-const arena = (specs: FactSpec[], hand: number, seconds: number, rounds = 10): ArenaCfg => ({
+export const arena = (specs: FactSpec[], hand: number, seconds: number, rounds = 10): ArenaCfg => ({
   kind: 'arena',
   specs,
   hand,
@@ -248,17 +252,18 @@ const ARENA: Record<Band, ArenaCfg[]> = {
 
 // ───────────── Treasure Bay ─────────────
 
-const bay = (tasks: BayTask[], rounds = 6): BayCfg => ({ kind: 'bay', tasks, rounds })
-const share = (ks: number[], lo: number, hi: number, o: { concrete?: boolean; rem?: boolean } = {}): BayTask => ({
+export const bay = (tasks: BayTask[], rounds = 6): BayCfg => ({ kind: 'bay', tasks, rounds })
+export const share = (ks: number[], lo: number, hi: number, o: { concrete?: boolean; rem?: boolean } = {}): BayTask => ({
   t: 'share',
   ks,
   q: [lo, hi],
   ...o,
 })
-const groups = (ss: number[], lo: number, hi: number): BayTask => ({ t: 'groups', ss, n: [lo, hi] })
-const frac = (fracs: [number, number][], lo: number, hi: number): BayTask => ({ t: 'frac', fracs, q: [lo, hi] })
-const pct = (pcts: number[], bases: number[]): BayTask => ({ t: 'pct', pcts, bases })
-const ratio = (ratios: [number, number][], lo: number, hi: number): BayTask => ({ t: 'ratio', ratios, q: [lo, hi] })
+export const groups = (ss: number[], lo: number, hi: number): BayTask => ({ t: 'groups', ss, n: [lo, hi] })
+export const frac = (fracs: [number, number][], lo: number, hi: number): BayTask => ({ t: 'frac', fracs, q: [lo, hi] })
+export const pct = (pcts: number[], bases: number[]): BayTask => ({ t: 'pct', pcts, bases })
+export const ratio = (ratios: [number, number][], lo: number, hi: number): BayTask => ({ t: 'ratio', ratios, q: [lo, hi] })
+export const calc = (...specs: FactSpec[]): BayTask => ({ t: 'calc', specs })
 
 const bB = {
   s2510: share([2, 5, 10], 2, 10),
@@ -299,7 +304,7 @@ const BAY: Record<Band, BayCfg[]> = {
     bay([bB.f]),
     bay([share([2, 3, 4, 5], 2, 6, { concrete: true, rem: true })]),
     bay([bB.r]),
-    bay([bB.s2510, bB.s34, bB.g, bB.f, bB.r], 8),
+    bay([bB.s2510, bB.s34, bB.g, bB.f, bB.r, calc(aB.add2d, aB.sub20)], 8),
   ],
   C: [
     bay([share(R(6, 9), 2, 10)]),
@@ -309,7 +314,7 @@ const BAY: Record<Band, BayCfg[]> = {
     bay([bC.big]),
     bay([groups([6, 7, 8, 9, 12], 2, 10)]),
     bay([bC.f2]),
-    bay([bC.rem, bC.f1, bC.big, bC.f2], 8),
+    bay([bC.rem, bC.f1, bC.big, bC.f2, calc(aC.xAll, aC.xTens)], 8),
   ],
   D: [
     bay([bD.f]),
@@ -323,18 +328,120 @@ const BAY: Record<Band, BayCfg[]> = {
   ],
 }
 
-const LEVELS: Record<WorldId, Record<Band, LevelCfg[]>> = {
+// ───────────── Stepping stones ─────────────
+
+export const stones = (
+  min: number,
+  max: number,
+  count: number,
+  o: Partial<Pick<StonesCfg, 'unit' | 'den' | 'desc' | 'specs' | 'rounds'>> = {},
+): StonesCfg => ({
+  kind: 'stones',
+  unit: o.unit ?? 'int',
+  den: o.den ?? 1,
+  min,
+  max,
+  count,
+  desc: o.desc ?? false,
+  specs: o.specs,
+  rounds: o.rounds ?? 5,
+})
+
+/** One level per zone of the journey. */
+const STONES: Record<Band, StonesCfg[]> = {
+  A: [stones(1, 10, 4), stones(1, 20, 5), stones(1, 50, 5), stones(10, 99, 5, { desc: true })],
+  B: [
+    stones(1, 100, 5),
+    stones(100, 999, 5),
+    stones(0, 0, 5, { specs: [add(R(2, 9), R(2, 9))] }),
+    stones(100, 999, 6, { desc: true }),
+  ],
+  C: [
+    stones(1000, 9999, 5),
+    stones(0, 0, 5, { specs: [mul(R(2, 9), R(2, 9))] }),
+    stones(1, 99, 5, { unit: 'dec', den: 10 }),
+    stones(1, 399, 6, { unit: 'dec', den: 100 }),
+  ],
+  D: [
+    stones(-20, 20, 6),
+    stones(1, 999, 6, { unit: 'dec', den: 100, desc: true }),
+    stones(1, 23, 5, { unit: 'frac', den: 12 }),
+    stones(-100, 100, 6, { desc: true }),
+  ],
+}
+
+// ───────────── Pairs ─────────────
+
+export const pairs = (specs: FactSpec[], n = 5, boards = 2): PairsCfg => ({ kind: 'pairs', specs, pairs: n, boards })
+
+const PAIRS: Record<Band, PairsCfg[]> = {
+  A: [pairs([aA.to10], 4), pairs([aA.sub10], 4), pairs([aA.teen]), pairs([aA.cross, aA.sub20])],
+  B: [pairs([aB.add20]), pairs([aB.x2x10, aB.x5]), pairs([aB.x3x4]), pairs([aB.div])],
+  C: [pairs([aC.x2to5]), pairs([aC.x67, aC.x89]), pairs([aC.d2to5, aC.d6to9]), pairs([aC.x1112], 6)],
+  D: [pairs([aD.xHard], 6), pairs([aD.dAll], 6), pairs([aD.squares, aD.x11to15], 6), pairs([aD.dBig], 6)],
+}
+
+const LEVELS: Record<Kind, Record<Band, LevelCfg[]>> = {
   blocks: BLOCKS,
   party: PARTY,
   arena: ARENA,
   bay: BAY,
+  stones: STONES,
+  pairs: PAIRS,
 }
 
-export function getLevel(world: WorldId, band: Band, index: number): LevelCfg {
-  return LEVELS[world][band][index]
+export function getLevel(kind: Kind, band: Band, index: number): LevelCfg {
+  return LEVELS[kind][band][index]
 }
 
-export const levelKey = (world: WorldId, band: Band, index: number) => `${world}-${band}-${index}`
+/** Also the key under which stars are saved, so it must stay stable. */
+export const levelKey = (kind: Kind, band: Band, index: number) => `${kind}-${band}-${index}`
+
+// ───────────── The journey ─────────────
+
+export interface Stop {
+  /** Position along the whole journey, 0-based. */
+  index: number
+  zone: ZoneId
+  kind: Kind
+  /** Level of that kind's ladder. */
+  level: number
+  boss: boolean
+}
+
+export const STOPS_PER_ZONE = 10
+
+/**
+ * Every zone mixes all the activities so no two stops in a row feel the same; each zone takes the
+ * next step up every activity's ladder, and ends on a timed arena challenge.
+ */
+export const JOURNEY: Stop[] = ZONES.flatMap((zone, z) => {
+  const order: [Kind, number][] = [
+    ['blocks', 2 * z],
+    ['party', 2 * z],
+    ['stones', z],
+    ['arena', 2 * z],
+    ['bay', 2 * z],
+    ['pairs', z],
+    ['blocks', 2 * z + 1],
+    ['party', 2 * z + 1],
+    ['bay', 2 * z + 1],
+    ['arena', 2 * z + 1],
+  ]
+  return order.map(([kind, level], i) => ({
+    index: z * STOPS_PER_ZONE + i,
+    zone,
+    kind,
+    level,
+    boss: i === STOPS_PER_ZONE - 1,
+  }))
+})
+
+/** Facts for the surprise events of a zone: the same ones its arena levels practise. */
+export function eventSpecs(band: Band, zone: ZoneId): FactSpec[] {
+  const z = ZONES.indexOf(zone)
+  return [ARENA[band][2 * z], ARENA[band][2 * z + 1]].flatMap((cfg) => cfg.specs)
+}
 
 // ───────────── Lightning Gym (daily fluency ladder, Kumon style) ─────────────
 

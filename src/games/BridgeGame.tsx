@@ -4,7 +4,8 @@ import { fmtQty } from '../core/format'
 import { genBlocksRound, minPieces, type BlocksRound } from '../core/generators'
 import type { BlocksCfg } from '../core/types'
 import { useT } from '../i18n'
-import { Feedback, Hud, ProfileAvatar, Qty, SayButton, useTimeouts } from '../ui/kit'
+import { ProfileAvatar } from '../ui/Character'
+import { Feedback, Hud, Prompt, Qty, useTimeouts } from '../ui/kit'
 import { useRun, type GameProps } from './run'
 
 type Phase = 'build' | 'checking' | 'good' | 'short' | 'long'
@@ -13,7 +14,7 @@ const MAX_PER_PIECE = 30
 const CLIFF = 15
 const RIVER = 100 - 2 * CLIFF
 
-export function BridgeGame({ cfg, profile, hints, onFinish, onExit }: GameProps<BlocksCfg>) {
+export function BridgeGame({ cfg, profile, hints, firstTime, onFinish, onExit }: GameProps<BlocksCfg>) {
   const { t, lang } = useT()
   const run = useRun(cfg.rounds, onFinish)
   const later = useTimeouts()
@@ -79,14 +80,13 @@ export function BridgeGame({ cfg, profile, hints, onFinish, onExit }: GameProps<
   const prompt = cfg.partial ? t(`${ask}Partial`, { s: q(round.start), n: q(round.target) }) : t(ask, { n: q(round.target) })
   // Concrete stage: the river shows one slot per block, so the gap can be counted with a finger.
   const slots = cfg.preview && cfg.unit === 'int' && round.target <= 20 ? round.target : 0
+  // First ever bridge: a hand shows where to tap, first the pieces, then the hammer.
+  const guide = firstTime && run.results.length === 0 && phase === 'build' && tries === 0
 
   return (
     <div className="game game-blocks">
       <Hud onExit={onExit} results={run.results} total={cfg.rounds} />
-      <p className="prompt">
-        {prompt}
-        <SayButton text={prompt} />
-      </p>
+      <Prompt text={prompt} />
 
       <div className={`bridge-scene phase-${phase}`}>
         <div className="cliff left" style={{ width: `${CLIFF}%` }} />
@@ -147,7 +147,7 @@ export function BridgeGame({ cfg, profile, hints, onFinish, onExit }: GameProps<
             </div>
             <span className={`piece-count${counts[i] ? ' on' : ''}`}>×{counts[i]}</span>
             <button
-              className={`piece rank-${cfg.pieces.length - 1 - i}`}
+              className={`piece rank-${cfg.pieces.length - 1 - i}${guide && used === 0 && i === 0 ? ' nudge' : ''}`}
               onClick={() => change(i, 1)}
               aria-label={`+ ${q(p)}`}
             >
@@ -160,7 +160,7 @@ export function BridgeGame({ cfg, profile, hints, onFinish, onExit }: GameProps<
         ))}
       </div>
 
-      <button className="btn btn-primary btn-big" onClick={build} disabled={phase !== 'build' || used === 0}>
+      <button className={`btn btn-primary btn-big${guide && used > 0 ? ' nudge' : ''}`} onClick={build} disabled={phase !== 'build' || used === 0}>
         🔨 {t('blocks.build')}
       </button>
     </div>

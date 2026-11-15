@@ -1,11 +1,14 @@
 export type Lang = 'ca' | 'es' | 'en'
 export type Band = 'A' | 'B' | 'C' | 'D'
 export type Op = 'add' | 'sub' | 'mul' | 'div'
-export type WorldId = 'blocks' | 'party' | 'arena' | 'bay'
+/** The kinds of activity. Each one has its own ladder of levels per age band. */
+export type Kind = 'blocks' | 'party' | 'arena' | 'bay' | 'stones' | 'pairs'
+/** The places the journey goes through, in order. */
+export type ZoneId = 'beach' | 'jungle' | 'mountain' | 'space'
 
 export const BANDS: Band[] = ['A', 'B', 'C', 'D']
-export const WORLDS: WorldId[] = ['blocks', 'party', 'arena', 'bay']
-export const LEVELS_PER_WORLD = 8
+export const KINDS: Kind[] = ['blocks', 'party', 'arena', 'bay', 'stones', 'pairs']
+export const ZONES: ZoneId[] = ['beach', 'jungle', 'mountain', 'space']
 
 /** A basic number fact, the unit tracked by the spaced-repetition memory system. */
 export interface Fact {
@@ -88,6 +91,8 @@ export type BayTask =
   | { t: 'frac'; fracs: [number, number][]; q: [number, number] }
   | { t: 'pct'; pcts: number[]; bases: number[] }
   | { t: 'ratio'; ratios: [number, number][]; q: [number, number] }
+  /** A one-step word problem built on a number fact, answered on the keypad. */
+  | { t: 'calc'; specs: FactSpec[] }
 
 /** Treasure Bay — fair sharing: division, fractions, percentages, ratios. */
 export interface BayCfg {
@@ -96,7 +101,30 @@ export interface BayCfg {
   rounds: number
 }
 
-export type LevelCfg = BlocksCfg | PartyCfg | ArenaCfg | BayCfg
+/** Stepping stones — cross the river by tapping the stones in order. */
+export interface StonesCfg {
+  kind: 'stones'
+  unit: Unit
+  den: number
+  min: number
+  max: number
+  count: number
+  /** Largest first instead of smallest first. */
+  desc: boolean
+  /** When given, each stone shows an operation and is ordered by its result. */
+  specs?: FactSpec[]
+  rounds: number
+}
+
+/** Pairs — match every operation with its result. */
+export interface PairsCfg {
+  kind: 'pairs'
+  specs: FactSpec[]
+  pairs: number
+  boards: number
+}
+
+export type LevelCfg = BlocksCfg | PartyCfg | ArenaCfg | BayCfg | StonesCfg | PairsCfg
 
 export interface DojoStep {
   id: string

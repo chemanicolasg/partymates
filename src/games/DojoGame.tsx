@@ -69,7 +69,7 @@ export function DojoGame({
 
   return (
     <div className="game game-dojo">
-      <Hud onExit={onExit} results={flags} total={sheet.length} />
+      <Hud onExit={onExit} results={flags} total={sheet.length} pad={false} />
       <div className={`storm${pct >= 100 ? ' low' : ''}`}>
         <span>⏱️</span>
         <div className="storm-bar">

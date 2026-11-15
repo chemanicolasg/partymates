@@ -1,9 +1,10 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import type { Backend, ClassRoom, Member, Team } from './index'
+import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert } from './index'
 
 /**
- * Cloud classes on Supabase. Tables are closed by row-level security; every call goes through the
- * `pm_*` functions in supabase/migrations, which only ever expose nicknames, avatars and scores.
+ * Cloud classes on Supabase. Tables are closed; every call goes through the functions in
+ * supabase/migrations. Children's devices can only read the class name and its homework;
+ * the per-child report needs the teacher key.
  */
 export class SupabaseBackend implements Backend {
   mode = 'cloud' as const
@@ -20,27 +21,24 @@ export class SupabaseBackend implements Backend {
   }
 
   createClass(name: string) {
-    return this.rpc<string>('pm_create_class', { p_name: name })
+    return this.rpc<{ code: string; teacherKey: string }>('pm_class_create', { p_name: name })
   }
 
   getClass(code: string) {
-    return this.rpc<ClassRoom | null>('pm_get_class', { p_code: code })
+    return this.rpc<ClassInfo | null>('pm_class_get', { p_code: code })
   }
 
-  async upsertMember(code: string, m: Omit<Member, 'updatedAt'>, secret: string) {
-    await this.rpc('pm_upsert_member', {
+  async upsertMember(code: string, m: MemberUpsert, secret: string) {
+    await this.rpc('pm_member_upsert', {
       p_code: code,
       p_id: m.id,
       p_secret: secret,
       p_name: m.name,
-      p_skin: m.skin,
-      p_color: m.color,
-      p_pet: m.pet,
+      p_num: m.num,
+      p_look: m.look,
       p_stars: m.stars,
       p_xp: m.xp,
-      p_week_xp: m.weekXp,
-      p_week: m.week,
-      p_team_id: m.teamId,
+      p_stats: m.stats,
     })
   }
 
@@ -48,7 +46,19 @@ export class SupabaseBackend implements Backend {
     await this.rpc('pm_leave_class', { p_id: memberId, p_secret: secret })
   }
 
-  createTeam(code: string, name: string, emoji: string) {
-    return this.rpc<Team>('pm_create_team', { p_code: code, p_name: name, p_emoji: emoji })
+  report(code: string, teacherKey: string) {
+    return this.rpc<MemberReport[]>('pm_class_report', { p_code: code, p_key: teacherKey })
+  }
+
+  async setHomework(code: string, teacherKey: string, homework: Homework | null) {
+    await this.rpc('pm_class_set_homework', { p_code: code, p_key: teacherKey, p_homework: homework })
+  }
+
+  async removeMember(code: string, teacherKey: string, memberId: string) {
+    await this.rpc('pm_class_remove_member', { p_code: code, p_key: teacherKey, p_member: memberId })
+  }
+
+  async deleteClass(code: string, teacherKey: string) {
+    await this.rpc('pm_class_delete', { p_code: code, p_key: teacherKey })
   }
 }

@@ -5,13 +5,14 @@ import { fuse, genArenaRound, type ArenaRound } from '../core/generators'
 import { setMusicTempo } from '../core/music'
 import type { ArenaCfg } from '../core/types'
 import { useT } from '../i18n'
-import { Feedback, Hud, useTimeouts } from '../ui/kit'
+import { Feedback, Hud, Prompt, useTimeouts } from '../ui/kit'
+import { isPadOpen } from '../ui/Scratchpad'
 import { useRun, type GameProps } from './run'
 
 type Phase = 'play' | 'good' | 'bad' | 'over'
 const ENEMIES = ['🤖', '👾', '🛸', '🦾', '👹', '🐙', '🦂', '🧟', '👻', '🐉']
 
-export function ArenaGame({ cfg, profile, hints, onFinish, onExit }: GameProps<ArenaCfg>) {
+export function ArenaGame({ cfg, profile, hints, firstTime, onFinish, onExit }: GameProps<ArenaCfg>) {
   const { t, lang } = useT()
   const run = useRun(cfg.rounds, onFinish)
   const later = useTimeouts()
@@ -32,7 +33,8 @@ export function ArenaGame({ cfg, profile, hints, onFinish, onExit }: GameProps<A
   // The storm closes in: the clock only runs while the player can act.
   useEffect(() => {
     const id = window.setInterval(() => {
-      if (phaseRef.current === 'play') setLeft((v) => v - 200)
+      // Working a sum out on the notepad does not eat into the storm clock.
+      if (phaseRef.current === 'play' && !isPadOpen()) setLeft((v) => v - 200)
     }, 200)
     return () => clearInterval(id)
   }, [])
@@ -106,6 +108,8 @@ export function ArenaGame({ cfg, profile, hints, onFinish, onExit }: GameProps<A
         <span className="storm-time">{Math.ceil(Math.max(0, left) / 1000)}</span>
       </div>
 
+      <Prompt text={t(`arena.how.${round.op}`, { n: fmtNum(round.target, lang) })} />
+
       <div className="enemy-zone">
         <div className="enemy" key={run.results.length}>
           <span className="enemy-body">{phase === 'good' ? '💥' : enemy}</span>
@@ -130,10 +134,9 @@ export function ArenaGame({ cfg, profile, hints, onFinish, onExit }: GameProps<A
         {phase === 'good' ? <Feedback kind="good">{t('arena.hit')}</Feedback> : null}
         {phase === 'bad' ? <Feedback kind="bad">{t('arena.miss', { n: fmtNum(round.target, lang) })}</Feedback> : null}
         {phase === 'over' ? <Feedback kind="bad">{t('arena.timeUp')}</Feedback> : null}
-        {phase === 'play' ? <Feedback kind="info">{t(`arena.how.${round.op}`, { n: fmtNum(round.target, lang) })}</Feedback> : null}
       </div>
 
-      <div className="hand">
+      <div className={`hand${firstTime && run.results.length === 0 && selected.length === 0 && phase === 'play' && tries === 0 ? ' nudge' : ''}`}>
         {round.cards.map((c, i) => (
           <button
             key={`${run.results.length}-${i}`}

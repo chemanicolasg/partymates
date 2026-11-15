@@ -1,43 +1,10 @@
-import { useEffect, useRef, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { sfx } from '../core/audio'
 import { fmtNum, fmtQty, fracParts } from '../core/format'
-import { itemValue } from '../core/items'
-import { getState, type Profile } from '../core/store'
+import { PadButton, Scratchpad } from './Scratchpad'
+import { getState } from '../core/store'
 import type { Lang, Unit } from '../core/types'
 import { useT } from '../i18n'
-
-export function Avatar({
-  skin,
-  color,
-  pet,
-  size = 56,
-  bounce,
-}: {
-  skin: string
-  color: string
-  pet?: string | null
-  size?: number
-  bounce?: boolean
-}) {
-  return (
-    <span className={`avatar${bounce ? ' bounce' : ''}`} style={{ '--size': `${size}px`, background: color } as CSSProperties}>
-      <span className="avatar-skin">{skin}</span>
-      {pet ? <span className="avatar-pet">{pet}</span> : null}
-    </span>
-  )
-}
-
-export function ProfileAvatar({ p, size, bounce }: { p: Profile; size?: number; bounce?: boolean }) {
-  return (
-    <Avatar
-      skin={itemValue(p.skin, '🦊')}
-      color={itemValue(p.color, '#ffd23f')}
-      pet={p.pet ? itemValue(p.pet) : null}
-      size={size}
-      bounce={bounce}
-    />
-  )
-}
 
 export function Stars({ n, max = 3, big }: { n: number; max?: number; big?: boolean }) {
   return (
@@ -98,16 +65,19 @@ export function Numpad({ onKey, okLabel, disabled }: { onKey: (key: string) => v
   )
 }
 
-/** Top bar of every mini-game: exit, one pip per round, optional extra (timer, hint…). */
+/** Top bar of every mini-game: exit, one pip per round, the notepad and any extra (timer…). */
 export function Hud({
   onExit,
   results,
   total,
+  pad = true,
   children,
 }: {
   onExit: () => void
   results: boolean[]
   total: number
+  /** Offer the notepad for working things out by hand. */
+  pad?: boolean
   children?: ReactNode
 }) {
   const { t } = useT()
@@ -122,7 +92,50 @@ export function Hud({
         ))}
       </div>
       {children}
+      {pad ? <PadButton /> : null}
+      {pad ? <Scratchpad /> : null}
     </header>
+  )
+}
+
+/**
+ * The task, in large print at the top of every game. Numbers are picked out as chips so the
+ * figures that matter jump out even for children who are still slow readers.
+ */
+export function Prompt({ text, children }: { text: string; children?: ReactNode }) {
+  const parts = text.split(/(−?\d+(?:[.,]\d+)?(?:\/\d+)?(?:\s?%)?)/)
+  return (
+    <p className="prompt">
+      <span>
+        {children ??
+          parts.map((part, i) =>
+            i % 2 ? (
+              <b className="num" key={i}>
+                {part}
+              </b>
+            ) : (
+              part
+            ),
+          )}
+      </span>
+      <SayButton text={text} />
+    </p>
+  )
+}
+
+/** Three pictograms that show how an activity is played, for the card before it starts. */
+export function HowSteps({ steps }: { steps: { icon: string; text: string }[] }) {
+  return (
+    <ol className="how-steps">
+      {steps.map((s, i) => (
+        <li key={i}>
+          <span className="how-icon" aria-hidden="true">
+            {s.icon}
+          </span>
+          <span>{s.text}</span>
+        </li>
+      ))}
+    </ol>
   )
 }
 

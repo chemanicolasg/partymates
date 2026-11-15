@@ -1,11 +1,10 @@
 import { useSyncExternalStore } from 'react'
-import type { WorldId } from './types'
-
 export type Screen =
   | { id: 'welcome' }
   | { id: 'hub' }
-  | { id: 'world'; world: WorldId }
-  | { id: 'play'; world: WorldId; index: number }
+  /** A stop of the journey, by its position. */
+  | { id: 'play'; stop: number }
+  | { id: 'homework' }
   | { id: 'dojo' }
   | { id: 'shop' }
   | { id: 'class' }

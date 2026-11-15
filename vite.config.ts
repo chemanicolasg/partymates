@@ -10,8 +10,8 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg', 'apple-touch-icon.png'],
       manifest: {
-        name: 'PartyMates',
-        short_name: 'PartyMates',
+        name: 'Matty',
+        short_name: 'Matty',
         description: 'Math adventure worlds for kids · Mons d’aventures matemàtiques · Mundos de aventuras matemáticas',
         theme_color: '#2b1b6b',
         background_color: '#2b1b6b',

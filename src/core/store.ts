@@ -1,12 +1,12 @@
 import { useSyncExternalStore } from 'react'
 import { setSoundEnabled } from './audio'
-import { getBackend, type Member } from './backend'
-import { DOJO, DOJO_START, levelKey } from './curriculum'
+import { getBackend, type ClassInfo, type Homework, type MemberStats, type MemberUpsert } from './backend'
+import { DOJO, DOJO_START, JOURNEY, levelKey, STOPS_PER_ZONE, type Stop } from './curriculum'
+import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, LEGACY_SKINS, type ItemType, type Look } from './look'
 import { setMusicEnabled } from './music'
-import { ITEM_BY_ID, itemValue } from './items'
 import { dayKey, dojoPassed, rewardsFor, weekStart, type Rewards } from './scoring'
-import { review, type Memory } from './srs'
-import { LEVELS_PER_WORLD, WORLDS, type Band, type FactResult, type GameResult, type Lang, type WorldId } from './types'
+import { memoryStats, review, type Memory } from './srs'
+import type { Band, FactResult, GameResult, Lang, ZoneId } from './types'
 
 export interface LevelRecord {
   stars: number
@@ -18,10 +18,9 @@ export interface Profile {
   /** Device-only secret that proves ownership of this player's row in a cloud class. */
   secret: string
   name: string
-  skin: string
-  color: string
-  pet: string | null
+  look: Look
   band: Band
+  /** Points: earned by playing, spent on characters and outfits. */
   coins: number
   xp: number
   levels: Record<string, LevelRecord>
@@ -30,13 +29,29 @@ export interface Profile {
   owned: string[]
   stats: {
     playMs: number
-    byWorld: Record<WorldId, { ok: number; total: number }>
-    /** XP earned per day (kept for the weekly class ranking and the grown-ups report). */
+    byKind: Record<string, { ok: number; total: number }>
+    /** XP and play time per day (the grown-ups and teacher reports show the current week). */
     days: Record<string, number>
+    ms: Record<string, number>
   }
   classCode: string | null
-  teamId: string | null
+  /** Class list number the child typed when joining. */
+  classNum: number | null
+  /** Last known state of the class, so the homework shows up without waiting for the network. */
+  classInfo: ClassInfo | null
+  /** Stars earned on the current homework. */
+  hw: { id: string; stars: number; plays: number } | null
+  /** Levels played since the last surprise event. */
+  sinceEvent: number
   createdAt: number
+}
+
+/** A class this device manages as a teacher. Names never leave the device. */
+export interface TeacherClass {
+  code: string
+  key: string
+  name: string
+  names: Record<string, string>
 }
 
 export interface AppState {
@@ -46,6 +61,7 @@ export interface AppState {
   music: boolean
   profiles: Profile[]
   activeId: string | null
+  teacher: TeacherClass[]
 }
 
 const KEY = 'partymates.v1'
@@ -60,18 +76,62 @@ function detectLang(): Lang {
   return 'ca'
 }
 
+/** Brings a profile saved by an earlier version up to date without losing stars or points. */
+export function upgradeProfile(raw: Record<string, unknown>): Profile {
+  const old = raw as unknown as Profile & { skin?: string; color?: string; pet?: string | null; stats: { byWorld?: Profile['stats']['byKind'] } }
+  let { look, owned, coins } = old
+  if (!look) {
+    // First version: emoji characters. Keep the choice where a drawn equivalent exists, refund the rest.
+    const legacy = (id?: string | null) => (id ? id.slice(id.indexOf(':') + 1) : '')
+    const mapped = LEGACY_SKINS[legacy(old.skin)] ?? {}
+    look = { ...DEFAULT_LOOK, ...mapped, pet: legacy(old.pet) || null, bg: ITEM_BY_ID[`bg:${legacy(old.color)}`] ? legacy(old.color) : 'sun' }
+    const next = new Set<string>(FREE_ITEMS)
+    for (const id of old.owned ?? []) {
+      const m = id.startsWith('skin:') ? LEGACY_SKINS[legacy(id)] : null
+      if (m) for (const [type, name] of Object.entries(m)) next.add(`${type}:${name}`)
+      else if (id.startsWith('pet:') && ITEM_BY_ID[id]) next.add(id)
+      else if (id.startsWith('color:') && ITEM_BY_ID[`bg:${legacy(id)}`]) next.add(`bg:${legacy(id)}`)
+    }
+    owned = [...next]
+    coins = old.coins ?? 0
+  }
+  return {
+    ...old,
+    look,
+    owned,
+    coins,
+    stats: {
+      playMs: old.stats?.playMs ?? 0,
+      byKind: old.stats?.byKind ?? old.stats?.byWorld ?? {},
+      days: old.stats?.days ?? {},
+      ms: old.stats?.ms ?? {},
+    },
+    classNum: old.classNum ?? null,
+    // A class joined before list numbers existed has to be joined again.
+    classCode: old.classNum ? old.classCode : null,
+    classInfo: old.classNum ? (old.classInfo ?? null) : null,
+    hw: old.hw ?? null,
+    sinceEvent: old.sinceEvent ?? 0,
+  }
+}
+
 function load(): AppState {
   try {
     const raw = localStorage.getItem(KEY)
     if (raw) {
       const s = JSON.parse(raw) as AppState
-      // `music` arrived after the first players had saved games: default it on for them.
-      if (s.v === 1 && Array.isArray(s.profiles)) return { ...s, music: s.music ?? true }
+      if (s.v === 1 && Array.isArray(s.profiles))
+        return {
+          ...s,
+          music: s.music ?? true,
+          teacher: s.teacher ?? [],
+          profiles: s.profiles.map((p) => upgradeProfile(p as unknown as Record<string, unknown>)),
+        }
     }
   } catch {
     /* corrupted or unavailable storage: start fresh */
   }
-  return { v: 1, lang: detectLang(), sound: true, music: true, profiles: [], activeId: null }
+  return { v: 1, lang: detectLang(), sound: true, music: true, profiles: [], activeId: null, teacher: [] }
 }
 
 let state: AppState = load()
@@ -113,15 +173,48 @@ function patchProfile(id: string, fn: (p: Profile) => Profile) {
 // ───────────── Derived values ─────────────
 
 export const totalStars = (p: Profile) => Object.values(p.levels).reduce((s, l) => s + l.stars, 0)
-export const levelStars = (p: Profile, world: WorldId, index: number) =>
-  p.levels[levelKey(world, p.band, index)]?.stars ?? 0
-export const worldStars = (p: Profile, world: WorldId) =>
-  Array.from({ length: LEVELS_PER_WORLD }, (_, i) => levelStars(p, world, i)).reduce((a, b) => a + b, 0)
-/** Levels open one after another; any star on the previous level is enough to move on. */
-export const isUnlocked = (p: Profile, world: WorldId, index: number) => index === 0 || levelStars(p, world, index - 1) > 0
-export function weekXp(p: Profile, now = Date.now()): number {
+export const stopKey = (p: Profile, stop: Stop) => levelKey(stop.kind, p.band, stop.level)
+export const stopStars = (p: Profile, stop: Stop) => p.levels[stopKey(p, stop)]?.stars ?? 0
+export const stopPlays = (p: Profile, stop: Stop) => p.levels[stopKey(p, stop)]?.plays ?? 0
+export const zoneStars = (p: Profile, zone: ZoneId) =>
+  JOURNEY.filter((s) => s.zone === zone).reduce((sum, s) => sum + stopStars(p, s), 0)
+export const ZONE_MAX_STARS = STOPS_PER_ZONE * 3
+
+/**
+ * The journey opens one stop at a time. A star on the previous stop opens the next one — and so
+ * do three honest tries, so nobody is ever stuck behind one hard level.
+ */
+export function isStopOpen(p: Profile, index: number): boolean {
+  if (index <= 0) return true
+  const prev = JOURNEY[index - 1]
+  return isStopOpen(p, index - 1) && (stopStars(p, prev) > 0 || stopPlays(p, prev) >= 3)
+}
+/** The furthest stop the player can enter. */
+export function frontier(p: Profile): number {
+  let i = 0
+  while (i + 1 < JOURNEY.length && isStopOpen(p, i + 1)) i++
+  return i
+}
+/** First time with this kind of activity on any level: the game shows where to tap. */
+export const isNewKind = (p: Profile, kind: string) => !Object.keys(p.levels).some((k) => k.startsWith(`${kind}-`))
+
+function sumWeek(days: Record<string, number>, now = Date.now()): number {
   const start = weekStart(now)
-  return Object.entries(p.stats.days).reduce((s, [day, xp]) => (day >= start ? s + xp : s), 0)
+  return Object.entries(days).reduce((s, [day, v]) => (day >= start ? s + v : s), 0)
+}
+export const weekXp = (p: Profile) => sumWeek(p.stats.days)
+export const weekMinutes = (p: Profile) => Math.round(sumWeek(p.stats.ms) / 60000)
+
+/** The class homework, if there is one and its week has not ended. */
+export function activeHomework(p: Profile, now = Date.now()): Homework | null {
+  const hw = p.classInfo?.homework
+  return hw && hw.until >= dayKey(now) ? hw : null
+}
+export const homeworkStars = (p: Profile, hw: Homework) => (p.hw?.id === hw.id ? p.hw.stars : 0)
+
+export const isItemUnlocked = (p: Profile, itemId: string) => {
+  const item = ITEM_BY_ID[itemId]
+  return !!item && (p.owned.includes(itemId) || (item.stars !== undefined && totalStars(p) >= item.stars))
 }
 
 // ───────────── Settings & profiles ─────────────
@@ -131,34 +224,30 @@ export const setSound = (sound: boolean) => {
   setSoundEnabled(sound)
   set({ ...state, sound })
 }
-
 export const setMusic = (music: boolean) => {
   setMusicEnabled(music)
   set({ ...state, music })
 }
 
-export function createProfile(name: string, skin: string, color: string, band: Band): Profile {
+export function createProfile(name: string, look: Look, band: Band): Profile {
   const p: Profile = {
     id: crypto.randomUUID(),
     secret: crypto.randomUUID(),
     name: name.trim().slice(0, 14),
-    skin,
-    color,
-    pet: null,
+    look,
     band,
     coins: 0,
     xp: 0,
     levels: {},
     facts: {},
     dojo: { step: DOJO_START[band], streak: 0, lastDay: '', best: {} },
-    owned: [skin, color],
-    stats: {
-      playMs: 0,
-      byWorld: Object.fromEntries(WORLDS.map((w) => [w, { ok: 0, total: 0 }])) as Profile['stats']['byWorld'],
-      days: {},
-    },
+    owned: [...FREE_ITEMS],
+    stats: { playMs: 0, byKind: {}, days: {}, ms: {} },
     classCode: null,
-    teamId: null,
+    classNum: null,
+    classInfo: null,
+    hw: null,
+    sinceEvent: 0,
     createdAt: Date.now(),
   }
   set({ ...state, profiles: [...state.profiles, p], activeId: p.id })
@@ -180,19 +269,30 @@ export function setBand(id: string, band: Band) {
 
 // ───────────── Playing ─────────────
 
-function addDay(days: Record<string, number>, xp: number): Record<string, number> {
+function addDay(days: Record<string, number>, amount: number): Record<string, number> {
   const today = dayKey()
-  const next = { ...days, [today]: (days[today] ?? 0) + xp }
+  const next = { ...days, [today]: (days[today] ?? 0) + amount }
   // Keep two months of history at most.
   const keys = Object.keys(next).sort()
   for (const k of keys.slice(0, Math.max(0, keys.length - 60))) delete next[k]
   return next
 }
 
-export function finishLevel(world: WorldId, index: number, result: GameResult): Rewards & { previous: number } {
+function played(cur: Profile, kind: string, result: GameResult, xp: number): Profile['stats'] {
+  const prev = cur.stats.byKind[kind] ?? { ok: 0, total: 0 }
+  return {
+    playMs: cur.stats.playMs + result.ms,
+    byKind: { ...cur.stats.byKind, [kind]: { ok: prev.ok + result.correct, total: prev.total + result.total } },
+    days: addDay(cur.stats.days, xp),
+    ms: addDay(cur.stats.ms, result.ms),
+  }
+}
+
+export function finishStop(index: number, result: GameResult): Rewards & { previous: number } {
   const p = activeProfile()
   if (!p) throw new Error('No active profile')
-  const key = levelKey(world, p.band, index)
+  const stop = JOURNEY[index]
+  const key = stopKey(p, stop)
   const previous = p.levels[key]?.stars ?? 0
   const rewards = rewardsFor(result, previous)
   patchProfile(p.id, (cur) => ({
@@ -201,20 +301,53 @@ export function finishLevel(world: WorldId, index: number, result: GameResult): 
     xp: cur.xp + rewards.xp,
     levels: { ...cur.levels, [key]: { stars: Math.max(previous, rewards.stars), plays: (cur.levels[key]?.plays ?? 0) + 1 } },
     facts: review(cur.facts, result.facts),
-    stats: {
-      playMs: cur.stats.playMs + result.ms,
-      byWorld: {
-        ...cur.stats.byWorld,
-        [world]: {
-          ok: cur.stats.byWorld[world].ok + result.correct,
-          total: cur.stats.byWorld[world].total + result.total,
-        },
-      },
-      days: addDay(cur.stats.days, rewards.xp),
-    },
+    stats: played(cur, stop.kind, result, rewards.xp),
+    sinceEvent: cur.sinceEvent + 1,
   }))
   void syncClass()
   return { ...rewards, previous }
+}
+
+/** One homework activity: the stars add up towards the teacher's goal. */
+export function finishHomework(hw: Homework, kind: string, result: GameResult): Rewards & { progress: number } {
+  const p = activeProfile()
+  if (!p) throw new Error('No active profile')
+  const rewards = rewardsFor(result, 3)
+  const before = p.hw?.id === hw.id ? p.hw : { id: hw.id, stars: 0, plays: 0 }
+  const progress = before.stars + rewards.stars
+  patchProfile(p.id, (cur) => ({
+    ...cur,
+    coins: cur.coins + rewards.coins,
+    xp: cur.xp + rewards.xp,
+    facts: review(cur.facts, result.facts),
+    stats: played(cur, kind, result, rewards.xp),
+    hw: { id: hw.id, stars: progress, plays: before.plays + 1 },
+  }))
+  void syncClass()
+  return { ...rewards, progress }
+}
+
+/** Should a surprise jump out before the next level? Never on the first plays, never twice in a row. */
+export function rollEvent(rnd: () => number = Math.random): boolean {
+  const p = activeProfile()
+  if (!p || p.sinceEvent < 2) return false
+  return p.sinceEvent >= 5 || rnd() < 0.4
+}
+
+export function finishEvent(results: FactResult[], ms: number): { coins: number; correct: number } {
+  const p = activeProfile()
+  if (!p) throw new Error('No active profile')
+  const correct = results.filter((r) => r.correct).length
+  const coins = correct * 3
+  patchProfile(p.id, (cur) => ({
+    ...cur,
+    coins: cur.coins + coins,
+    xp: cur.xp + correct * 5,
+    facts: review(cur.facts, results),
+    stats: played(cur, 'event', { correct, total: results.length, ms, facts: results }, correct * 5),
+    sinceEvent: 0,
+  }))
+  return { coins, correct }
 }
 
 export interface DojoOutcome {
@@ -253,54 +386,64 @@ export function finishDojo(results: FactResult[], ms: number): DojoOutcome {
       lastDay: today,
       best: correct === results.length && (best === undefined || sec < best) ? { ...cur.dojo.best, [step.id]: sec } : cur.dojo.best,
     },
-    stats: { ...cur.stats, playMs: cur.stats.playMs + ms, days: addDay(cur.stats.days, xp) },
+    stats: { ...cur.stats, playMs: cur.stats.playMs + ms, days: addDay(cur.stats.days, xp), ms: addDay(cur.stats.ms, ms) },
   }))
   void syncClass()
   return { passed, leveledUp, coins, xp, streak, sec, correct, total: results.length }
 }
 
-// ───────────── Shop ─────────────
+// ───────────── Wardrobe ─────────────
 
-export function buyItem(itemId: string): boolean {
+const LOOK_FIELD: Record<ItemType, keyof Look> = { base: 'base', hat: 'hat', glasses: 'glasses', outfit: 'outfit', pet: 'pet', bg: 'bg' }
+
+/** Buys the item if needed (and affordable) and puts it on. False when it stays out of reach. */
+export function wearItem(itemId: string): boolean {
   const p = activeProfile()
   const item = ITEM_BY_ID[itemId]
-  if (!p || !item || p.owned.includes(itemId) || p.coins < item.price) return false
-  patchProfile(p.id, (cur) => ({ ...cur, coins: cur.coins - item.price, owned: [...cur.owned, itemId] }))
-  equipItem(itemId)
+  if (!p || !item) return false
+  if (!isItemUnlocked(p, itemId)) {
+    if (item.stars !== undefined || p.coins < item.price) return false
+    patchProfile(p.id, (cur) => ({ ...cur, coins: cur.coins - item.price, owned: [...cur.owned, itemId] }))
+  }
+  patchProfile(p.id, (cur) => ({ ...cur, look: { ...cur.look, [LOOK_FIELD[item.type]]: itemName(itemId) } }))
+  void syncClass()
   return true
 }
 
-export function equipItem(itemId: string | null, type?: 'pet') {
+/** Takes off a hat, glasses or pet. */
+export function takeOff(type: 'hat' | 'glasses' | 'pet') {
   const p = activeProfile()
   if (!p) return
-  if (itemId === null) {
-    if (type === 'pet') patchProfile(p.id, (cur) => ({ ...cur, pet: null }))
-  } else {
-    const item = ITEM_BY_ID[itemId]
-    if (!item || !p.owned.includes(itemId)) return
-    patchProfile(p.id, (cur) => ({ ...cur, [item.type]: itemId }))
-  }
+  patchProfile(p.id, (cur) => ({ ...cur, look: { ...cur.look, [type]: null } }))
   void syncClass()
 }
 
-// ───────────── Class ─────────────
+/** Skin tone, hair style and hair colour are always free. */
+export function styleKid(patch: Partial<Pick<Look, 'tone' | 'hair' | 'hairColor'>>) {
+  const p = activeProfile()
+  if (!p) return
+  patchProfile(p.id, (cur) => ({ ...cur, look: { ...cur.look, ...patch } }))
+  void syncClass()
+}
 
-export function memberOf(p: Profile): Omit<Member, 'updatedAt'> {
+// ───────────── Class (child side) ─────────────
+
+export function memberStats(p: Profile): MemberStats {
   return {
-    id: p.id,
-    name: p.name,
-    skin: itemValue(p.skin, '🦊'),
-    color: itemValue(p.color, '#ffd23f'),
-    pet: p.pet ? itemValue(p.pet) : null,
-    stars: totalStars(p),
-    xp: p.xp,
-    weekXp: weekXp(p),
     week: weekStart(),
-    teamId: p.teamId,
+    weekMin: weekMinutes(p),
+    byKind: p.stats.byKind,
+    dojo: p.dojo.step,
+    weak: memoryStats(p.facts).weak.slice(0, 6),
+    hw: p.hw ? { id: p.hw.id, stars: p.hw.stars } : null,
   }
 }
 
-/** Pushes the active player's scores to their class. Failures are silent: the game never blocks on the network. */
+export function memberOf(p: Profile): MemberUpsert {
+  return { id: p.id, name: p.name, num: p.classNum ?? 1, look: encodeLook(p.look), stars: totalStars(p), xp: p.xp, stats: memberStats(p) }
+}
+
+/** Pushes the active player's progress to their class. Failures are silent: the game never blocks on the network. */
 export async function syncClass(): Promise<void> {
   const p = activeProfile()
   if (!p?.classCode) return
@@ -312,14 +455,25 @@ export async function syncClass(): Promise<void> {
   }
 }
 
-export async function joinClass(code: string): Promise<boolean> {
+/** Fetches the class (name, homework, shared stars) and remembers it. Null when the class is gone. */
+export async function refreshClass(): Promise<ClassInfo | null> {
+  const p = activeProfile()
+  if (!p?.classCode) return null
+  const backend = await getBackend()
+  await syncClass()
+  const info = await backend.getClass(p.classCode)
+  patchProfile(p.id, (cur) => ({ ...cur, classInfo: info }))
+  return info
+}
+
+export async function joinClass(code: string, num: number): Promise<boolean> {
   const p = activeProfile()
   if (!p) return false
   const backend = await getBackend()
-  const room = await backend.getClass(code)
-  if (!room) return false
-  await backend.upsertMember(code, { ...memberOf(p), teamId: null }, p.secret)
-  patchProfile(p.id, (cur) => ({ ...cur, classCode: code, teamId: null }))
+  const info = await backend.getClass(code)
+  if (!info) return false
+  await backend.upsertMember(code, { ...memberOf(p), num }, p.secret)
+  patchProfile(p.id, (cur) => ({ ...cur, classCode: code, classNum: num, classInfo: info }))
   return true
 }
 
@@ -328,12 +482,49 @@ export async function leaveClass(): Promise<void> {
   if (!p?.classCode) return
   const backend = await getBackend()
   await backend.leaveClass(p.classCode, p.id, p.secret).catch(() => {})
-  patchProfile(p.id, (cur) => ({ ...cur, classCode: null, teamId: null }))
+  patchProfile(p.id, (cur) => ({ ...cur, classCode: null, classNum: null, classInfo: null }))
 }
 
-export async function setTeam(teamId: string | null): Promise<void> {
-  const p = activeProfile()
-  if (!p?.classCode) return
-  patchProfile(p.id, (cur) => ({ ...cur, teamId }))
-  await syncClass()
+// ───────────── Class (teacher side) ─────────────
+
+export async function teacherCreateClass(name: string): Promise<TeacherClass> {
+  const backend = await getBackend()
+  const { code, teacherKey } = await backend.createClass(name.trim())
+  const entry: TeacherClass = { code, key: teacherKey, name: name.trim(), names: {} }
+  set({ ...state, teacher: [...state.teacher, entry] })
+  return entry
+}
+
+/** Opens an existing class on another device with its code and teacher key. False if they do not match. */
+export async function teacherOpenClass(code: string, key: string): Promise<boolean> {
+  const backend = await getBackend()
+  try {
+    await backend.report(code, key)
+  } catch {
+    return false
+  }
+  const info = await backend.getClass(code)
+  if (!info) return false
+  const entry: TeacherClass = { code, key, name: info.name, names: {} }
+  set({ ...state, teacher: [...state.teacher.filter((c) => c.code !== code), entry] })
+  return true
+}
+
+export const teacherForgetClass = (code: string) => set({ ...state, teacher: state.teacher.filter((c) => c.code !== code) })
+
+/** Deletes the class for everybody, with everything the pupils' devices sent to it. */
+export async function teacherDeleteClass(code: string): Promise<void> {
+  const cls = state.teacher.find((c) => c.code === code)
+  if (!cls) return
+  const backend = await getBackend()
+  await backend.deleteClass(cls.code, cls.key)
+  teacherForgetClass(code)
+}
+
+/** The name a teacher writes next to a list number. Stored on this device only. */
+export function teacherNameStudent(code: string, num: number, name: string) {
+  set({
+    ...state,
+    teacher: state.teacher.map((c) => (c.code === code ? { ...c, names: { ...c.names, [num]: name.slice(0, 30) } } : c)),
+  })
 }

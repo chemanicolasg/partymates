@@ -1,11 +1,12 @@
 import { useState } from 'react'
 import { sfx } from '../core/audio'
-import { STARTER_COLORS, STARTER_SKINS } from '../core/items'
+import { DEFAULT_LOOK, itemName, STARTER_BASES, STARTER_BGS, type Look } from '../core/look'
 import { go } from '../core/nav'
 import { createProfile, selectProfile, setLang, totalStars, useApp } from '../core/store'
 import { BANDS, type Band, type Lang } from '../core/types'
 import { LANG_NAMES, useT } from '../i18n'
-import { Avatar, ProfileAvatar } from '../ui/kit'
+import { Character, ProfileAvatar } from '../ui/Character'
+import { KidStyle } from './ShopScreen'
 
 const BAND_ICON: Record<Band, string> = { A: '🐣', B: '🚀', C: '🦸', D: '🧠' }
 
@@ -22,6 +23,14 @@ export function LangPicker() {
   )
 }
 
+export function Logo() {
+  return (
+    <h1 className="logo-word">
+      Matt<span>y</span>
+    </h1>
+  )
+}
+
 export function WelcomeScreen() {
   const { t } = useT()
   const profiles = useApp((s) => s.profiles)
@@ -35,10 +44,7 @@ export function WelcomeScreen() {
   return (
     <div className="screen welcome center">
       <div className="logo">
-        <span className="logo-die">🎲</span>
-        <h1>
-          Party<span>Mates</span>
-        </h1>
+        <Logo />
         <p>{t('welcome.tagline')}</p>
       </div>
       <LangPicker />
@@ -50,7 +56,7 @@ export function WelcomeScreen() {
           <div className="who-list">
             {profiles.map((p) => (
               <button key={p.id} className="who" onClick={() => enter(p.id)}>
-                <ProfileAvatar p={p} size={64} />
+                <ProfileAvatar p={p} size={72} />
                 <strong>{p.name}</strong>
                 <small>⭐ {totalStars(p)}</small>
               </button>
@@ -69,15 +75,15 @@ export function WelcomeScreen() {
 function NewPlayer({ onCancel }: { onCancel?: () => void }) {
   const { t } = useT()
   const [name, setName] = useState('')
-  const [skin, setSkin] = useState(STARTER_SKINS[0])
-  const [color, setColor] = useState(STARTER_COLORS[0])
+  const [look, setLook] = useState<Look>(DEFAULT_LOOK)
   const [band, setBand] = useState<Band | null>(null)
   const ready = name.trim().length > 0 && band !== null
+  const change = (patch: Partial<Look>) => setLook({ ...look, ...patch })
 
   const create = () => {
     if (!ready || !band) return
     sfx('win')
-    createProfile(name, skin.id, color.id, band)
+    createProfile(name, look, band)
     go({ id: 'hub' }, { reset: true })
   }
 
@@ -91,33 +97,32 @@ function NewPlayer({ onCancel }: { onCancel?: () => void }) {
     >
       <h2>{t('new.title')}</h2>
       <div className="new-preview">
-        <Avatar skin={skin.value} color={color.value} size={84} bounce />
+        <Character look={look} size={120} bounce />
+      </div>
+      <div className="pick-row" role="group" aria-label={t('new.skin')}>
+        {STARTER_BASES.map((b) => {
+          const base = itemName(b.id)
+          return (
+            <button type="button" key={b.id} className={`pick face${look.base === base ? ' on' : ''}`} onClick={() => change({ base })} aria-pressed={look.base === base} aria-label={base}>
+              <Character look={{ ...look, base }} size={48} />
+            </button>
+          )
+        })}
+      </div>
+      {look.base === 'kid' ? <KidStyle look={look} onChange={change} /> : null}
+      <div className="pick-row" role="group" aria-label={t('new.color')}>
+        {STARTER_BGS.map((c) => {
+          const bg = itemName(c.id)
+          return (
+            <button type="button" key={c.id} className={`pick swatch${look.bg === bg ? ' on' : ''}`} style={{ background: c.value }} onClick={() => change({ bg })} aria-pressed={look.bg === bg} aria-label={bg} />
+          )
+        })}
       </div>
       <label className="field">
         <span>{t('new.name')}</span>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={14} placeholder={t('new.namePh')} autoComplete="off" />
         <small>{t('new.nameHint')}</small>
       </label>
-      <div className="pick-row" role="group" aria-label={t('new.skin')}>
-        {STARTER_SKINS.map((s) => (
-          <button type="button" key={s.id} className={`pick${s.id === skin.id ? ' on' : ''}`} onClick={() => setSkin(s)} aria-pressed={s.id === skin.id}>
-            {s.value}
-          </button>
-        ))}
-      </div>
-      <div className="pick-row" role="group" aria-label={t('new.color')}>
-        {STARTER_COLORS.map((c) => (
-          <button
-            type="button"
-            key={c.id}
-            className={`pick swatch${c.id === color.id ? ' on' : ''}`}
-            style={{ background: c.value }}
-            onClick={() => setColor(c)}
-            aria-pressed={c.id === color.id}
-            aria-label={c.id}
-          />
-        ))}
-      </div>
       <p className="field-label">{t('new.age')}</p>
       <div className="bands">
         {BANDS.map((b) => (

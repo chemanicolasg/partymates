@@ -4,12 +4,14 @@ import { DOJO } from '../core/curriculum'
 import { factLabel } from '../core/format'
 import { back, go } from '../core/nav'
 import { memoryStats } from '../core/srs'
-import { deleteProfile, setBand, setMusic, setSound, totalStars, useApp, useProfile, worldStars } from '../core/store'
-import { BANDS, LEVELS_PER_WORLD, WORLDS } from '../core/types'
+import { deleteProfile, setBand, setMusic, setSound, totalStars, useApp, useProfile, weekMinutes, zoneStars, ZONE_MAX_STARS } from '../core/store'
+import { BANDS, KINDS, ZONES } from '../core/types'
 import { useT } from '../i18n'
-import { Modal, ProfileAvatar, TopBar } from '../ui/kit'
+import { ProfileAvatar } from '../ui/Character'
+import { Modal, TopBar } from '../ui/kit'
+import { KIND_ICON, ZONE_ICON } from './art'
+import { TeacherPanel } from './TeacherPanel'
 import { LangPicker } from './WelcomeScreen'
-import { WORLD_ART } from './worlds'
 
 const METHODS = ['montessori', 'kumon', 'cpa', 'srs', 'play'] as const
 const HOLD_MS = 1500
@@ -17,6 +19,7 @@ const HOLD_MS = 1500
 export function GrownUpsScreen() {
   const { t } = useT()
   const [open, setOpen] = useState(false)
+  const [tab, setTab] = useState<'family' | 'teacher'>('family')
   const [holding, setHolding] = useState(false)
   const timer = useRef<number | undefined>(undefined)
   const press = () => {
@@ -32,7 +35,16 @@ export function GrownUpsScreen() {
     <div className="screen grownups">
       <TopBar title={`🧑‍🏫 ${t('nav.grownups')}`} onBack={back} />
       {open ? (
-        <Report />
+        <>
+          <div className="tabs gu-tabs" role="tablist">
+            {(['family', 'teacher'] as const).map((k) => (
+              <button key={k} role="tab" aria-selected={k === tab} className={`tab${k === tab ? ' on' : ''}`} onClick={() => setTab(k)}>
+                {t(`gu.tab.${k}`)}
+              </button>
+            ))}
+          </div>
+          {tab === 'family' ? <Report /> : <TeacherPanel />}
+        </>
       ) : (
         <div className="gate center">
           <div className="card intro-card">
@@ -73,7 +85,7 @@ function Report() {
         <div>
           <h2>{p.name}</h2>
           <p>
-            ⭐ {totalStars(p)} · ⏱️ {t('gu.minutes', { n: minutes })} · 🔥 {p.dojo.streak}
+            ⭐ {totalStars(p)} · ⏱️ {t('gu.minutes', { n: minutes })} · {t('gu.thisWeek', { n: weekMinutes(p) })} · 🔥 {p.dojo.streak}
           </p>
         </div>
       </section>
@@ -93,18 +105,32 @@ function Report() {
 
       <section className="card">
         <h2>{t('gu.progress')}</h2>
-        {WORLDS.map((w) => {
-          const s = p.stats.byWorld[w]
-          const acc = s.total ? Math.round((s.ok / s.total) * 100) : null
+        {ZONES.map((z) => (
+          <div className="report-row" key={z}>
+            <span className="report-world">
+              {ZONE_ICON[z]} {t(`zone.${z}`)}
+            </span>
+            <span>
+              ⭐ {zoneStars(p, z)}/{ZONE_MAX_STARS}
+            </span>
+            <span className="report-acc">
+              <span className="meter">
+                <i style={{ width: `${(zoneStars(p, z) / ZONE_MAX_STARS) * 100}%` }} />
+              </span>
+            </span>
+          </div>
+        ))}
+        <h2>{t('gu.byKind')}</h2>
+        {KINDS.map((k) => {
+          const s = p.stats.byKind[k]
+          const acc = s?.total ? Math.round((s.ok / s.total) * 100) : null
           return (
-            <div className="report-row" key={w}>
+            <div className="report-row" key={k}>
               <span className="report-world">
-                {WORLD_ART[w].icon} {t(`world.${w}`)}
-                <small>{t(`world.${w}.skill`)}</small>
+                {KIND_ICON[k]} {t(`mission.${k}`)}
+                <small>{t(`kind.${k}.skill`)}</small>
               </span>
-              <span>
-                ⭐ {worldStars(p, w)}/{LEVELS_PER_WORLD * 3}
-              </span>
+              <span />
               <span className="report-acc">
                 <span className="meter">
                   <i style={{ width: `${acc ?? 0}%` }} />
