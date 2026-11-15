@@ -175,7 +175,8 @@ export function RaceGame({ cfg, profile, onFinish, onExit }: GameProps<PartyCfg>
         <div className={`board${phase === 'choose' ? ' active' : ''}`} style={{ '--cols': cfg.max - cfg.min > 20 ? 10 : 5 } as CSSProperties}>
           {Array.from({ length: cfg.max - cfg.min + 1 }, (_, i) => cfg.min + i).map((v) => (
             <button key={v} className={`tile${tileClass(v)}`} onClick={() => choose(v)} disabled={phase !== 'choose'}>
-              {v === pos ? <ProfileAvatar p={profile} size={30} /> : fmtNum(v, lang)}
+              {v === pos ? <ProfileAvatar p={profile} size={28} /> : null}
+              <span>{fmtNum(v, lang)}</span>
             </button>
           ))}
         </div>

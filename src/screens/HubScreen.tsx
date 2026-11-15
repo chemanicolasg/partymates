@@ -19,9 +19,9 @@ export function HubScreen() {
   return (
     <div className="screen hub">
       <header className="hub-top">
-        <button className="me" onClick={open(() => go({ id: 'shop' }))} aria-label={t('nav.shop')}>
+        <button className="hub-me" onClick={open(() => go({ id: 'shop' }))} aria-label={t('nav.shop')}>
           <ProfileAvatar p={p} size={52} />
-          <span className="me-text">
+          <span className="hub-me-text">
             <strong>{p.name}</strong>
             <small>{t('hub.level', { n: playerLevel(p.xp) })}</small>
             <span className="xp-bar">

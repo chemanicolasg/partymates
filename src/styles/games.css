@@ -478,6 +478,14 @@
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
+.tile.here {
+  grid-template-columns: auto auto;
+  justify-content: center;
+  gap: 4px;
+}
+.tile.here span:last-child {
+  font-size: 0.85rem;
+}
 .tile:nth-child(odd) {
   background: #ffe9f4;
 }
