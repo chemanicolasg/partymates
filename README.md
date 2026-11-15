@@ -35,19 +35,23 @@ npm test         # 143 pruebas del motor pedagógico
 npm run build    # genera dist/ (PWA con funcionamiento sin conexión)
 ```
 
-## Clases en línea (opcional)
+## Clases en línea
 
 Sin configurar nada, las clases funcionan en **modo tableta**: se guardan en el dispositivo y las comparten
 los jugadores de ese dispositivo (útil para tabletas de aula compartidas o hermanos).
 
-Para que una clase se comparta entre dispositivos hace falta un proyecto de [Supabase](https://supabase.com):
+Con las dos variables de `.env.example` definidas, las clases se comparten entre dispositivos a través de
+[Supabase](https://supabase.com). El proyecto **Partymaths** ya tiene aplicado el esquema de
+`supabase/migrations/`; para usar otro proyecto, ejecuta esas migraciones en él y cambia las variables.
 
-1. Ejecuta `supabase/migrations/0001_classes.sql` en el proyecto (SQL Editor o `supabase db push`).
-2. Copia `.env.example` a `.env` y rellena la URL y la clave pública (anon) del proyecto.
-3. Vuelve a compilar. La pantalla de clase pasará a «Clase en línea».
+Las tablas están cerradas (RLS sin políticas y sin permisos para la API); la app solo puede llamar a las
+funciones `pm_*`, que únicamente exponen apodo, avatar y puntuaciones. Cada jugador se identifica con un
+secreto que nunca sale de su dispositivo.
 
-Las tablas quedan cerradas con RLS; la app solo puede llamar a las funciones `pm_*`, que únicamente exponen
-apodo, avatar y puntuaciones. Cada jugador se identifica con un secreto que nunca sale de su dispositivo.
+## Publicación
+
+`netlify.toml` define la compilación (`npm run build` → `dist/`). El sitio de Netlify **partymaths** ya tiene
+las variables `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (ambas públicas por diseño: viajan al navegador).
 
 ## Estructura
 
