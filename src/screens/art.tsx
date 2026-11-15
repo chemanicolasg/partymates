@@ -12,6 +12,8 @@ export const HOW_ICONS: Record<Kind, [string, string, string]> = {
   stones: ['🔢', '👆', '🏁'],
   pairs: ['🧮', '👉', '🔗'],
 }
+/** The five stations of the number-sense mission. */
+export const TASK_ICON = { dots: '🔴', cmpDots: '⚖️', cmpNum: '🔢', line: '📏', facts: '⚡' } as const
 export const ZONE_ICON: Record<ZoneId, string> = { beach: '🏖️', jungle: '🌴', mountain: '⛰️', space: '🚀' }
 
 const INK = '#23164f'

@@ -7,6 +7,7 @@
 
 alter table pm_classes add column if not exists teacher_key text;
 alter table pm_classes add column if not exists homework jsonb;
+alter table pm_classes add column if not exists screening jsonb;
 
 alter table pm_members add column if not exists num int check (num between 1 and 99);
 alter table pm_members add column if not exists look text check (char_length(look) <= 200);
@@ -37,6 +38,7 @@ language sql security definer stable set search_path = public as $$
     'code', c.code,
     'name', c.name,
     'homework', c.homework,
+    'screening', c.screening,
     'members', (select count(*) from pm_members m where m.class_code = c.code),
     'stars', (select coalesce(sum(m.stars), 0) from pm_members m where m.class_code = c.code))
   from pm_classes c where c.code = upper(p_code);
@@ -95,6 +97,17 @@ begin
   update pm_classes set homework = p_homework where code = upper(p_code);
 end $$;
 
+-- Opens (or closes, with null) the number-sense mission for the class.
+create or replace function pm_class_set_screening(p_code text, p_key text, p_screening jsonb) returns void
+language plpgsql security definer set search_path = public as $$
+begin
+  perform pm_assert_teacher(p_code, p_key);
+  if p_screening is not null and pg_column_size(p_screening) > 300 then
+    raise exception 'screening-too-big';
+  end if;
+  update pm_classes set screening = p_screening where code = upper(p_code);
+end $$;
+
 create or replace function pm_class_remove_member(p_code text, p_key text, p_member uuid) returns void
 language plpgsql security definer set search_path = public as $$
 begin
@@ -116,6 +129,7 @@ revoke all on function pm_member_upsert(text, uuid, uuid, text, int, text, int, 
 revoke all on function pm_assert_teacher(text, text) from public, anon, authenticated;
 revoke all on function pm_class_report(text, text) from public;
 revoke all on function pm_class_set_homework(text, text, jsonb) from public;
+revoke all on function pm_class_set_screening(text, text, jsonb) from public;
 revoke all on function pm_class_remove_member(text, text, uuid) from public;
 revoke all on function pm_class_delete(text, text) from public;
 grant execute on function pm_class_create(text) to anon, authenticated;
@@ -123,5 +137,6 @@ grant execute on function pm_class_get(text) to anon, authenticated;
 grant execute on function pm_member_upsert(text, uuid, uuid, text, int, text, int, int, jsonb) to anon, authenticated;
 grant execute on function pm_class_report(text, text) to anon, authenticated;
 grant execute on function pm_class_set_homework(text, text, jsonb) to anon, authenticated;
+grant execute on function pm_class_set_screening(text, text, jsonb) to anon, authenticated;
 grant execute on function pm_class_remove_member(text, text, uuid) to anon, authenticated;
 grant execute on function pm_class_delete(text, text) to anon, authenticated;

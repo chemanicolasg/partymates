@@ -1,10 +1,11 @@
 import { useSyncExternalStore } from 'react'
 import { setSoundEnabled } from './audio'
-import { getBackend, type ClassInfo, type Homework, type MemberStats, type MemberUpsert } from './backend'
+import { getBackend, type ClassInfo, type Homework, type MemberStats, type MemberUpsert, type Screening } from './backend'
 import { DOJO, DOJO_START, JOURNEY, levelKey, STOPS_PER_ZONE, type Stop } from './curriculum'
 import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, LEGACY_SKINS, type ItemType, type Look } from './look'
 import { setMusicEnabled } from './music'
 import { dayKey, dojoPassed, rewardsFor, weekStart, type Rewards } from './scoring'
+import type { ScreenResult, TaskId, TaskScore } from './screening'
 import { memoryStats, review, type Memory } from './srs'
 import type { Band, FactResult, GameResult, Lang, ZoneId } from './types'
 
@@ -41,6 +42,8 @@ export interface Profile {
   classInfo: ClassInfo | null
   /** Stars earned on the current homework. */
   hw: { id: string; stars: number; plays: number } | null
+  /** Latest number-sense mission the child completed. */
+  screen: ScreenResult | null
   /** Levels played since the last surprise event. */
   sinceEvent: number
   createdAt: number
@@ -111,6 +114,7 @@ export function upgradeProfile(raw: Record<string, unknown>): Profile {
     classCode: old.classNum ? old.classCode : null,
     classInfo: old.classNum ? (old.classInfo ?? null) : null,
     hw: old.hw ?? null,
+    screen: old.screen ?? null,
     sinceEvent: old.sinceEvent ?? 0,
   }
 }
@@ -212,6 +216,12 @@ export function activeHomework(p: Profile, now = Date.now()): Homework | null {
 }
 export const homeworkStars = (p: Profile, hw: Homework) => (p.hw?.id === hw.id ? p.hw.stars : 0)
 
+/** The class's number-sense mission, while it is open and this child has not done it yet. */
+export function pendingScreening(p: Profile, now = Date.now()): Screening | null {
+  const s = p.classInfo?.screening
+  return s && s.until >= dayKey(now) && p.screen?.id !== s.id ? s : null
+}
+
 export const isItemUnlocked = (p: Profile, itemId: string) => {
   const item = ITEM_BY_ID[itemId]
   return !!item && (p.owned.includes(itemId) || (item.stars !== undefined && totalStars(p) >= item.stars))
@@ -247,6 +257,7 @@ export function createProfile(name: string, look: Look, band: Band): Profile {
     classNum: null,
     classInfo: null,
     hw: null,
+    screen: null,
     sinceEvent: 0,
     createdAt: Date.now(),
   }
@@ -350,6 +361,22 @@ export function finishEvent(results: FactResult[], ms: number): { coins: number;
   return { coins, correct }
 }
 
+export const SCREENING_REWARD = 30
+
+/** Stores the mission's measurements for the teacher. The child only gets a thank-you and some points. */
+export function finishScreening(id: string, tasks: Record<TaskId, TaskScore>, ms: number) {
+  const p = activeProfile()
+  if (!p) throw new Error('No active profile')
+  patchProfile(p.id, (cur) => ({
+    ...cur,
+    coins: cur.coins + SCREENING_REWARD,
+    xp: cur.xp + 50,
+    screen: { id, day: dayKey(), band: cur.band, tasks },
+    stats: { ...cur.stats, playMs: cur.stats.playMs + ms, days: addDay(cur.stats.days, 50), ms: addDay(cur.stats.ms, ms) },
+  }))
+  void syncClass()
+}
+
 export interface DojoOutcome {
   passed: boolean
   leveledUp: boolean
@@ -436,6 +463,7 @@ export function memberStats(p: Profile): MemberStats {
     dojo: p.dojo.step,
     weak: memoryStats(p.facts).weak.slice(0, 6),
     hw: p.hw ? { id: p.hw.id, stars: p.hw.stars } : null,
+    screen: p.screen,
   }
 }
 

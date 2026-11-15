@@ -1,3 +1,4 @@
+import type { ScreenResult } from '../screening'
 import { LocalBackend } from './local'
 
 /** The theme of the week a teacher sets for the class. */
@@ -10,11 +11,18 @@ export interface Homework {
   until: string
 }
 
+/** The number-sense mission a teacher opens for the class for a while. */
+export interface Screening {
+  id: string
+  until: string
+}
+
 /** What a child's device learns about its class: no classmates, no rankings. */
 export interface ClassInfo {
   code: string
   name: string
   homework: Homework | null
+  screening: Screening | null
   members: number
   /** Stars earned by the whole class together. */
   stars: number
@@ -30,6 +38,8 @@ export interface MemberStats {
   /** Number facts that keep slipping, e.g. "7x8". */
   weak: string[]
   hw: { id: string; stars: number } | null
+  /** Latest number-sense mission, if the child has done one. */
+  screen?: ScreenResult | null
 }
 
 export interface MemberUpsert {
@@ -58,6 +68,7 @@ export interface Backend {
   /** Teacher only: fails with 'bad-key' unless the teacher key matches. */
   report(code: string, teacherKey: string): Promise<MemberReport[]>
   setHomework(code: string, teacherKey: string, homework: Homework | null): Promise<void>
+  setScreening(code: string, teacherKey: string, screening: Screening | null): Promise<void>
   removeMember(code: string, teacherKey: string, memberId: string): Promise<void>
   /** Deletes the class and everything its pupils sent to it. */
   deleteClass(code: string, teacherKey: string): Promise<void>

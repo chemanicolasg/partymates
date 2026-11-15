@@ -1,5 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
-import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert } from './index'
+import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert, Screening } from './index'
 
 /**
  * Cloud classes on Supabase. Tables are closed; every call goes through the functions in
@@ -52,6 +52,10 @@ export class SupabaseBackend implements Backend {
 
   async setHomework(code: string, teacherKey: string, homework: Homework | null) {
     await this.rpc('pm_class_set_homework', { p_code: code, p_key: teacherKey, p_homework: homework })
+  }
+
+  async setScreening(code: string, teacherKey: string, screening: Screening | null) {
+    await this.rpc('pm_class_set_screening', { p_code: code, p_key: teacherKey, p_screening: screening })
   }
 
   async removeMember(code: string, teacherKey: string, memberId: string) {

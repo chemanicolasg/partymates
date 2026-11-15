@@ -19,6 +19,7 @@ import {
 } from '../src/core/generators'
 import { midi, parseTrack, TRACKS, type TrackId } from '../src/core/music'
 import { dojoPassed, rewardsFor, starsFor, weekStart } from '../src/core/scoring'
+import { buildTask, dotLayout, MIN_GROUP, readClass, scoreTask, TASKS, type ScreenResult, type TaskId, type TaskScore } from '../src/core/screening'
 import { INTERVALS, isDue, memoryStats, review } from '../src/core/srs'
 import { decodeLook, DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEMS } from '../src/core/look'
 import { upgradeProfile } from '../src/core/store'
@@ -359,6 +360,104 @@ describe('music', () => {
   it('rejects malformed bars', () => {
     expect(() => parseTrack({ ...TRACKS.dojo, melody: 'E5 - - G5' })).toThrow()
     expect(() => parseTrack({ ...TRACKS.dojo, chords: ['Em'] })).toThrow()
+  })
+})
+
+describe('number-sense mission', () => {
+  it('lays dots out without overlaps, inside the field', () => {
+    const rnd = seeded(4)
+    for (const [n, r] of [[1, 5.5], [8, 5.5], [18, 3.2], [15, 4.6]] as const) {
+      const dots = dotLayout(n, r, rnd)
+      expect(dots.length).toBe(n)
+      for (const [i, a] of dots.entries()) {
+        expect(a.x - r).toBeGreaterThanOrEqual(0)
+        expect(a.x + r).toBeLessThanOrEqual(100)
+        expect(a.y - r).toBeGreaterThanOrEqual(0)
+        expect(a.y + r).toBeLessThanOrEqual(70)
+        for (const b of dots.slice(i + 1)) expect(Math.hypot(a.x - b.x, a.y - b.y)).toBeGreaterThan(2 * r)
+      }
+    }
+  })
+
+  it('every task has practice items and consistent answers on every track', () => {
+    const rnd = seeded(12)
+    for (const band of BANDS)
+      for (const task of TASKS) {
+        const { practice, trials } = buildTask(task, band, rnd)
+        expect(practice, `${task}-${band}`).toBeGreaterThanOrEqual(1)
+        expect(trials.length - practice, `${task}-${band}`).toBeGreaterThanOrEqual(6)
+        for (const tr of trials) {
+          if (tr.task === 'dots') {
+            expect(tr.dots.length).toBe(tr.n)
+            expect(tr.n).toBeLessThanOrEqual(9)
+          }
+          if (tr.task === 'cmpDots') {
+            expect(tr.left.length).not.toBe(tr.right.length)
+            expect(tr.answer).toBe(tr.left.length > tr.right.length ? 'left' : 'right')
+          }
+          if (tr.task === 'cmpNum') expect(tr.answer).toBe(tr.left > tr.right ? 'left' : 'right')
+          if (tr.task === 'line') {
+            expect(tr.target).toBeGreaterThan(0)
+            expect(tr.target).toBeLessThan(tr.max)
+          }
+          if (tr.task === 'facts') {
+            expect(tr.answer).toBe(tr.op === 'add' ? tr.a + tr.b : tr.a - tr.b)
+            expect(tr.answer).toBeGreaterThanOrEqual(0)
+            expect(tr.answer).toBeLessThanOrEqual(band === 'A' ? 6 : 18)
+          }
+        }
+      }
+  })
+
+  it('the bigger group of dots does not always carry more ink', () => {
+    const { trials } = buildTask('cmpDots', 'B', seeded(2))
+    const ink = (dots: { r: number }[]) => dots.reduce((s, d) => s + d.r * d.r, 0)
+    const moreInkOnBiggerSide = trials.slice(2).filter((tr) => tr.task === 'cmpDots' && (tr.left.length > tr.right.length) === (ink(tr.left) > ink(tr.right))).length
+    expect(moreInkOnBiggerSide).toBeLessThan(trials.length - 2)
+  })
+
+  it('scores accuracy, median time of right answers and number-line error', () => {
+    expect(scoreTask('dots', [{ ok: true, ms: 900 }, { ok: true, ms: 1500 }, { ok: false, ms: 9000 }, { ok: true, ms: 1100 }])).toEqual({ n: 4, ok: 3, ms: 1100 })
+    expect(scoreTask('line', [{ ok: true, ms: 1, error: 0.05 }, { ok: false, ms: 1, error: 0.25 }])).toEqual({ n: 2, ok: 1, ms: 1, pae: 15 })
+    expect(scoreTask('facts', [{ ok: false, ms: 4000 }, { ok: false, ms: 2000 }]).ms).toBe(3000)
+  })
+
+  const pupil = (over: Partial<Record<TaskId, Partial<TaskScore>>> = {}): ScreenResult => ({
+    id: 'm',
+    day: '2026-11-16',
+    band: 'B',
+    tasks: Object.fromEntries(
+      TASKS.map((k) => [k, { n: 12, ok: 11, ms: 1500, ...(k === 'line' ? { pae: 8 } : {}), ...over[k] }]),
+    ) as Record<TaskId, TaskScore>,
+  })
+
+  it('does not compare groups that are too small', () => {
+    const few = Object.fromEntries(Array.from({ length: MIN_GROUP - 1 }, (_, i) => [`p${i}`, pupil()]))
+    expect(readClass(few)).toBeNull()
+  })
+
+  it('flags only the pupil who is clearly behind the group on the foundations', () => {
+    const group: Record<string, ScreenResult> = {}
+    for (let i = 0; i < 9; i++) group[`p${i}`] = pupil({ dots: { ok: 11 + (i % 2), ms: 1400 + i * 40 }, cmpNum: { ms: 1000 + i * 30 } })
+    // Slow and inaccurate at counting dots, weak at comparing quantities, far off on the number line.
+    group.slow = pupil({ dots: { ok: 7, ms: 4200 }, cmpDots: { ok: 7 }, line: { ok: 3, pae: 27 } })
+    // Only slow at retrieving sums: that is arithmetic practice, not number sense.
+    group.sums = pupil({ facts: { ok: 6, ms: 5200 } })
+    const reading = readClass(group)!
+    expect(reading.slow.observe).toBe(true)
+    expect(reading.slow.tasks.dots).toBe('low')
+    expect(reading.slow.tasks.line).toBe('low')
+    expect(reading.sums.observe).toBe(false)
+    expect(reading.sums.tasks.facts).toBe('low')
+    for (let i = 0; i < 9; i++) {
+      expect(reading[`p${i}`].observe, `p${i}`).toBe(false)
+      expect(Object.values(reading[`p${i}`].tasks).every((l) => l === 'ok'), `p${i}`).toBe(true)
+    }
+  })
+
+  it('a strong, even group raises no flags at all', () => {
+    const group = Object.fromEntries(Array.from({ length: 10 }, (_, i) => [`p${i}`, pupil({ dots: { ms: 1300 + i * 25 } })]))
+    for (const r of Object.values(readClass(group)!)) expect(r.observe).toBe(false)
   })
 })
 

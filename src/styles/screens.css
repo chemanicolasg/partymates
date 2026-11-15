@@ -1025,3 +1025,87 @@
 .modal .field-label {
   text-align: center;
 }
+
+/* ───────────── Teacher: mission results ───────────── */
+
+.hw-banner.mission {
+  background: var(--mint);
+}
+.screen-warn {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: #fff3c4;
+  color: var(--ink) !important;
+  font-size: 0.95rem;
+}
+.screen-legend {
+  font-size: 0.9rem;
+}
+.observe {
+  color: var(--ko) !important;
+  font-weight: 700 !important;
+}
+.task-dots {
+  flex: none;
+  display: flex;
+  gap: 3px;
+}
+.task-dots i {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border: 2px solid transparent;
+  border-radius: 50%;
+  font-size: 0.85rem;
+  font-style: normal;
+}
+.task-dots .ok {
+  background: var(--ok-soft);
+  border-color: var(--ok);
+}
+.task-dots .watch {
+  background: #fff0b8;
+  border-color: #d79a00;
+}
+.task-dots .low {
+  background: var(--ko-soft);
+  border-color: var(--ko);
+}
+.task-dots .none {
+  background: #ece7fb;
+}
+.task-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  font-variant-numeric: tabular-nums;
+}
+.task-table th {
+  text-align: left;
+  font-weight: 600;
+  padding: 5px 6px 5px 0;
+}
+.task-table td {
+  text-align: right;
+  padding: 5px 0 5px 8px;
+  white-space: nowrap;
+}
+.task-table tr.watch {
+  background: #fff7d6;
+}
+.task-table tr.low {
+  background: var(--ko-soft);
+}
+.kind-bars {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px 14px;
+}
+.kind-bars > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}

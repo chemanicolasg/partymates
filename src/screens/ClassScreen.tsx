@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { sfx } from '../core/audio'
 import { getBackend, normalizeCode } from '../core/backend'
 import { back, go } from '../core/nav'
-import { activeHomework, homeworkStars, joinClass, leaveClass, refreshClass, useProfile } from '../core/store'
+import { activeHomework, homeworkStars, joinClass, leaveClass, pendingScreening, refreshClass, useProfile } from '../core/store'
 import { useT } from '../i18n'
 import { Modal, Stars, TopBar } from '../ui/kit'
 
@@ -37,6 +37,7 @@ export function ClassScreen() {
 
   const info = p.classInfo
   const hw = activeHomework(p)
+  const mission = pendingScreening(p)
   const stars = hw ? Math.min(homeworkStars(p, hw), hw.goal) : 0
 
   return (
@@ -60,6 +61,22 @@ export function ClassScreen() {
                 <strong>⭐ {info.stars}</strong>
               </div>
             </div>
+
+            {mission ? (
+              <div className="card hw-card">
+                <small>🚀 {t('screen.banner')}</small>
+                <h2>{t('screen.title')}</h2>
+                <button
+                  className="btn btn-primary btn-big"
+                  onClick={() => {
+                    sfx('tap')
+                    go({ id: 'screen' })
+                  }}
+                >
+                  ▶ {t('screen.play')}
+                </button>
+              </div>
+            ) : null}
 
             {hw ? (
               <div className="card hw-card">

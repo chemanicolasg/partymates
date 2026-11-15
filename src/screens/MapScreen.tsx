@@ -6,6 +6,7 @@ import { dayKey, levelProgress, playerLevel } from '../core/scoring'
 import {
   activeHomework,
   frontier,
+  pendingScreening,
   homeworkStars,
   isStopOpen,
   refreshClass,
@@ -40,6 +41,7 @@ export function MapScreen() {
   const here = frontier(p)
   const dojoDue = p.dojo.lastDay !== dayKey()
   const hw = activeHomework(p)
+  const mission = pendingScreening(p)
   const open = (fn: () => void) => () => {
     sfx('tap')
     fn()
@@ -77,6 +79,13 @@ export function MapScreen() {
         </div>
       </header>
 
+      {mission ? (
+        <button className="hw-banner mission" onClick={open(() => go({ id: 'screen' }))}>
+          <span>🚀</span>
+          <strong>{t('screen.title')}</strong>
+          <span className="hw-count">{t('screen.banner')}</span>
+        </button>
+      ) : null}
       {hw ? (
         <button className="hw-banner" onClick={open(() => go({ id: 'class' }))}>
           <span>📚</span>

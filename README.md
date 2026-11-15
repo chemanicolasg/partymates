@@ -48,6 +48,22 @@ En «Adultos → Profes» (no hacen falta cuentas):
 - **Identificación sin datos personales**: el alumno entra con el código y su **número de lista**. El profe puede
   escribir el nombre junto al número, pero ese nombre se guarda solo en su dispositivo.
 
+### Sentido numérico: cribado orientativo
+
+La profe puede activar para su clase la **Misión Explorador**: cinco pruebas cortas (unos 8 minutos) sobre las
+bases del número —contar puntos, comparar cantidades, comparar cifras, situar números en una recta y cálculo
+rápido—. El niño la ve como una misión más: no hay reloj en pantalla ni se le dice si acierta, y nunca ve una nota.
+
+La profe ve, por alumno, aciertos y tiempos de cada prueba, con colores que **solo comparan con su propio
+grupo** (hacen falta al menos 6 alumnos) y una marca de «conviene observar» cuando las pruebas de base quedan
+claramente por debajo.
+
+> **No es un diagnóstico ni una prueba baremada.** Las tareas siguen paradigmas habituales en la investigación
+> sobre sentido numérico, pero esta implementación no está validada ni tiene baremos. Sirve para decidir a
+> quién observar de cerca y, si el perfil se mantiene, comentarlo con el equipo de orientación. Al tratarse de
+> datos de menores sobre posibles dificultades de aprendizaje, conviene usarla con el visto bueno del centro
+> y de las familias.
+
 ## Ponerlo en marcha
 
 ```bash

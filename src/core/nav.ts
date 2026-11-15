@@ -5,6 +5,8 @@ export type Screen =
   /** A stop of the journey, by its position. */
   | { id: 'play'; stop: number }
   | { id: 'homework' }
+  /** The number-sense mission a teacher opened for the class. */
+  | { id: 'screen' }
   | { id: 'dojo' }
   | { id: 'shop' }
   | { id: 'class' }

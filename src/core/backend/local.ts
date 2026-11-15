@@ -1,4 +1,4 @@
-import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert } from './index'
+import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert, type Screening } from './index'
 
 const KEY = 'matty.classes.v2'
 
@@ -6,6 +6,7 @@ interface Stored {
   name: string
   teacherKey: string
   homework: Homework | null
+  screening?: Screening | null
   members: Record<string, MemberReport>
 }
 
@@ -43,7 +44,7 @@ export class LocalBackend implements Backend {
     const c = this.read()[code]
     if (!c) return null
     const members = Object.values(c.members)
-    return { code, name: c.name, homework: c.homework, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
+    return { code, name: c.name, homework: c.homework, screening: c.screening ?? null, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
   }
 
   async upsertMember(code: string, member: MemberUpsert) {
@@ -66,6 +67,12 @@ export class LocalBackend implements Backend {
   async setHomework(code: string, teacherKey: string, homework: Homework | null) {
     const all = this.teacher(code, teacherKey)
     all[code].homework = homework
+    this.write(all)
+  }
+
+  async setScreening(code: string, teacherKey: string, screening: Screening | null) {
+    const all = this.teacher(code, teacherKey)
+    all[code].screening = screening
     this.write(all)
   }
 

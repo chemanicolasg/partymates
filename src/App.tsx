@@ -7,6 +7,7 @@ import { DojoScreen } from './screens/DojoScreen'
 import { GrownUpsScreen } from './screens/GrownUpsScreen'
 import { MapScreen } from './screens/MapScreen'
 import { HomeworkScreen, StopScreen } from './screens/PlayScreen'
+import { ScreenScreen } from './screens/ScreenScreen'
 import { ShopScreen } from './screens/ShopScreen'
 import { WelcomeScreen } from './screens/WelcomeScreen'
 
@@ -21,7 +22,7 @@ export function App() {
 
   // Activities choose their own tune; everywhere else it is the map theme (or the gym's).
   useEffect(() => {
-    if (screen.id !== 'play' && screen.id !== 'homework') playMusic(screen.id === 'dojo' ? 'dojo' : 'hub')
+    if (screen.id !== 'play' && screen.id !== 'homework') playMusic(screen.id === 'dojo' || screen.id === 'screen' ? 'dojo' : 'hub')
   }, [screen.id])
 
   // Every screen except the welcome one needs a player.
@@ -33,6 +34,8 @@ export function App() {
       return <StopScreen key={screen.stop} index={screen.stop} />
     case 'homework':
       return <HomeworkScreen />
+    case 'screen':
+      return <ScreenScreen />
     case 'dojo':
       return <DojoScreen />
     case 'shop':

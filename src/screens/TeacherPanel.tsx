@@ -1,5 +1,8 @@
 import { useCallback, useEffect, useState } from 'react'
 import { getBackend, normalizeCode, type ClassInfo, type Homework, type MemberReport } from '../core/backend'
+import { fmtNum } from '../core/format'
+import { MIN_GROUP, readClass, TASKS, type Level, type ScreenResult } from '../core/screening'
+import { KINDS } from '../core/types'
 import { factLabel } from '../core/format'
 import { decodeLook } from '../core/look'
 import { dayKey, weekStart } from '../core/scoring'
@@ -8,6 +11,7 @@ import { AREAS, TOPICS, type Topic } from '../core/topics'
 import { useT } from '../i18n'
 import { Character } from '../ui/Character'
 import { Modal } from '../ui/kit'
+import { KIND_ICON, TASK_ICON } from './art'
 
 /** Sunday of this week (or a later one) as a day key: homework runs until then. */
 function sunday(weeksAhead: number): string {
@@ -174,6 +178,18 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
         </div>
       </section>
 
+      <ScreeningSection
+        members={members ?? []}
+        active={info?.screening && info.screening.until >= dayKey() ? info.screening : null}
+        names={cls.names}
+        until={until}
+        onSet={async (screening) => {
+          const backend = await getBackend()
+          await backend.setScreening(cls.code, cls.key, screening)
+          await load()
+        }}
+      />
+
       <section className="card">
         <div className="teacher-row-head">
           <h2>
@@ -213,6 +229,25 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
                   {t('teacher.nick')}: <b>{m.name}</b> · {t('teacher.lastSeen')}: {new Date(m.updatedAt).toLocaleDateString(lang)}
                 </p>
                 {repeated.has(m.num) ? <p className="error">⚠ {t('teacher.dupNum')}</p> : null}
+                {totals.total ? (
+                  <>
+                    <p>{t('teacher.kinds')}</p>
+                    <div className="kind-bars">
+                      {KINDS.filter((k) => m.stats.byKind[k]?.total).map((k) => {
+                        const pct = Math.round((m.stats.byKind[k].ok / m.stats.byKind[k].total) * 100)
+                        return (
+                          <span key={k} title={t(`mission.${k}`)}>
+                            {KIND_ICON[k]}
+                            <span className="meter">
+                              <i style={{ width: `${pct}%` }} />
+                            </span>
+                            {pct} %
+                          </span>
+                        )
+                      })}
+                    </div>
+                  </>
+                ) : null}
                 {m.stats?.weak?.length ? (
                   <>
                     <p>{t('gu.weak')}</p>
@@ -352,5 +387,105 @@ function HomeworkEditor({
         {t('teacher.save')}
       </button>
     </Modal>
+  )
+}
+
+const LEVEL_CLASS: Record<Level, string> = { ok: 'ok', watch: 'watch', low: 'low' }
+
+/**
+ * Number-sense mission for the teacher: switch it on for the class and read the results.
+ * Colours only compare a pupil with this group, and say so; nothing here is a diagnosis.
+ */
+function ScreeningSection({
+  members,
+  active,
+  names,
+  until,
+  onSet,
+}: {
+  members: MemberReport[]
+  active: { id: string; until: string } | null
+  names: Record<string, string>
+  until: (day: string) => string
+  onSet: (screening: { id: string; until: string } | null) => Promise<void>
+}) {
+  const { t, lang } = useT()
+  const [busy, setBusy] = useState(false)
+  const done = members.filter((m) => m.stats?.screen)
+  const results: Record<string, ScreenResult> = Object.fromEntries(done.map((m) => [m.id, m.stats.screen as ScreenResult]))
+  const reading = readClass(results)
+  const run = async (screening: { id: string; until: string } | null) => {
+    setBusy(true)
+    await onSet(screening).catch(() => {})
+    setBusy(false)
+  }
+
+  return (
+    <section className="card">
+      <h2>🔭 {t('teacher.screen.title')}</h2>
+      <p>{t('teacher.screen.about')}</p>
+      <p className="screen-warn">⚠️ {t('teacher.screen.warn')}</p>
+      <p className="hw-current">{active ? t('teacher.screen.on', { day: until(active.until) }) : t('teacher.screen.off')}</p>
+      <div className="btn-row">
+        <button className="btn btn-primary" disabled={busy} onClick={() => void run({ id: crypto.randomUUID(), until: sunday(1) })}>
+          {t(active || done.length ? 'teacher.screen.restart' : 'teacher.screen.start')}
+        </button>
+        {active ? (
+          <button className="btn" disabled={busy} onClick={() => void run(null)}>
+            {t('teacher.screen.stop')}
+          </button>
+        ) : null}
+      </div>
+
+      {done.length ? (
+        <>
+          <p>{t('teacher.screen.count', { n: done.length, total: members.length })}</p>
+          <p className="screen-legend">{reading ? t('teacher.screen.legend') : t('teacher.screen.small', { n: MIN_GROUP })}</p>
+          {done.map((m) => {
+            const r = results[m.id]
+            const read = reading?.[m.id]
+            return (
+              <details key={m.id} className="student">
+                <summary>
+                  <span className="student-num">{m.num}</span>
+                  <span className="student-name">
+                    <strong>{names[m.num] || m.name}</strong>
+                    {read?.observe ? <small className="observe">👀 {t('teacher.screen.observe')}</small> : null}
+                  </span>
+                  <span className="task-dots">
+                    {TASKS.map((k) => (
+                      <i key={k} className={read ? LEVEL_CLASS[read.tasks[k] ?? 'ok'] : 'none'} title={t(`screen.${k}.title`)}>
+                        {TASK_ICON[k]}
+                      </i>
+                    ))}
+                  </span>
+                </summary>
+                <table className="task-table">
+                  <tbody>
+                    {TASKS.map((k) => {
+                      const s = r.tasks[k]
+                      return (
+                        <tr key={k} className={read ? LEVEL_CLASS[read.tasks[k] ?? 'ok'] : ''}>
+                          <th>
+                            {TASK_ICON[k]} {t(`screen.${k}.title`)}
+                          </th>
+                          <td>
+                            {s.ok}/{s.n} {t('teacher.screen.right')}
+                          </td>
+                          <td>{k === 'line' ? `${fmtNum(s.pae ?? 0, lang)} % ${t('teacher.screen.error')}` : `${fmtNum(Math.round(s.ms / 100) / 10, lang)} s`}</td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+                <p>
+                  {new Date(`${r.day}T12:00:00`).toLocaleDateString(lang)} · {t(`band.${r.band}`)}
+                </p>
+              </details>
+            )
+          })}
+        </>
+      ) : null}
+    </section>
   )
 }

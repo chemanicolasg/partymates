@@ -1362,3 +1362,159 @@
   background: var(--pink);
   color: #fff;
 }
+
+/* ───────────── Explorer Mission ───────────── */
+
+.game-screen {
+  color: #fff;
+}
+.stations {
+  flex: none;
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+.stations span {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  font-size: 1.2rem;
+  filter: grayscale(0.7);
+}
+.stations .now {
+  border-color: var(--sun);
+  background: #fff;
+  filter: none;
+  transform: scale(1.12);
+}
+.stations .done {
+  border-color: var(--mint);
+  background: var(--mint);
+  color: var(--ink);
+  filter: none;
+  font-weight: 700;
+}
+.game-screen .pips {
+  flex: none;
+}
+.screen-ask {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-size: 1.6rem;
+  font-weight: 700;
+  text-align: center;
+}
+.practice-tag {
+  padding: 2px 12px;
+  border-radius: 999px;
+  background: var(--sun);
+  color: var(--ink);
+  font-size: 0.9rem;
+}
+.screen-stage {
+  flex: 1;
+  min-height: 0;
+  display: grid;
+  place-items: center;
+}
+.dot-field {
+  width: 100%;
+  max-width: 420px;
+  max-height: 100%;
+  border: 3px solid var(--ink);
+  border-radius: 22px;
+  background: var(--paper);
+}
+.dot-field circle {
+  fill: var(--ink);
+}
+.screen-pair {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.screen-side {
+  display: grid;
+  place-items: center;
+  border-radius: 24px;
+}
+.screen-side:active {
+  transform: scale(0.97);
+}
+.screen-side.number {
+  min-height: 170px;
+  border: 3px solid var(--ink);
+  background: var(--paper);
+  color: var(--ink);
+  font-size: 4.4rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.screen-side.answer,
+.screen-side.answer .dot-field {
+  box-shadow: 0 0 0 6px var(--mint);
+}
+.number-line {
+  width: 100%;
+  padding: 0 14px;
+}
+.line-track {
+  position: relative;
+  height: 84px;
+  touch-action: none;
+  cursor: pointer;
+}
+.line-track::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 8px;
+  margin-top: -4px;
+  border-radius: 4px;
+  background: #fff;
+  box-shadow:
+    -3px 0 0 3px #fff,
+    3px 0 0 3px #fff;
+}
+.line-mark {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  width: 10px;
+  margin-left: -5px;
+  border: 2px solid var(--ink);
+  border-radius: 5px;
+  background: var(--sun);
+}
+.line-mark.true {
+  background: var(--mint);
+}
+.line-ends {
+  display: flex;
+  justify-content: space-between;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+.count-keys {
+  flex: none;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  width: 100%;
+  max-width: 340px;
+  margin: 0 auto;
+}
+.screen-thumb {
+  font-size: 1.8rem;
+  animation: pop 0.2s;
+}
