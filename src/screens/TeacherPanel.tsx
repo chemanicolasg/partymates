@@ -178,6 +178,8 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
         </div>
       </section>
 
+      {members?.length ? <ClassSummary members={members} week={week} /> : null}
+
       <ScreeningSection
         members={members ?? []}
         active={info?.screening && info.screening.until >= dayKey() ? info.screening : null}
@@ -484,6 +486,56 @@ function ScreeningSection({
               </details>
             )
           })}
+        </>
+      ) : null}
+    </section>
+  )
+}
+
+/** The class as a whole: how much it played this week, where it is strong and what most pupils find hard. */
+function ClassSummary({ members, week }: { members: MemberReport[]; week: string }) {
+  const { t, lang } = useT()
+  const active = members.filter((m) => m.stats?.week === week && m.stats.weekMin > 0)
+  const minutes = active.reduce((s, m) => s + m.stats.weekMin, 0)
+  const kinds = KINDS.map((k) => {
+    const sum = members.reduce((acc, m) => ({ ok: acc.ok + (m.stats?.byKind?.[k]?.ok ?? 0), total: acc.total + (m.stats?.byKind?.[k]?.total ?? 0) }), { ok: 0, total: 0 })
+    return { k, pct: sum.total ? Math.round((sum.ok / sum.total) * 100) : null }
+  }).filter((x) => x.pct !== null)
+  // Facts that several pupils keep getting wrong are worth a few minutes on the board.
+  const counts = new Map<string, number>()
+  for (const m of members) for (const key of m.stats?.weak ?? []) counts.set(key, (counts.get(key) ?? 0) + 1)
+  const hard = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
+
+  return (
+    <section className="card">
+      <h2>📊 {t('teacher.summary')}</h2>
+      <p>{t('teacher.summaryWeek', { n: active.length, total: members.length, min: active.length ? Math.round(minutes / active.length) : 0 })}</p>
+      {kinds.length ? (
+        <>
+          <p>{t('teacher.kinds')}</p>
+          <div className="kind-bars">
+            {kinds.map(({ k, pct }) => (
+              <span key={k} title={t(`mission.${k}`)}>
+                {KIND_ICON[k]}
+                <span className="meter">
+                  <i style={{ width: `${pct}%` }} />
+                </span>
+                {pct} %
+              </span>
+            ))}
+          </div>
+        </>
+      ) : null}
+      {hard.length ? (
+        <>
+          <p>{t('teacher.hard')}</p>
+          <div className="weak-facts">
+            {hard.map(([key, n]) => (
+              <span key={key}>
+                {factLabel(key, lang)} <b>· {n}</b>
+              </span>
+            ))}
+          </div>
         </>
       ) : null}
     </section>

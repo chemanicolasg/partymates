@@ -365,4 +365,7 @@ export const ca = {
   'teacher.screen.right': 'encerts',
   'teacher.screen.error': 'd’error',
   'teacher.kinds': 'Encert per activitat',
+  'teacher.summary': 'Resum de la classe',
+  'teacher.summaryWeek': 'Aquesta setmana han jugat {n} de {total} alumnes, uns {min} min cadascun de mitjana.',
+  'teacher.hard': 'El que més costa a la classe (i a quants alumnes):',
 }

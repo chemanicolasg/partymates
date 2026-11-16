@@ -366,4 +366,7 @@ export const en: Dict = {
   'teacher.screen.right': 'correct',
   'teacher.screen.error': 'error',
   'teacher.kinds': 'Accuracy by activity',
+  'teacher.summary': 'Class summary',
+  'teacher.summaryWeek': 'This week {n} of {total} pupils played, about {min} min each on average.',
+  'teacher.hard': 'What the class finds hardest (and how many pupils):',
 }

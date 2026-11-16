@@ -367,4 +367,7 @@ export const es: Dict = {
   'teacher.screen.right': 'aciertos',
   'teacher.screen.error': 'de error',
   'teacher.kinds': 'Acierto por actividad',
+  'teacher.summary': 'Resumen de la clase',
+  'teacher.summaryWeek': 'Esta semana han jugado {n} de {total} alumnos, unos {min} min cada uno de media.',
+  'teacher.hard': 'Lo que más cuesta a la clase (y a cuántos alumnos):',
 }
