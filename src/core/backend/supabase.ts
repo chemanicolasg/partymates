@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
+import type { World } from '../worlds'
 import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert, Screening } from './index'
 
 /**
@@ -56,6 +57,10 @@ export class SupabaseBackend implements Backend {
 
   async setScreening(code: string, teacherKey: string, screening: Screening | null) {
     await this.rpc('pm_class_set_screening', { p_code: code, p_key: teacherKey, p_screening: screening })
+  }
+
+  async setWorld(code: string, teacherKey: string, world: World | null) {
+    await this.rpc('pm_class_set_world', { p_code: code, p_key: teacherKey, p_world: world })
   }
 
   async removeMember(code: string, teacherKey: string, memberId: string) {

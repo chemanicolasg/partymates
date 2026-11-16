@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { sfx } from '../core/audio'
 import { HAIR_COLORS, HAIR_STYLES, ITEMS, itemName, SKIN_TONES, type Item, type ItemType, type Look } from '../core/look'
 import { back } from '../core/nav'
-import { isItemUnlocked, styleKid, takeOff, totalStars, useProfile, wearItem } from '../core/store'
+import { SEASON_OF_ITEM } from '../core/seasons'
+import { isItemOnOffer, isItemUnlocked, styleKid, takeOff, totalStars, useProfile, useSeason, wearItem } from '../core/store'
 import { useT } from '../i18n'
 import { Character } from '../ui/Character'
 import { Chip, TopBar } from '../ui/kit'
@@ -17,6 +18,7 @@ export function ShopScreen() {
   const p = useProfile()
   const [tab, setTab] = useState<ItemType>('base')
   const stars = totalStars(p)
+  const season = useSeason()
   const wearing = (item: Item) => p.look[FIELD[item.type]] === itemName(item.id)
 
   const tap = (item: Item) => {
@@ -59,18 +61,33 @@ export function ShopScreen() {
               <small>{t('shop.none')}</small>
             </button>
           ) : null}
-          {ITEMS.filter((i) => i.type === tab).map((item) => {
+          {ITEMS.filter((i) => i.type === tab && isItemOnOffer(p, i.id, season)).map((item) => {
             const unlocked = isItemUnlocked(p, item.id)
-            const locked = !unlocked && (item.stars !== undefined || p.coins < item.price)
+            const locked = !unlocked && (item.stars !== undefined || item.prize || p.coins < item.price)
+            const seasonal = !unlocked && SEASON_OF_ITEM[item.id]
             return (
-              <button key={item.id} className={`shop-item${wearing(item) ? ' on' : ''}${locked ? ' poor' : ''}`} onClick={() => tap(item)} aria-pressed={wearing(item)}>
+              <button
+                key={item.id}
+                className={`shop-item${wearing(item) ? ' on' : ''}${locked ? ' poor' : ''}${seasonal ? ' seasonal' : ''}`}
+                onClick={() => tap(item)}
+                aria-pressed={wearing(item)}
+                title={seasonal ? t(item.prize ? 'shop.prize' : 'shop.season') : undefined}
+              >
                 {item.type === 'pet' ? (
                   <span className="shop-emoji">{item.value}</span>
                 ) : (
                   <Character look={{ ...p.look, pet: null, [FIELD[item.type]]: itemName(item.id) }} size={72} />
                 )}
                 <small>
-                  {wearing(item) ? `✔ ${t('shop.on')}` : unlocked ? t('shop.use') : item.stars !== undefined ? `⭐ ${item.stars}` : `🪙 ${item.price}`}
+                  {wearing(item)
+                    ? `✔ ${t('shop.on')}`
+                    : unlocked
+                      ? t('shop.use')
+                      : item.prize
+                        ? `🎁 ${t('shop.prize')}`
+                        : item.stars !== undefined
+                          ? `⭐ ${item.stars}`
+                          : `${seasonal ? '✨ ' : ''}🪙 ${item.price}`}
                 </small>
               </button>
             )

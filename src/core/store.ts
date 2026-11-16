@@ -6,12 +6,20 @@ import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, ITEMS, LEGA
 import { setMusicEnabled } from './music'
 import { dayKey, dojoPassed, giftCoins, rewardsFor, weekStart, type Rewards } from './scoring'
 import type { ScreenResult, TaskId, TaskScore } from './screening'
+import { currentSeason, SEASON_OF_ITEM, seasonWorld, type Season, type SeasonSetting } from './seasons'
 import { memoryStats, review, type Memory } from './srs'
 import type { Band, FactResult, GameResult, Lang, ZoneId } from './types'
+import { cleanWorld, type World } from './worlds'
 
 export interface LevelRecord {
   stars: number
   plays: number
+}
+
+export interface WorldRecord {
+  stars: number[]
+  plays: number[]
+  miss: number[][]
 }
 
 export interface Profile {
@@ -42,6 +50,8 @@ export interface Profile {
   classInfo: ClassInfo | null
   /** Stars earned on the current homework. */
   hw: { id: string; stars: number; plays: number } | null
+  /** Extra worlds (the teacher's, the seasons'): per stop, best stars, visits and the exercises missed last time. */
+  worlds: Record<string, WorldRecord>
   /** Latest number-sense mission the child completed. */
   screen: ScreenResult | null
   /** Matty's daily present: the last day it was opened and how many days in a row. */
@@ -64,6 +74,8 @@ export interface AppState {
   lang: Lang
   sound: boolean
   music: boolean
+  /** Seasonal dress-up: by the calendar, never, or one season fixed. */
+  season: SeasonSetting
   profiles: Profile[]
   activeId: string | null
   teacher: TeacherClass[]
@@ -116,6 +128,7 @@ export function upgradeProfile(raw: Record<string, unknown>): Profile {
     classCode: old.classNum ? old.classCode : null,
     classInfo: old.classNum ? (old.classInfo ?? null) : null,
     hw: old.hw ?? null,
+    worlds: old.worlds ?? {},
     screen: old.screen ?? null,
     gift: old.gift ?? null,
     sinceEvent: old.sinceEvent ?? 0,
@@ -131,6 +144,7 @@ function load(): AppState {
         return {
           ...s,
           music: s.music ?? true,
+          season: s.season ?? 'auto',
           teacher: s.teacher ?? [],
           profiles: s.profiles.map((p) => upgradeProfile(p as unknown as Record<string, unknown>)),
         }
@@ -138,7 +152,7 @@ function load(): AppState {
   } catch {
     /* corrupted or unavailable storage: start fresh */
   }
-  return { v: 1, lang: detectLang(), sound: true, music: true, profiles: [], activeId: null, teacher: [] }
+  return { v: 1, lang: detectLang(), sound: true, music: true, season: 'auto', profiles: [], activeId: null, teacher: [] }
 }
 
 let state: AppState = load()
@@ -225,6 +239,27 @@ export function pendingScreening(p: Profile, now = Date.now()): Screening | null
   return s && s.until >= dayKey(now) && p.screen?.id !== s.id ? s : null
 }
 
+/** The season dressing the game right now, if any. */
+export const activeSeason = (s: AppState = state, now = new Date()): Season | null => currentSeason(s.season, now)
+export const useSeason = () => activeSeason(useApp((s) => s))
+export const setSeason = (season: SeasonSetting) => set({ ...state, season })
+
+/** The world the teacher made for this child's class. */
+export const classWorld = (p: Profile): World | null => cleanWorld(p.classInfo?.world)
+/** The running season's world for this child's age. */
+export const seasonWorldOf = (p: Profile, season: Season | null = activeSeason()): World | null => (season ? seasonWorld(season, p.band) : null)
+
+const EMPTY_RECORD: WorldRecord = { stars: [], plays: [], miss: [] }
+export const worldRecord = (p: Profile, world: World): WorldRecord => p.worlds[world.id] ?? EMPTY_RECORD
+export const worldStars = (p: Profile, world: World) => world.stops.reduce((s, _, i) => s + (worldRecord(p, world).stars[i] ?? 0), 0)
+/** Like the journey: a stop opens once the one before has been visited. */
+export const isWorldStopOpen = (p: Profile, world: World, i: number) => i === 0 || (worldRecord(p, world).plays[i - 1] ?? 0) > 0
+export const worldDone = (p: Profile, world: World) => world.stops.every((_, i) => (worldRecord(p, world).stars[i] ?? 0) > 0)
+
+/** Seasonal items are sold only during their season; prizes are never sold. */
+export const isItemOnOffer = (p: Profile, itemId: string, season: Season | null = activeSeason()) =>
+  p.owned.includes(itemId) || !SEASON_OF_ITEM[itemId] || SEASON_OF_ITEM[itemId] === season?.id
+
 export const isItemUnlocked = (p: Profile, itemId: string) => {
   const item = ITEM_BY_ID[itemId]
   return !!item && (p.owned.includes(itemId) || (item.stars !== undefined && totalStars(p) >= item.stars))
@@ -260,6 +295,7 @@ export function createProfile(name: string, look: Look, band: Band): Profile {
     classNum: null,
     classInfo: null,
     hw: null,
+    worlds: {},
     screen: null,
     gift: null,
     sinceEvent: 0,
@@ -360,6 +396,41 @@ export function finishHomework(hw: Homework, kind: string, result: GameResult): 
   return { ...rewards, progress }
 }
 
+/**
+ * One stop of an extra world. `missed` lists the teacher's own exercises that went wrong (they are
+ * not number facts, so they stay out of the spaced-repetition memory). Finishing a season's world
+ * hands over its prize.
+ */
+export function finishWorldStop(world: World, index: number, kind: string, result: GameResult, missed: number[] | null): Rewards & { gifts: string[] } {
+  const p = activeProfile()
+  if (!p) throw new Error('No active profile')
+  const rec = worldRecord(p, world)
+  const previous = rec.stars[index] ?? 0
+  const rewards = rewardsFor(result, previous)
+  const pad = (xs: number[]) => world.stops.map((_, i) => xs[i] ?? 0)
+  const next: WorldRecord = {
+    stars: pad(rec.stars).map((s, i) => (i === index ? Math.max(s, rewards.stars) : s)),
+    plays: pad(rec.plays).map((n, i) => (i === index ? n + 1 : n)),
+    miss: world.stops.map((_, i) => (i === index ? (missed ?? []) : (rec.miss[i] ?? []))),
+  }
+  const season = activeSeason()
+  const prize = season && seasonWorld(season, p.band).id === world.id ? season.prize : null
+  const won = prize && !p.owned.includes(prize) && next.stars.every((s) => s > 0) ? [prize] : []
+  // Old editions and replaced class worlds are forgotten: only the latest few are kept.
+  const kept = Object.entries(p.worlds).filter(([id]) => id !== world.id).slice(-3)
+  patchProfile(p.id, (cur) => ({
+    ...cur,
+    coins: cur.coins + rewards.coins,
+    xp: cur.xp + rewards.xp,
+    facts: missed ? cur.facts : review(cur.facts, result.facts),
+    stats: played(cur, kind, result, rewards.xp),
+    worlds: { ...Object.fromEntries(kept), [world.id]: next },
+    owned: [...cur.owned, ...won],
+  }))
+  void syncClass()
+  return { ...rewards, gifts: won }
+}
+
 /** Should a surprise jump out before the next level? Never on the first plays, never twice in a row. */
 export function rollEvent(rnd: () => number = Math.random): boolean {
   const p = activeProfile()
@@ -451,7 +522,7 @@ export function wearItem(itemId: string): boolean {
   const item = ITEM_BY_ID[itemId]
   if (!p || !item) return false
   if (!isItemUnlocked(p, itemId)) {
-    if (item.stars !== undefined || p.coins < item.price) return false
+    if (item.stars !== undefined || item.prize || !isItemOnOffer(p, itemId) || p.coins < item.price) return false
     patchProfile(p.id, (cur) => ({ ...cur, coins: cur.coins - item.price, owned: [...cur.owned, itemId] }))
   }
   patchProfile(p.id, (cur) => ({ ...cur, look: { ...cur.look, [LOOK_FIELD[item.type]]: itemName(itemId) } }))
@@ -478,6 +549,7 @@ export function styleKid(patch: Partial<Pick<Look, 'tone' | 'hair' | 'hairColor'
 // ───────────── Class (child side) ─────────────
 
 export function memberStats(p: Profile): MemberStats {
+  const world = classWorld(p)
   return {
     week: weekStart(),
     weekMin: weekMinutes(p),
@@ -485,6 +557,7 @@ export function memberStats(p: Profile): MemberStats {
     dojo: p.dojo.step,
     weak: memoryStats(p.facts).weak.slice(0, 6),
     hw: p.hw ? { id: p.hw.id, stars: p.hw.stars } : null,
+    world: world ? { id: world.id, ...(({ stars, miss }) => ({ stars, miss }))(worldRecord(p, world)) } : null,
     screen: p.screen,
   }
 }
@@ -569,6 +642,14 @@ export async function teacherDeleteClass(code: string): Promise<void> {
   const backend = await getBackend()
   await backend.deleteClass(cls.code, cls.key)
   teacherForgetClass(code)
+}
+
+/** Launches (or withdraws, with null) a world for the class. */
+export async function teacherSetWorld(code: string, world: World | null): Promise<void> {
+  const cls = state.teacher.find((c) => c.code === code)
+  if (!cls) return
+  const backend = await getBackend()
+  await backend.setWorld(cls.code, cls.key, world)
 }
 
 /** The name a teacher writes next to a list number. Stored on this device only. */

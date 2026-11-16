@@ -6,6 +6,7 @@ import { App } from './App'
 import './styles/base.css'
 import './styles/screens.css'
 import './styles/games.css'
+import './styles/scenes.css'
 
 registerSW({ immediate: true })
 

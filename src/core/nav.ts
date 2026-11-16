@@ -5,6 +5,9 @@ export type Screen =
   /** A stop of the journey, by its position. */
   | { id: 'play'; stop: number }
   | { id: 'homework' }
+  /** An extra world: the teacher's for the class, or the running season's. */
+  | { id: 'world'; src: 'class' | 'season' }
+  | { id: 'worldplay'; src: 'class' | 'season'; stop: number }
   /** The number-sense mission a teacher opened for the class. */
   | { id: 'screen' }
   | { id: 'dojo' }

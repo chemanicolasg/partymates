@@ -42,6 +42,26 @@ Además:
 - **Nadie se queda atascado**: una parada se abre con una estrella en la anterior o tras tres intentos.
 - **Repaso espaciado (Leitner)** de las operaciones falladas y **pistas que retroceden una etapa** en vez de dar la respuesta.
 - **Música** con un tema por actividad, generada por la propia app (sin archivos de audio).
+- **Escenarios en capas**: el suelo de cada zona son recortes superpuestos con sombra, los elementos (palmeras,
+  cabañas, planetas…) están sombreados con degradados y todo lleva un grano de papel por encima. Está dibujado
+  por la propia app en `src/ui/scene.tsx`, sin imágenes externas, así que pesa poco y funciona sin conexión.
+
+## Temporadas
+
+Durante unas semanas el juego entero se disfraza: decoración sobre el mapa, Matty con gorro, prendas especiales
+en el armario (solo se venden en temporada, pero se conservan) y un **mundo extra** de cinco paradas con un
+premio al completarlo. Ahora hay dos: **Halloween** (17 oct – 2 nov) y **Navidad** (1 dic – 6 ene). Se activan
+solas por fecha; en «Adultos → Ajustes» se pueden desactivar o fijar una para verla fuera de fecha.
+
+Lanzar una temporada nueva (carnaval, verano…) es:
+
+1. Añadir su entrada en `src/core/seasons.ts`: fechas, prendas, premio y temas de su mundo por edad.
+2. Dibujar su ambientación en `src/ui/scene.tsx` (franjas de terreno y elementos) y lo que cae del cielo en
+   `src/ui/Season.tsx`; los colores van en `src/styles/scenes.css`.
+3. Dibujar sus prendas en `src/ui/Character.tsx` y darlas de alta en `src/core/look.ts`.
+4. Poner sus textos en `src/i18n/` (`season.<id>…`).
+
+Las pruebas comprueban que las temporadas no se solapan y que todo lo que nombran existe.
 
 ## Zona de profes
 
@@ -50,6 +70,18 @@ En «Adultos → Profes» (no hacen falta cuentas):
 - **Crear una clase**: se obtiene un código de 6 letras para los alumnos y una clave de profe.
 - **Deberes / tema de la semana**: 24 temas (sumas llevando, restas llevando, tablas, fracciones…) con un objetivo
   de estrellas y fecha. Cada tema se practica con actividades distintas que se van alternando.
+- **Mundo de la clase**: la profe monta un camino de hasta 8 paradas y lo lanza al mapa de sus alumnos. Cada
+  parada es un tema ya preparado o **ejercicios escritos por ella**, uno por línea:
+
+  ```
+  23 + 48                      → la app calcula la respuesta
+  3 x ? = 12                   → la app encuentra el hueco
+  Lados de un hexágono = 6     → cualquier pregunta, con su respuesta tras «=»
+  ```
+
+  Puede empezar desde una plantilla (todas las paradas de sumas, de restas…), elegir la ambientación y reordenar.
+  En el informe ve las estrellas de cada alumno por parada y los ejercicios que más se fallan. Lo que escribe
+  nunca se ejecuta como código: solo se lee como números y signos.
 - **Informe por alumno**: estrellas, minutos de la semana, porcentaje de acierto, deberes hechos y las operaciones
   que más le cuestan.
 - **Identificación sin datos personales**: el alumno entra con el código y su **número de lista**. El profe puede
@@ -99,11 +131,11 @@ necesita `VITE_SUPABASE_URL` y `VITE_SUPABASE_ANON_KEY` (ambas públicas por dis
 ## Estructura
 
 ```
-src/core/         motor sin interfaz: currículo, viaje, generadores, temas de deberes, repaso espaciado, guardado
+src/core/         motor sin interfaz: currículo, viaje, generadores, temas de deberes, mundos, temporadas, guardado
 src/core/backend/ clases (local o Supabase)
-src/games/        las seis actividades, el evento sorpresa y el Gimnasio Rayo
-src/screens/      mapa, armario, clase, zona de adultos y profes
-src/ui/           personajes dibujados, bloc de notas y componentes comunes
+src/games/        las seis actividades, el reto de la profe, el evento sorpresa y el Gimnasio Rayo
+src/screens/      mapa, mundos extra, armario, clase, zona de adultos y profes
+src/ui/           personajes y escenarios dibujados, bloc de notas y componentes comunes
 src/i18n/         textos en ca / es / en
 tests/            pruebas del motor (todas las paradas y temas generan problemas resolubles)
 supabase/         esquema SQL de las clases en línea

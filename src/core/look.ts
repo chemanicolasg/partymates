@@ -11,6 +11,8 @@ export interface Item {
   price: number
   /** Unlocked for free once the player has this many stars, instead of being bought. */
   stars?: number
+  /** Won by finishing a season's world: it cannot be bought. */
+  prize?: boolean
   /** Only for pets (an emoji) and backgrounds (a CSS colour). */
   value?: string
 }
@@ -34,6 +36,7 @@ export const HAIR_STYLES = ['short', 'swept', 'spiky', 'curly', 'bob', 'long', '
 
 const item = (type: ItemType, name: string, price = 0, extra: Partial<Item> = {}): Item => ({ id: `${type}:${name}`, type, price, ...extra })
 const starItem = (type: ItemType, name: string, stars: number): Item => ({ id: `${type}:${name}`, type, price: 0, stars })
+const prizeItem = (type: ItemType, name: string): Item => ({ id: `${type}:${name}`, type, price: 0, prize: true })
 const pet = (emoji: string, price: number) => item('pet', emoji, price, { value: emoji })
 const bg = (name: string, value: string, price = 0) => item('bg', name, price, { value })
 
@@ -47,6 +50,9 @@ export const ITEMS: Item[] = [
   item('hat', 'cowboy', 70), item('hat', 'tophat', 80), item('hat', 'pirate', 90), item('hat', 'chef', 90), item('hat', 'wizard', 120),
   item('hat', 'viking', 130), item('hat', 'astro', 150), starItem('hat', 'matty', 12), starItem('hat', 'grad', 30), starItem('hat', 'crown', 60),
 
+  // Seasonal: on sale only during their season (see core/seasons.ts), kept for ever.
+  item('hat', 'witch', 60), prizeItem('hat', 'pumpkin'), item('hat', 'santa', 60), item('hat', 'antlers', 60), prizeItem('hat', 'elf'),
+
   item('glasses', 'round', 30), item('glasses', 'sun', 50), item('glasses', 'patch', 60), item('glasses', 'star', 70),
   item('glasses', 'heart', 70), item('glasses', 'goggles', 80), item('glasses', '3d', 90), item('glasses', 'monocle', 100),
 
@@ -54,8 +60,9 @@ export const ITEMS: Item[] = [
   item('outfit', 'stripes', 30), item('outfit', 'hoodie', 40), item('outfit', 'football', 60), item('outfit', 'dungarees', 60),
   item('outfit', 'pirate', 90), item('outfit', 'lab', 100), item('outfit', 'ninja', 110), item('outfit', 'wizard', 120),
   item('outfit', 'tux', 120), item('outfit', 'hero', 140), item('outfit', 'astro', 160), starItem('outfit', 'royal', 90),
+  item('outfit', 'skeleton', 90), item('outfit', 'xmas', 90),
 
-  pet('🐥', 50), pet('🐢', 60), pet('🐝', 70), pet('🦜', 90), pet('🦋', 110), pet('🐳', 140), pet('🦉', 170), pet('⭐', 220),
+  pet('🐥', 50), pet('🐢', 60), pet('🐝', 70), pet('🦜', 90), pet('🦋', 110), pet('🐳', 140), pet('🦉', 170), pet('⭐', 220), pet('🦇', 80), pet('⛄', 80),
 
   bg('sun', '#ffd23f'), bg('sky', '#5cc8ff'), bg('mint', '#6fe3a5'), bg('rose', '#ff8fb8'),
   bg('lava', 'linear-gradient(135deg,#ff4d6d,#ffb347)', 90),
@@ -66,7 +73,7 @@ export const ITEMS: Item[] = [
 ]
 
 export const ITEM_BY_ID: Record<string, Item> = Object.fromEntries(ITEMS.map((i) => [i.id, i]))
-export const FREE_ITEMS = ITEMS.filter((i) => i.price === 0 && !i.stars).map((i) => i.id)
+export const FREE_ITEMS = ITEMS.filter((i) => i.price === 0 && !i.stars && !i.prize).map((i) => i.id)
 export const STARTER_BASES = ITEMS.filter((i) => i.type === 'base' && i.price === 0)
 export const STARTER_BGS = ITEMS.filter((i) => i.type === 'bg' && i.price === 0)
 export const itemName = (id: string) => id.slice(id.indexOf(':') + 1)

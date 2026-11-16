@@ -1,4 +1,5 @@
 import type { ScreenResult } from '../screening'
+import type { World } from '../worlds'
 import { LocalBackend } from './local'
 
 /** The theme of the week a teacher sets for the class. */
@@ -23,6 +24,8 @@ export interface ClassInfo {
   name: string
   homework: Homework | null
   screening: Screening | null
+  /** A world the teacher put together for the class. */
+  world?: World | null
   members: number
   /** Stars earned by the whole class together. */
   stars: number
@@ -38,6 +41,8 @@ export interface MemberStats {
   /** Number facts that keep slipping, e.g. "7x8". */
   weak: string[]
   hw: { id: string; stars: number } | null
+  /** Progress in the teacher's world: best stars per stop and, for her own exercises, the ones missed last time. */
+  world?: { id: string; stars: number[]; miss: number[][] } | null
   /** Latest number-sense mission, if the child has done one. */
   screen?: ScreenResult | null
 }
@@ -69,6 +74,7 @@ export interface Backend {
   report(code: string, teacherKey: string): Promise<MemberReport[]>
   setHomework(code: string, teacherKey: string, homework: Homework | null): Promise<void>
   setScreening(code: string, teacherKey: string, screening: Screening | null): Promise<void>
+  setWorld(code: string, teacherKey: string, world: World | null): Promise<void>
   removeMember(code: string, teacherKey: string, memberId: string): Promise<void>
   /** Deletes the class and everything its pupils sent to it. */
   deleteClass(code: string, teacherKey: string): Promise<void>

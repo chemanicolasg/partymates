@@ -238,6 +238,22 @@ function Outfit({ id }: { id: string }) {
           <path d="M38 76 Q50 86 62 76" fill="none" {...line} stroke="#ffd23f" strokeWidth={3} />
         </>
       )
+    case 'skeleton':
+      return (
+        <>
+          <path d={body} fill="#2b2d42" {...line} />
+          <path d="M50 79 V104 M38 85 Q50 80 62 85 M35 92 Q50 87 65 92 M34 99 Q50 94 66 99" fill="none" stroke="#ffffff" strokeWidth="3.4" strokeLinecap="round" />
+        </>
+      )
+    case 'xmas':
+      return (
+        <>
+          <path d={body} fill="#d83a52" {...line} />
+          <path d="M17 93 L25 87 L33 93 L41 87 L50 93 L59 87 L67 93 L75 87 L83 93" fill="none" stroke="#ffffff" strokeWidth="3" strokeLinejoin="round" strokeLinecap="round" />
+          <path d="M22 101 H78" fill="none" stroke="#2fa862" strokeWidth="3.4" strokeLinecap="round" strokeDasharray="0.1 7" />
+          <path d="M41 76 Q50 85 59 76" fill="none" {...line} stroke="#ffffff" strokeWidth={3.4} />
+        </>
+      )
     case 'tux':
       return (
         <>
@@ -428,6 +444,49 @@ function Hat({ id }: { id: string }) {
           <circle cx="50" cy="11" r="10.5" />
           <rect x="34" y="17" width="32" height="14" rx="2" />
           <path d="M40 22 V28 M50 22 V28 M60 22 V28" {...thin} stroke="#c7d0e0" />
+        </g>
+      )
+    case 'witch':
+      return (
+        <g {...line}>
+          <path d="M32 30 L49 3 Q57 -5 67 1 Q59 2 58 9 L68 30Z" fill="#3a2a5c" />
+          <ellipse cx="50" cy="30" rx="33" ry="6.5" fill="#4a3675" />
+          <path d="M35.5 24.5 L64.5 24.5 L67 29.5 Q50 33 33 29.5Z" fill="#ff8a3c" />
+          <rect x="46" y="23" width="8" height="7.5" rx="1.5" fill="#ffd23f" />
+        </g>
+      )
+    case 'pumpkin':
+      return (
+        <g {...line}>
+          <path d="M26 34 C22 8 78 8 74 34Z" fill="#ff8a3c" />
+          <path d="M40 33 C36 23 39 15 45 13 M60 33 C64 23 61 15 55 13 M50 33 V13" fill="none" {...thin} stroke="#d9641a" />
+          <path d="M46.5 14 C45.5 7 48 2 53.5 1 L55.5 5.5 C52.5 6.5 52.5 10 53.5 14Z" fill="#3fa35c" />
+          <path d="M53 9 C60 4.5 66.5 7.5 67.5 13 C61 13.5 56 12 53 9Z" fill="#5fd38d" />
+        </g>
+      )
+    case 'santa':
+      return (
+        <g {...line}>
+          <path d="M28 32 C26 10 56 3 71 13 C80 19 85 28 83 37 C77 31 73 27 69 26 L71 32Z" fill="#e8375a" />
+          <rect x="23.5" y="27" width="53" height="10.5" rx="5.2" fill="#ffffff" />
+          <circle cx="83" cy="39" r="6.2" fill="#ffffff" />
+        </g>
+      )
+    case 'antlers':
+      return (
+        <g fill="none" {...line} stroke="#8b5a2b" strokeWidth="5">
+          <path d="M35 23 C31 15 29 9 31 2 M31.5 13 L24 9 M32 7 L38 3" />
+          <path d="M65 23 C69 15 71 9 69 2 M68.5 13 L76 9 M68 7 L62 3" />
+          <path d="M50 16.5 L43 12 L43 21Z M50 16.5 L57 12 L57 21Z" fill="#e8375a" {...thin} />
+          <circle cx="50" cy="16.5" r="2.6" fill="#ffd23f" {...thin} />
+        </g>
+      )
+    case 'elf':
+      return (
+        <g {...line}>
+          <path d="M28 32 C30 14 44 6 62 2 C71 0 79 4 81 11 C73 9 69 13 70 20 L72 32Z" fill="#2fa862" />
+          <path d="M25 31 L31 25 L37 31 L43 25 L50 31 L57 25 L63 31 L69 25 L75 31 L75 36 L25 36Z" fill="#e8375a" />
+          <circle cx="82.5" cy="13.5" r="4.6" fill="#ffd23f" />
         </g>
       )
     case 'wizard':

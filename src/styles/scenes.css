@@ -1,0 +1,622 @@
+/*
+ * Scenery: layered ground, props, the road and the paper grain that sits over all of it,
+ * plus what a season changes while it lasts.
+ */
+
+/* ───────────── Paper grain ───────────── */
+
+.grain {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  /* Fine dark speckles, like the tooth of thick paper. One small tile, drawn once and repeated. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .1 0 0 0 0 .06 0 0 0 0 .27 1.5 0 0 0 -.62'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+  opacity: 0.38;
+}
+
+/* ───────────── Trails ───────────── */
+
+.zone {
+  background: #2f9d57;
+}
+.terrain {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.zone-decor {
+  position: absolute;
+  pointer-events: none;
+  filter: drop-shadow(0 6px 5px rgba(26, 15, 69, 0.22));
+}
+.sprite {
+  display: block;
+  overflow: visible;
+}
+
+.scene-beach {
+  --road: #fff7dc;
+  --road-edge: #d9a85a;
+  --road-line: rgba(160, 110, 40, 0.35);
+}
+.scene-jungle {
+  --road: #f0d59a;
+  --road-edge: #9a6a34;
+  --road-line: rgba(110, 70, 20, 0.35);
+}
+.scene-mountain {
+  --road: #f6efe2;
+  --road-edge: #7f7566;
+  --road-line: rgba(90, 80, 60, 0.3);
+}
+.scene-space {
+  --road: #f4f1ff;
+  --road-edge: #7c6ff0;
+  --road-line: rgba(90, 70, 220, 0.4);
+}
+.scene-halloween {
+  --road: #ffd9a0;
+  --road-edge: #6b2c1c;
+  --road-line: rgba(110, 50, 20, 0.4);
+}
+.scene-xmas {
+  --road: #ffffff;
+  --road-edge: #8fb3df;
+  --road-line: rgba(90, 130, 190, 0.4);
+}
+
+/* Stars over the dark skies, as two repeating fields of dots. */
+.scene-space .terrain,
+.scene-halloween .terrain,
+.scene-xmas .terrain {
+  background-color: transparent;
+}
+.zone.scene-space::before,
+.zone.scene-halloween::before,
+.zone.scene-xmas::before,
+.backdrop.scene-space::before,
+.backdrop.scene-halloween::before,
+.backdrop.scene-xmas::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 45% 0;
+  z-index: 1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle, #fff 0 1.2px, transparent 1.8px), radial-gradient(circle, rgba(255, 255, 255, 0.8) 0 1px, transparent 1.6px),
+    radial-gradient(circle, rgba(255, 240, 180, 0.9) 0 1.8px, transparent 2.6px);
+  background-size:
+    97px 113px,
+    61px 79px,
+    211px 173px;
+  background-position:
+    12px 20px,
+    40px 61px,
+    90px 40px;
+  -webkit-mask-image: linear-gradient(#000 55%, transparent);
+  mask-image: linear-gradient(#000 55%, transparent);
+}
+.backdrop.scene-space::before,
+.backdrop.scene-halloween::before,
+.backdrop.scene-xmas::before {
+  inset: 0 0 40% 0;
+}
+
+.road {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.road path {
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+}
+.road-shadow {
+  stroke: rgba(26, 15, 69, 0.2);
+  stroke-width: 36px;
+}
+.road-edge {
+  stroke: var(--road-edge);
+  stroke-width: 36px;
+}
+.road-top {
+  stroke: var(--road);
+  stroke-width: 27px;
+}
+.road-line {
+  stroke: var(--road-line);
+  stroke-width: 3px;
+  stroke-dasharray: 9 13;
+}
+
+/* Stops: glossy buttons standing on the road. */
+.node-disc {
+  position: relative;
+  background: linear-gradient(#ffffff, #e7e9f6);
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -6px 0 rgba(26, 15, 69, 0.1),
+    0 6px 0 var(--ink),
+    0 14px 12px rgba(26, 15, 69, 0.32);
+}
+.node-disc::before {
+  content: '';
+  position: absolute;
+  left: 16%;
+  top: 9%;
+  width: 40%;
+  height: 22%;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.65);
+  transform: rotate(-18deg);
+  pointer-events: none;
+}
+.node.done .node-disc {
+  background: linear-gradient(#a8f5cd, #4fd394);
+}
+.node.current .node-disc {
+  background: linear-gradient(#ffe98a, #ffc21a);
+}
+.node.locked .node-disc {
+  background: linear-gradient(#e6e2f3, #c9c3e0);
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.6),
+    0 6px 0 rgba(35, 22, 79, 0.45),
+    0 14px 12px rgba(26, 15, 69, 0.2);
+}
+.node:active:not(:disabled) .node-disc {
+  box-shadow:
+    inset 0 4px 0 rgba(255, 255, 255, 0.85),
+    0 1px 0 var(--ink),
+    0 4px 6px rgba(26, 15, 69, 0.3);
+}
+.zone-sign {
+  background: linear-gradient(#fffdf7, #f3ecd9);
+  box-shadow:
+    0 4px 0 var(--ink),
+    0 12px 14px rgba(26, 15, 69, 0.28);
+}
+
+/* ───────────── The view behind cards ───────────── */
+
+.screen.has-backdrop {
+  position: relative;
+  isolation: isolate;
+}
+.backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+.backdrop-prop {
+  position: absolute;
+  filter: drop-shadow(0 8px 6px rgba(26, 15, 69, 0.22));
+}
+
+/* Cards and panels take a little of the same paper. */
+.card {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 38%),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 1.1 0 0 0 -.5'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
+  box-shadow:
+    var(--hard),
+    0 16px 22px rgba(26, 15, 69, 0.22);
+}
+
+/* ───────────── Extra worlds ───────────── */
+
+.hw-banner.world {
+  background: linear-gradient(90deg, #e6fff7, #d6ecff);
+}
+.world-screen .map {
+  display: flex;
+  flex-direction: column;
+}
+.world-screen .zone {
+  flex: none;
+}
+.world-foot {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 16px 14px calc(22px + var(--safe-bottom));
+  background: var(--paper);
+  border-top: 3px solid var(--ink);
+}
+.world-prize {
+  display: block;
+  margin-top: 6px;
+  filter: grayscale(0.7);
+  opacity: 0.8;
+}
+.world-prize.won {
+  filter: none;
+  opacity: 1;
+}
+
+/* ───────────── The teacher's own exercises ───────────── */
+
+.world-quiz {
+  background: linear-gradient(160deg, #8fe6ea, #5cc8ff 50%, #7c8cff);
+}
+.game-quiz .quiz-stage {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+}
+.quiz-options.stack {
+  grid-template-columns: 1fr;
+}
+.quiz-options.stack .dodge-option {
+  min-height: 56px;
+}
+.quiz-answer {
+  min-width: 150px;
+  padding: 10px 26px;
+  text-align: center;
+  font-size: clamp(2rem, 9vw, 3rem);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.quiz-answer.ok {
+  background-color: var(--ok-soft);
+}
+.quiz-answer.ko {
+  background-color: var(--ko-soft);
+}
+.quiz-options .dodge-option {
+  font-size: clamp(1.2rem, 5vw, 1.7rem);
+}
+
+/* ───────────── Seasons ───────────── */
+
+.season-tint {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+[data-season='xmas'] .season-tint {
+  background: linear-gradient(rgba(255, 255, 255, 0.5), rgba(214, 232, 255, 0.34));
+}
+[data-season='halloween'] .season-tint {
+  background: linear-gradient(rgba(60, 26, 110, 0.5), rgba(128, 52, 140, 0.34));
+}
+.hw-banner.season-xmas {
+  background: linear-gradient(90deg, #ffe3e8, #e3fbe9);
+}
+.hw-banner.season-halloween {
+  background: linear-gradient(90deg, #ffe0bf, #e8d9ff);
+}
+
+.season-sky {
+  position: absolute;
+  inset: 0;
+  z-index: 3;
+  overflow: hidden;
+  pointer-events: none;
+}
+.season-sky i {
+  position: absolute;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+.season-xmas i {
+  left: var(--along);
+  top: var(--across);
+  animation-name: snow-fall;
+}
+.season-halloween i {
+  top: var(--across);
+  left: var(--along);
+  animation-name: bat-cross;
+  animation-duration: 16s !important;
+}
+@keyframes snow-fall {
+  from {
+    top: -6%;
+    transform: translateX(0) rotate(0);
+  }
+  50% {
+    transform: translateX(18px) rotate(90deg);
+  }
+  to {
+    top: 104%;
+    transform: translateX(-10px) rotate(180deg);
+  }
+}
+@keyframes bat-cross {
+  from {
+    left: -12%;
+    transform: translateY(0);
+  }
+  25% {
+    transform: translateY(-22px);
+  }
+  50% {
+    transform: translateY(6px);
+  }
+  75% {
+    transform: translateY(-16px);
+  }
+  to {
+    left: 108%;
+    transform: translateY(0);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .season-sky i {
+    animation: none;
+  }
+}
+
+/* Editor of the teacher's world */
+.modal:has(.world-editor) {
+  max-width: 560px;
+  text-align: left;
+}
+.world-stop select {
+  flex: 1;
+  min-width: 0;
+  min-height: 40px;
+  padding: 4px 8px;
+  border: 3px solid var(--ink);
+  border-radius: 10px;
+  background: #fff;
+  font: inherit;
+  font-weight: 600;
+}
+.world-editor {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.world-stops {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+.world-stop {
+  border: 3px solid var(--ink);
+  border-radius: 16px;
+  background: #fff;
+  padding: 10px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.world-stop-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.world-stop-head strong {
+  flex: 1;
+  min-width: 0;
+}
+.world-stop-n {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--sun);
+  border: 2px solid var(--ink);
+  font-weight: 700;
+}
+.world-stop textarea {
+  width: 100%;
+  min-height: 132px;
+  padding: 10px 12px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  font: inherit;
+  font-size: 1rem;
+  line-height: 1.5;
+  resize: vertical;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.world-preview {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.world-preview li {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--ok-soft);
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+.world-preview li.bad {
+  background: var(--ko-soft);
+}
+.world-preview b {
+  color: var(--ok);
+}
+.scene-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.scene-pick {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  min-width: 74px;
+  padding: 8px 10px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+.scene-pick span {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.scene-pick.on {
+  background: var(--sun);
+  box-shadow: 0 3px 0 var(--ink);
+}
+.world-grid {
+  overflow-x: auto;
+}
+.world-grid table {
+  border-collapse: collapse;
+  width: 100%;
+  font-variant-numeric: tabular-nums;
+}
+.world-grid th,
+.world-grid td {
+  padding: 5px 8px;
+  text-align: center;
+  border-bottom: 2px solid rgba(35, 22, 79, 0.12);
+  white-space: nowrap;
+}
+.world-grid th:first-child,
+.world-grid td:first-child {
+  text-align: left;
+}
+.world-missed {
+  margin: 0;
+  padding-left: 18px;
+}
+
+/* ───────────── Game stages with volume ─────────────
+   The same layouts as in games.css, lit from the top left: gradients, a lit edge and a soft
+   shadow under everything that can be touched. */
+
+.btn,
+.btn-primary,
+.key,
+.dodge-option,
+.piece {
+  background-image: linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 58%);
+}
+
+.bridge-scene {
+  background:
+    radial-gradient(circle at 84% 20%, #fff7b8 0 7%, rgba(255, 231, 128, 0.55) 8% 12%, transparent 20%),
+    radial-gradient(ellipse 34px 15px at 22% 30%, #fff 0 98%, transparent),
+    radial-gradient(ellipse 26px 17px at 30% 25%, #fff 0 98%, transparent),
+    radial-gradient(ellipse 30px 13px at 39% 31%, #fff 0 98%, transparent),
+    radial-gradient(ellipse 24px 10px at 62% 14%, rgba(255, 255, 255, 0.8) 0 98%, transparent),
+    linear-gradient(#86d5ff, #d4f2ff 55%, #f1fcff);
+}
+.cliff {
+  border-top: 0;
+  background:
+    linear-gradient(#86e466, #49b83f) top / 100% 15px no-repeat,
+    linear-gradient(rgba(0, 0, 0, 0.22), transparent) 0 15px / 100% 9px no-repeat,
+    radial-gradient(circle at 20% 40%, rgba(0, 0, 0, 0.13) 0 3px, transparent 4px) 0 15px / 30px 27px,
+    radial-gradient(circle at 70% 70%, rgba(255, 255, 255, 0.16) 0 2px, transparent 3px) 0 15px / 37px 31px,
+    linear-gradient(#bd7c42, #8a5226);
+}
+.cliff.left {
+  box-shadow: inset -12px 0 12px -6px rgba(0, 0, 0, 0.32);
+}
+.cliff.right {
+  box-shadow: inset 12px 0 12px -6px rgba(0, 0, 0, 0.32);
+}
+.river {
+  background:
+    radial-gradient(circle at 12px -4px, transparent 11px, #55bdf7 12px) 0 0 / 24px 13px repeat-x,
+    linear-gradient(transparent 12px, #55bdf7 12px, #1f7fd6) 0 0 / 100% 100% no-repeat;
+}
+.bridge.new,
+.bridge.old {
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -3px 0 rgba(0, 0, 0, 0.16),
+    0 7px 6px rgba(10, 40, 90, 0.28);
+}
+
+.tile {
+  background: linear-gradient(#fffdf2, #f5e6b5);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.85),
+    inset 0 -4px 0 rgba(0, 0, 0, 0.08);
+}
+.platform {
+  background: linear-gradient(#fffdf2, #f3e2ac);
+  box-shadow: 0 10px 10px rgba(26, 15, 69, 0.28);
+}
+
+.power-card {
+  background: linear-gradient(160deg, #bba2ff, #5b3fd6 72%);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.35),
+    0 5px 0 rgba(0, 0, 0, 0.45),
+    0 13px 14px rgba(0, 0, 0, 0.35);
+}
+
+.chest {
+  background:
+    linear-gradient(#dea05a 0 12px, #ffd23f 12px 16px, transparent 16px),
+    repeating-linear-gradient(90deg, rgba(0, 0, 0, 0.11) 0 2px, transparent 2px 27px),
+    linear-gradient(#bd7c42, #8f5a2c);
+  box-shadow:
+    inset 0 3px 0 rgba(255, 255, 255, 0.3),
+    0 5px 0 var(--ink),
+    0 13px 10px rgba(70, 45, 10, 0.35);
+}
+.chest-gems i {
+  background: linear-gradient(135deg, #e9feff, #5fe9f2 55%, #2bbfd0);
+}
+
+.river-crossing {
+  background:
+    radial-gradient(ellipse 60px 16px at 20% 30%, rgba(255, 255, 255, 0.3) 0 98%, transparent),
+    radial-gradient(ellipse 80px 18px at 76% 64%, rgba(255, 255, 255, 0.22) 0 98%, transparent),
+    radial-gradient(ellipse 46px 10px at 48% 84%, rgba(255, 255, 255, 0.2) 0 98%, transparent),
+    linear-gradient(#5cc6f8, #2389dd 60%, #1c6fc4);
+}
+.bank {
+  background:
+    radial-gradient(circle at 12% 30%, rgba(255, 255, 255, 0.3) 0 5px, transparent 6px) 0 0 / 46px 30px,
+    linear-gradient(#93e47c, #58b94f);
+}
+.bank.end {
+  box-shadow: 0 8px 10px rgba(10, 40, 90, 0.3);
+}
+.bank.start {
+  box-shadow: 0 -8px 10px rgba(10, 40, 90, 0.25);
+}
+.stone {
+  background: radial-gradient(ellipse at 34% 24%, #ffffff 0, #eceef5 32%, #bcc2d2 78%, #9aa1b6 100%);
+  box-shadow:
+    inset 0 -6px 0 rgba(0, 0, 0, 0.07),
+    0 6px 0 var(--ink),
+    0 15px 10px rgba(10, 40, 90, 0.42);
+}
+.stone.done {
+  background: radial-gradient(ellipse at 34% 24%, #f1fff7 0, #b9f3cf 34%, #5fd394 82%);
+}
+
+.pair-card {
+  background: linear-gradient(#ffffff, #eceefa);
+  box-shadow:
+    inset 0 3px 0 #fff,
+    0 5px 0 var(--ink),
+    0 13px 10px rgba(26, 15, 69, 0.24);
+}

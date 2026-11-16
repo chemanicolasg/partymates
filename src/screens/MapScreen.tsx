@@ -7,18 +7,23 @@ import { dayKey, levelProgress, playerLevel } from '../core/scoring'
 import {
   activeHomework,
   claimGift,
+  classWorld,
   frontier,
   giftReady,
   pendingScreening,
   homeworkStars,
   isStopOpen,
   refreshClass,
+  seasonWorldOf,
   selectProfile,
   setMusic,
   stopStars,
   totalStars,
   useApp,
   useProfile,
+  useSeason,
+  worldDone,
+  worldStars,
   zoneStars,
   ZONE_MAX_STARS,
   type Profile,
@@ -26,16 +31,12 @@ import {
 import { ZONES } from '../core/types'
 import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
-import { Chip, speak, Stars } from '../ui/kit'
+import { Chip, speak } from '../ui/kit'
 import { Matty, type MattyPose } from '../ui/Matty'
-import { Decor, KIND_ICON, ZONE_DECOR, ZONE_ICON } from './art'
-
-/** Horizontal position (%) of each stop along a zone's winding trail. */
-const XS = [50, 73, 60, 32, 24, 45, 71, 62, 35, 50]
-const STEP = 104
-const FOOT = 96
-const HEIGHT = FOOT + STEP * STOPS_PER_ZONE
-const y = (i: number) => HEIGHT - FOOT - STEP * (i + 0.5)
+import { SCENE_ICON } from '../ui/scene'
+import { SeasonSky } from '../ui/Season'
+import { KIND_ICON, ZONE_ICON } from './art'
+import { TrailGround, TrailNode, TrailRoad, trailHeight } from './Trail'
 
 /** The journey: one long trail from the beach up to space, with the player waiting at the next stop. */
 export function MapScreen() {
@@ -47,6 +48,9 @@ export function MapScreen() {
   const dojoDue = p.dojo.lastDay !== dayKey()
   const hw = activeHomework(p)
   const mission = pendingScreening(p)
+  const season = useSeason()
+  const festive = seasonWorldOf(p, season)
+  const lesson = classWorld(p)
   const open = (fn: () => void) => () => {
     sfx('tap')
     fn()
@@ -101,55 +105,58 @@ export function MapScreen() {
         </button>
       ) : null}
 
+      {lesson ? (
+        <button className="hw-banner world" onClick={open(() => go({ id: 'world', src: 'class' }))}>
+          <span>{SCENE_ICON[lesson.scene]}</span>
+          <strong>{lesson.name}</strong>
+          <span className="hw-count">
+            ⭐ {worldStars(p, lesson)}/{lesson.stops.length * 3}
+          </span>
+        </button>
+      ) : null}
+      {festive && season ? (
+        <button className={`hw-banner world season-${season.id}`} onClick={open(() => go({ id: 'world', src: 'season' }))}>
+          <span>{SCENE_ICON[festive.scene]}</span>
+          <strong>{t(`season.${season.id}.world`)}</strong>
+          <span className="hw-count">{worldDone(p, festive) ? '🎁 ✔' : `⭐ ${worldStars(p, festive)}/${festive.stops.length * 3}`}</span>
+        </button>
+      ) : null}
+
       <div className="map-wrap">
+      {season ? <SeasonSky season={season.id} /> : null}
       <main className="map">
         {[...ZONES].reverse().map((zone) => {
           const z = ZONES.indexOf(zone)
           const stops = JOURNEY.filter((s) => s.zone === zone)
           const reached = isStopOpen(p, z * STOPS_PER_ZONE)
           return (
-            <section key={zone} className={`zone zone-${zone}${reached ? '' : ' far'}`} style={{ height: HEIGHT }}>
-              {ZONE_DECOR[zone].map(([name, left, top, size], i) => (
-                <span key={i} className="zone-decor" style={{ left: `${left}%`, top: `${top}%` }}>
-                  <Decor name={name} size={size} />
-                </span>
-              ))}
+            <section key={zone} className={`zone scene-${zone}${reached ? '' : ' far'}`} style={{ height: trailHeight(STOPS_PER_ZONE) }}>
+              <TrailGround scene={zone} stops={STOPS_PER_ZONE} season={season?.id} />
               <div className="zone-inner">
-              <svg className="zone-path" viewBox={`0 0 100 ${HEIGHT}`} preserveAspectRatio="none" aria-hidden="true">
-                <polyline points={[`50,${HEIGHT}`, ...stops.map((_, i) => `${XS[i]},${y(i)}`), '50,0'].join(' ')} />
-              </svg>
-              <div className="zone-sign">
-                <span>{ZONE_ICON[zone]}</span>
-                <strong>{t(`zone.${zone}`)}</strong>
-                <small>
-                  ⭐ {zoneStars(p, zone)}/{ZONE_MAX_STARS}
-                </small>
-              </div>
-              {stops.map((stop, i) => {
-                const isOpen = isStopOpen(p, stop.index)
-                const stars = stopStars(p, stop)
-                const isHere = stop.index === here
-                return (
-                  <button
+                <TrailRoad stops={STOPS_PER_ZONE} />
+                <div className="zone-sign">
+                  <span>{ZONE_ICON[zone]}</span>
+                  <strong>{t(`zone.${zone}`)}</strong>
+                  <small>
+                    ⭐ {zoneStars(p, zone)}/{ZONE_MAX_STARS}
+                  </small>
+                </div>
+                {stops.map((stop, i) => (
+                  <TrailNode
                     key={stop.index}
-                    ref={isHere ? current : undefined}
-                    className={`node${isOpen ? '' : ' locked'}${stop.boss ? ' boss' : ''}${isHere ? ' current' : ''}${stars ? ' done' : ''}`}
-                    style={{ left: `${XS[i]}%`, top: y(i) }}
-                    disabled={!isOpen}
-                    aria-label={`${t(`mission.${stop.kind}`)} ${stop.index + 1}${isOpen ? '' : ' 🔒'}`}
+                    nodeRef={stop.index === here ? current : undefined}
+                    i={i}
+                    stops={STOPS_PER_ZONE}
+                    open={isStopOpen(p, stop.index)}
+                    here={stop.index === here}
+                    boss={stop.boss}
+                    stars={stopStars(p, stop)}
+                    icon={KIND_ICON[stop.kind]}
+                    label={`${t(`mission.${stop.kind}`)} ${stop.index + 1}`}
+                    hero={p}
                     onClick={open(() => go({ id: 'play', stop: stop.index }))}
-                  >
-                    {isHere ? (
-                      <span className="node-hero">
-                        <ProfileAvatar p={p} size={46} bounce />
-                      </span>
-                    ) : null}
-                    <span className="node-disc">{isOpen ? KIND_ICON[stop.kind] : '🔒'}</span>
-                    {stop.boss && isOpen ? <span className="node-crown">👑</span> : null}
-                    <Stars n={stars} />
-                  </button>
-                )
-              })}
+                  />
+                ))}
               </div>
             </section>
           )

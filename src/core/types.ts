@@ -126,6 +126,14 @@ export interface PairsCfg {
 
 export type LevelCfg = BlocksCfg | PartyCfg | ArenaCfg | BayCfg | StonesCfg | PairsCfg
 
+/** Questions a teacher wrote herself, each with its answer. Not part of the journey's ladders. */
+export interface QuizCfg {
+  kind: 'quiz'
+  items: [q: string, a: string][]
+}
+export type PlayCfg = LevelCfg | QuizCfg
+export type PlayKind = Kind | 'quiz'
+
 export interface DojoStep {
   id: string
   /** Language-free name of the sheet, e.g. "×7". */

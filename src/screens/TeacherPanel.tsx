@@ -6,12 +6,14 @@ import { KINDS } from '../core/types'
 import { factLabel } from '../core/format'
 import { decodeLook } from '../core/look'
 import { dayKey, weekStart } from '../core/scoring'
-import { teacherCreateClass, teacherDeleteClass, teacherForgetClass, teacherNameStudent, teacherOpenClass, useApp, type TeacherClass } from '../core/store'
+import { teacherCreateClass, teacherDeleteClass, teacherForgetClass, teacherNameStudent, teacherOpenClass, teacherSetWorld, useApp, type TeacherClass } from '../core/store'
 import { AREAS, TOPICS, type Topic } from '../core/topics'
+import { cleanWorld } from '../core/worlds'
 import { useT } from '../i18n'
 import { Character } from '../ui/Character'
 import { Modal } from '../ui/kit'
 import { KIND_ICON, TASK_ICON } from './art'
+import { WorldSection } from './WorldEditor'
 
 /** Sunday of this week (or a later one) as a day key: homework runs until then. */
 function sunday(weeksAhead: number): string {
@@ -177,6 +179,16 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
           ) : null}
         </div>
       </section>
+
+      <WorldSection
+        world={cleanWorld(info?.world)}
+        members={members ?? []}
+        names={cls.names}
+        onSet={async (world) => {
+          await teacherSetWorld(cls.code, world)
+          await load()
+        }}
+      />
 
       {members?.length ? <ClassSummary members={members} week={week} /> : null}
 

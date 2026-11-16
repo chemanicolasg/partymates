@@ -4,7 +4,8 @@ import { DOJO } from '../core/curriculum'
 import { factLabel } from '../core/format'
 import { back, go } from '../core/nav'
 import { memoryStats } from '../core/srs'
-import { deleteProfile, setBand, setMusic, setSound, totalStars, useApp, useProfile, weekMinutes, zoneStars, ZONE_MAX_STARS } from '../core/store'
+import { SEASONS, type SeasonSetting } from '../core/seasons'
+import { deleteProfile, setBand, setMusic, setSeason, setSound, totalStars, useApp, useProfile, weekMinutes, zoneStars, ZONE_MAX_STARS } from '../core/store'
 import { BANDS, KINDS, ZONES } from '../core/types'
 import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
@@ -74,6 +75,7 @@ function Report() {
   const p = useProfile()
   const sound = useApp((s) => s.sound)
   const music = useApp((s) => s.music)
+  const season = useApp((s) => s.season)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const memory = memoryStats(p.facts)
   const minutes = Math.round(p.stats.playMs / 60000)
@@ -188,6 +190,15 @@ function Report() {
           <input type="checkbox" checked={music} onChange={(e) => setMusic(e.target.checked)} />
           <span>🎵 {t('music')}</span>
         </label>
+        <p className="field-label">🎄 {t('season.setting')}</p>
+        <div className="chips">
+          {(['auto', 'off', ...SEASONS.map((s) => s.id)] as SeasonSetting[]).map((s) => (
+            <button key={s} className={`chip-btn${s === season ? ' on' : ''}`} aria-pressed={s === season} onClick={() => setSeason(s)}>
+              {s === 'auto' ? t('season.auto') : s === 'off' ? t('season.off') : t(`season.${s}`)}
+            </button>
+          ))}
+        </div>
+        <small>{t('season.note')}</small>
         <p className="privacy">🔐 {t(cloudConfig() ? 'gu.privacyCloud' : 'gu.privacyLocal')}</p>
         <button className="btn btn-danger" onClick={() => setConfirmDelete(true)}>
           🗑️ {t('gu.delete')}

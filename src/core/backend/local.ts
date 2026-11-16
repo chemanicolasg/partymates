@@ -1,3 +1,4 @@
+import type { World } from '../worlds'
 import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert, type Screening } from './index'
 
 const KEY = 'matty.classes.v2'
@@ -7,6 +8,7 @@ interface Stored {
   teacherKey: string
   homework: Homework | null
   screening?: Screening | null
+  world?: World | null
   members: Record<string, MemberReport>
 }
 
@@ -44,7 +46,7 @@ export class LocalBackend implements Backend {
     const c = this.read()[code]
     if (!c) return null
     const members = Object.values(c.members)
-    return { code, name: c.name, homework: c.homework, screening: c.screening ?? null, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
+    return { code, name: c.name, homework: c.homework, screening: c.screening ?? null, world: c.world ?? null, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
   }
 
   async upsertMember(code: string, member: MemberUpsert) {
@@ -73,6 +75,12 @@ export class LocalBackend implements Backend {
   async setScreening(code: string, teacherKey: string, screening: Screening | null) {
     const all = this.teacher(code, teacherKey)
     all[code].screening = screening
+    this.write(all)
+  }
+
+  async setWorld(code: string, teacherKey: string, world: World | null) {
+    const all = this.teacher(code, teacherKey)
+    all[code].world = world
     this.write(all)
   }
 

@@ -6,26 +6,34 @@ import { back, go } from '../core/nav'
 import { playerLevel } from '../core/scoring'
 import {
   activeHomework,
+  classWorld,
   finishEvent,
   finishHomework,
   finishStop,
+  finishWorldStop,
   homeworkStars,
   isNewKind,
   isStopOpen,
+  isWorldStopOpen,
   rollEvent,
+  seasonWorldOf,
   stopPlays,
   stopStars,
   useProfile,
+  useSeason,
+  worldRecord,
   type Profile,
 } from '../core/store'
 import { ITEM_BY_ID, itemName } from '../core/look'
 import { TOPIC_BY_ID } from '../core/topics'
-import type { GameResult, Kind, LevelCfg } from '../core/types'
+import type { GameResult, PlayCfg, PlayKind } from '../core/types'
+import type { SceneId } from '../core/worlds'
 import { ArenaGame } from '../games/ArenaGame'
 import { BayGame } from '../games/BayGame'
 import { BridgeGame } from '../games/BridgeGame'
 import { DodgeGame } from '../games/DodgeGame'
 import { PairsGame } from '../games/PairsGame'
+import { QuizGame } from '../games/QuizGame'
 import { RaceGame } from '../games/RaceGame'
 import { StonesGame } from '../games/StonesGame'
 import { useT } from '../i18n'
@@ -33,9 +41,10 @@ import { Character } from '../ui/Character'
 import { Confetti, CountUp, HelpContext, HowSteps, Modal, SayButton, speak, Stars } from '../ui/kit'
 import { Matty, MattySays } from '../ui/Matty'
 import { canShareFile, CARD_FILE, cardTexts, cardToPng, downloadBlob, tierFor, Trophy, TrophyCard, type CardCopy } from '../ui/Trophy'
+import { Backdrop, SCENE_ICON } from '../ui/scene'
 import { HOW_ICONS, KIND_ICON, ZONE_ICON } from './art'
 
-const MUSIC: Record<Kind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party' }
+const MUSIC: Record<PlayKind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party', quiz: 'bay' }
 
 interface Outcome {
   result: GameResult
@@ -47,7 +56,7 @@ interface Outcome {
   gifts: string[]
 }
 
-function Game({ cfg, ...props }: { cfg: LevelCfg; profile: Profile; hints: boolean; firstTime: boolean; onFinish: (r: GameResult) => void; onExit: () => void }) {
+function Game({ cfg, ...props }: { cfg: PlayCfg; profile: Profile; hints: boolean; firstTime: boolean; onFinish: (r: GameResult) => void; onExit: () => void }) {
   switch (cfg.kind) {
     case 'blocks':
       return <BridgeGame cfg={cfg} {...props} />
@@ -61,6 +70,8 @@ function Game({ cfg, ...props }: { cfg: LevelCfg; profile: Profile; hints: boole
       return <StonesGame cfg={cfg} {...props} />
     case 'pairs':
       return <PairsGame cfg={cfg} {...props} />
+    case 'quiz':
+      return <QuizGame cfg={cfg} {...props} />
   }
 }
 
@@ -76,9 +87,15 @@ function Activity({
   save,
   resultExtra,
   cupPlace,
+  scene,
+  title,
   next,
 }: {
-  cfg: LevelCfg
+  cfg: PlayCfg
+  /** The place it happens in: its landscape shows behind the briefing and the result. */
+  scene?: SceneId
+  /** Name of the mission, when it is not simply the kind of activity. */
+  title?: string
   eyebrow: string
   startWithHints: boolean
   firstTime: boolean
@@ -98,7 +115,9 @@ function Activity({
   const [outcome, setOutcome] = useState<Outcome | null>(null)
   const [cupOpen, setCupOpen] = useState(false)
   const steps = HOW_ICONS[kind].map((icon, i) => ({ icon, text: t(`how.${kind}.${(i + 1) as 1 | 2 | 3}`) }))
-  const briefing = `${t(`mission.${kind}`)}. ${steps.map((s) => s.text).join('. ')}.`
+  const mission = title ?? t(`mission.${kind}`)
+  const backdrop = scene ? <Backdrop scene={scene} /> : null
+  const briefing = `${mission}. ${steps.map((s) => s.text).join('. ')}.`
 
   useEffect(() => {
     playMusic(MUSIC[kind])
@@ -123,7 +142,9 @@ function Activity({
 
   if (phase === 'game')
     return (
-      <div className={`screen world-${kind}`} key={attempt}>
+      <div className={`screen world-${kind}${scene && kind === 'quiz' ? ' has-backdrop' : ''}`} key={attempt}>
+        {/* The journey's games bring their own setting; the teacher's exercises borrow the world's. */}
+        {kind === 'quiz' ? backdrop : null}
         <HelpContext.Provider value={{ tip: t(`tip.${kind}`), ask: () => setHints(true) }}>
           <Game cfg={cfg} profile={profile} hints={hints} firstTime={firstTime && attempt === 1} onFinish={onFinish} onExit={back} />
         </HelpContext.Provider>
@@ -134,7 +155,8 @@ function Activity({
     const { stars, result } = outcome
     const onward = next?.(outcome) ?? null
     return (
-      <div className={`screen world-${kind} center`}>
+      <div className={`screen world-${kind} center${scene ? ' has-backdrop' : ''}`}>
+        {backdrop}
         {stars > 0 ? <Confetti /> : null}
         <div className="card result-card">
           <Matty pose={stars >= 2 ? 'cheer' : stars === 1 ? 'happy' : 'oops'} size={116} bounce={stars > 0} />
@@ -201,7 +223,7 @@ function Activity({
         {cupOpen && cupPlace ? (
           <CupModal
             stars={stars}
-            copy={{ title: t('cup.title'), subtitle: `${t(`mission.${kind}`)} · ${cupPlace}`, tagline: t('cup.tagline'), site: window.location.host }}
+            copy={{ title: t('cup.title'), subtitle: `${mission} · ${cupPlace}`, tagline: t('cup.tagline'), site: window.location.host }}
             onClose={() => setCupOpen(false)}
           />
         ) : null}
@@ -210,7 +232,8 @@ function Activity({
   }
 
   return (
-    <div className={`screen world-${kind} center`}>
+    <div className={`screen world-${kind} center${scene ? ' has-backdrop' : ''}`}>
+      {backdrop}
       <div className="card intro-card">
         <button className="icon-btn intro-close" onClick={back} aria-label={t('back')}>
           ←
@@ -218,7 +241,7 @@ function Activity({
         <small>{eyebrow}</small>
         <MattySays pose="point" size={86} className="brief">
           <span className="brief-icon">{KIND_ICON[kind]}</span>
-          <strong>{t(`mission.${kind}`)}</strong>
+          <strong>{mission}</strong>
           <SayButton text={briefing} />
         </MattySays>
         <HowSteps steps={steps} />
@@ -327,6 +350,7 @@ export function StopScreen({ index }: { index: number }) {
   return (
     <Activity
       cfg={cfg}
+      scene={stop.zone}
       eyebrow={`${ZONE_ICON[stop.zone]} ${t(`zone.${stop.zone}`)} · ${stop.boss ? `👑 ${t('level.boss')}` : t('level.n', { n: (index % 10) + 1 })}`}
       startWithHints={startWithHints}
       firstTime={firstTime}
@@ -375,6 +399,57 @@ export function HomeworkScreen() {
         )
       }}
       next={() => ({ label: t('class.hwAnother'), go: () => setTurn(turn + 1) })}
+    />
+  )
+}
+
+/** A stop of an extra world: one of the ready-made themes, or the teacher's own exercises. */
+export function WorldStopScreen({ src, index }: { src: 'class' | 'season'; index: number }) {
+  const { t } = useT()
+  const profile = useProfile()
+  const season = useSeason()
+  // Fixed on arrival: a new world from the teacher must not swap the exercises mid-game.
+  const [world] = useState(() => (src === 'class' ? classWorld(profile) : seasonWorldOf(profile, season)))
+  const stop = world?.stops[index]
+  const [turn, setTurn] = useState(() => (world ? (worldRecord(profile, world).plays[index] ?? 0) : 0))
+  const topic = stop?.t === 'topic' ? TOPIC_BY_ID[stop.topic] : undefined
+
+  useEffect(() => {
+    if (!world || !stop) go({ id: 'hub' }, { replace: true })
+  }, [world, stop])
+  if (!world || !stop) return null
+
+  const name = src === 'class' ? world.name : t(`season.${season?.id ?? 'xmas'}.world`)
+  const cfg: PlayCfg = topic ? topic.activities[turn % topic.activities.length] : { kind: 'quiz', items: stop.t === 'own' ? stop.items : [] }
+  const last = index + 1 >= world.stops.length
+  return (
+    <Activity
+      key={turn}
+      cfg={cfg}
+      scene={world.scene}
+      title={stop.t === 'topic' ? t(`topic.${stop.topic}` as 'topic.n20') : undefined}
+      eyebrow={`${SCENE_ICON[world.scene]} ${name} · ${t('level.n', { n: index + 1 })}`}
+      startWithHints={false}
+      firstTime={false}
+      save={(result) =>
+        finishWorldStop(
+          world,
+          index,
+          cfg.kind,
+          result,
+          cfg.kind === 'quiz' ? result.facts.filter((f) => !f.correct).map((f) => Number(f.key.slice(1))) : null,
+        )
+      }
+      // The teacher's title stays off the picture children may share.
+      cupPlace={`${src === 'class' ? t('world.class') : name} · ${t('level.n', { n: index + 1 })}`}
+      resultExtra={(o) => (o.gifts.length ? null : last && o.stars > 0 ? <p className="level-up">🎉 {t('world.done')}</p> : null)}
+      next={() =>
+        !last && isWorldStopOpen(profile, world, index + 1)
+          ? { label: t('res.next'), go: () => go({ id: 'worldplay', src, stop: index + 1 }, { replace: true }) }
+          : topic
+            ? { label: t('class.hwAnother'), go: () => setTurn(turn + 1) }
+            : null
+      }
     />
   )
 }

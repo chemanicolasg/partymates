@@ -1,4 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
+import { useSeason } from '../core/store'
 
 /**
  * Matty, the mascot: a small astronaut with a teal face behind a round visor, sun-yellow gloves,
@@ -197,20 +198,45 @@ function Arms({ pose }: { pose: MattyPose }) {
   }
 }
 
+/** What Matty puts on over the helmet for a season. */
+export type MattyHat = 'santa' | 'witch'
+const SEASON_HAT: Record<string, MattyHat> = { xmas: 'santa', halloween: 'witch' }
+
+function SeasonHat({ hat }: { hat: MattyHat }) {
+  if (hat === 'santa')
+    return (
+      <g {...line}>
+        <path d="M27 18 C32 -4 58 -12 72 -2 C82 5 87 14 86 24 C80 18 76 14 71 13 L73 19Z" fill="#e8375a" />
+        <path d="M21 26 C30 2 70 2 79 26 C80 30 75 32 72 28 C64 10 36 10 28 28 C25 32 20 30 21 26Z" fill="#ffffff" />
+        <circle cx="87" cy="27" r="6" fill="#ffffff" />
+      </g>
+    )
+  return (
+    <g {...line}>
+      <path d="M31 13 L49 -15 Q59 -24 70 -17 Q62 -15 61 -8 L69 13Z" fill="#3a2a5c" />
+      <path d="M13 23 C30 1 70 1 87 23 C81 27 66 14 50 14 C34 14 19 27 13 23Z" fill="#4a3675" />
+      <path d="M34 8 C44 4 56 4 66 8 L68.5 13.5 C56 8.5 44 8.5 31.5 13.5Z" fill="#ff8a3c" />
+      <rect x="46" y="3" width="8" height="7.5" rx="1.5" fill="#ffd23f" />
+    </g>
+  )
+}
+
 /** The drawing itself, for placing Matty inside another picture (viewBox -6 -8 112 118). */
-export function MattyArt({ pose = 'happy' }: { pose?: MattyPose }) {
+export function MattyArt({ pose = 'happy', hat }: { pose?: MattyPose; hat?: MattyHat }) {
   return (
     <>
       <Suit />
       <Helmet />
       <Face pose={pose} />
+      {hat ? <SeasonHat hat={hat} /> : null}
       <Arms pose={pose} />
     </>
   )
 }
 
-/** Matty, whole. `size` is the width in CSS pixels. */
+/** Matty, whole. `size` is the width in CSS pixels. In season he wears a hat over the helmet. */
 export function Matty({ pose = 'happy', size = 96, bounce, className = '' }: { pose?: MattyPose; size?: number; bounce?: boolean; className?: string }) {
+  const season = useSeason()
   return (
     <svg
       className={`matty${bounce ? ' bounce' : ''} ${className}`}
@@ -219,9 +245,10 @@ export function Matty({ pose = 'happy', size = 96, bounce, className = '' }: { p
       height={(size * 118) / 112}
       role="img"
       aria-label="Matty"
-      style={{ flex: 'none' } as CSSProperties}
+      // A hat may reach above the canvas.
+      style={{ flex: 'none', overflow: 'visible' } as CSSProperties}
     >
-      <MattyArt pose={pose} />
+      <MattyArt pose={pose} hat={season ? SEASON_HAT[season.id] : undefined} />
     </svg>
   )
 }
