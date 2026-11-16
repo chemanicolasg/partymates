@@ -19,10 +19,10 @@ const POSES: [MattyPose, string][] = [
 ]
 const PALETTE: [string, string][] = [
   ['Turquesa Matty', '#35c9b8'],
-  ['Turquesa sombra', '#1fa596'],
-  ['Barriga', '#e6fff7'],
+  ['Blanco traje', '#f7f9fc'],
+  ['Gris mochila', '#c7d0e0'],
   ['Amarillo sol', '#ffd23f'],
-  ['Amarillo sombra', '#f2a900'],
+  ['Menta panel', '#e6fff7'],
   ['Mofletes', '#ff9fb5'],
   ['Tinta', '#23164f'],
   ['Violeta de marca', '#7c4dff'],
@@ -37,7 +37,7 @@ createRoot(document.getElementById('root')!).render(
       <Matty pose="hi" size={120} />
       <div>
         <h1 style={{ fontSize: 44, margin: 0 }}>Matty · hoja de modelo</h1>
-        <p style={{ margin: 0, fontSize: 18 }}>Explorador turquesa con bufanda amarilla. Sus dos orejas dibujan una «M».</p>
+        <p style={{ margin: 0, fontSize: 18 }}>Pequeño astronauta de cara turquesa, guantes y botas amarillos y antena con destello.</p>
       </div>
     </div>
 

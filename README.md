@@ -8,8 +8,9 @@ En **catalán, castellano e inglés**. Web app instalable (PWA) pensada para mó
 
 ## Matty
 
-La mascota: un explorador turquesa con bufanda amarilla que guía el viaje, da pistas desde la barra de cada
-juego, anima cuando algo falla, trae un regalo cada día y entrega prendas especiales al alcanzar estrellas.
+La mascota: un pequeño astronauta de cara turquesa que guía el viaje, da pistas desde la barra de cada juego,
+anima cuando algo falla, trae un regalo cada día y entrega prendas especiales al alcanzar estrellas. Al pasar un
+nivel se gana una **copa** con una imagen para guardar o compartir, con la marca y sin datos del niño.
 La guía del personaje, la hoja de modelo y los vectores de cada pose están en [`brand/`](brand/README.md).
 
 ## El viaje

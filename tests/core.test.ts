@@ -24,6 +24,7 @@ import { INTERVALS, isDue, memoryStats, review } from '../src/core/srs'
 import { decodeLook, DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEMS } from '../src/core/look'
 import { upgradeProfile } from '../src/core/store'
 import { TOPICS } from '../src/core/topics'
+import { cardTexts, tierFor } from '../src/ui/Trophy'
 import { BANDS, KINDS, ZONES, type LevelCfg } from '../src/core/types'
 
 /** Deterministic random numbers so failures can be reproduced. */
@@ -318,6 +319,18 @@ describe('scoring', () => {
     expect(presents.length).toBeGreaterThanOrEqual(4)
     expect(Math.min(...presents)).toBeLessThanOrEqual(15)
     expect(ITEMS.some((i) => i.id === 'hat:matty' && i.stars !== undefined)).toBe(true)
+  })
+
+  it('the cup is bronze, silver or gold with the stars', () => {
+    expect([1, 2, 3].map(tierFor)).toEqual(['bronze', 'silver', 'gold'])
+  })
+
+  it('the cup picture says where it comes from and nothing about the child', () => {
+    const lines = cardTexts({ title: '¡Nivel superado!', subtitle: 'Cruza el río · Playa Sol · Nivel 3', tagline: 'Mates que parecen un juego', site: 'example.org' })
+    const text = lines.map((l) => l.parts.map((p) => p.text).join('')).join(' | ')
+    expect(text).toContain('Matty')
+    expect(text).toContain('example.org')
+    expect(lines.every((l) => l.y > 0 && l.y < 1080 && l.size >= 30)).toBe(true)
   })
 
   it('weeks start on Monday', () => {

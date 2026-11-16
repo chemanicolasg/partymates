@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { sfx } from '../core/audio'
 import { eventSpecs, getLevel, JOURNEY } from '../core/curriculum'
 import { playMusic, type TrackId } from '../core/music'
@@ -30,8 +30,9 @@ import { RaceGame } from '../games/RaceGame'
 import { StonesGame } from '../games/StonesGame'
 import { useT } from '../i18n'
 import { Character } from '../ui/Character'
-import { Confetti, CountUp, HelpContext, HowSteps, SayButton, speak, Stars } from '../ui/kit'
+import { Confetti, CountUp, HelpContext, HowSteps, Modal, SayButton, speak, Stars } from '../ui/kit'
 import { Matty, MattySays } from '../ui/Matty'
+import { canShareFile, CARD_FILE, cardTexts, cardToPng, downloadBlob, tierFor, Trophy, TrophyCard, type CardCopy } from '../ui/Trophy'
 import { HOW_ICONS, KIND_ICON, ZONE_ICON } from './art'
 
 const MUSIC: Record<Kind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party' }
@@ -74,6 +75,7 @@ function Activity({
   firstTime,
   save,
   resultExtra,
+  cupPlace,
   next,
 }: {
   cfg: LevelCfg
@@ -82,6 +84,8 @@ function Activity({
   firstTime: boolean
   save: (result: GameResult) => { stars: number; coins: number; xp: number; gifts?: string[] }
   resultExtra?: (outcome: Outcome) => ReactNode
+  /** Where this was won, for the line under the title on the cup picture. Without it there is no cup. */
+  cupPlace?: string
   /** Label and action of the "carry on" button, when there is somewhere to carry on to. */
   next?: (outcome: Outcome) => { label: string; go: () => void } | null
 }) {
@@ -92,6 +96,7 @@ function Activity({
   const [hints, setHints] = useState(startWithHints)
   const [attempt, setAttempt] = useState(0)
   const [outcome, setOutcome] = useState<Outcome | null>(null)
+  const [cupOpen, setCupOpen] = useState(false)
   const steps = HOW_ICONS[kind].map((icon, i) => ({ icon, text: t(`how.${kind}.${(i + 1) as 1 | 2 | 3}`) }))
   const briefing = `${t(`mission.${kind}`)}. ${steps.map((s) => s.text).join('. ')}.`
 
@@ -145,6 +150,21 @@ function Activity({
             </span>
           </div>
           {outcome.leveledUp ? <p className="level-up">🎉 {t('res.levelUp', { n: playerLevel(profile.xp) })}</p> : null}
+          {stars > 0 && cupPlace ? (
+            <button
+              className="cup-btn"
+              onClick={() => {
+                sfx('star')
+                setCupOpen(true)
+              }}
+            >
+              <Trophy tier={tierFor(stars)} size={62} />
+              <span>
+                <strong>{t(`cup.${tierFor(stars)}`)}</strong>
+                <small>📥 {t('cup.get')}</small>
+              </span>
+            </button>
+          ) : null}
           {outcome.gifts.length ? (
             <div className="matty-gift">
               <strong>🎁 {t('matty.presents')}</strong>
@@ -178,6 +198,13 @@ function Activity({
             </button>
           </div>
         </div>
+        {cupOpen && cupPlace ? (
+          <CupModal
+            stars={stars}
+            copy={{ title: t('cup.title'), subtitle: `${t(`mission.${kind}`)} · ${cupPlace}`, tagline: t('cup.tagline'), site: window.location.host }}
+            onClose={() => setCupOpen(false)}
+          />
+        ) : null}
       </div>
     )
   }
@@ -204,6 +231,66 @@ function Activity({
         </button>
       </div>
     </div>
+  )
+}
+
+/** The cup picture, full size, with the buttons to keep it or send it. */
+function CupModal({ stars, copy, onClose }: { stars: number; copy: CardCopy; onClose: () => void }) {
+  const { t } = useT()
+  const profile = useProfile()
+  const card = useRef<SVGSVGElement>(null)
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState<'saved' | 'error' | null>(null)
+  const [shareable] = useState(canShareFile)
+
+  const make = async (then: (blob: Blob) => Promise<void> | void) => {
+    if (!card.current || busy) return
+    setBusy(true)
+    setNote(null)
+    try {
+      await then(await cardToPng(card.current, cardTexts(copy)))
+    } catch (e) {
+      // Closing the share sheet without sending is not an error.
+      if ((e as Error)?.name !== 'AbortError') setNote('error')
+    }
+    setBusy(false)
+  }
+
+  return (
+    <Modal onClose={onClose}>
+      <TrophyCard ref={card} tier={tierFor(stars)} stars={stars} look={profile.look} copy={copy} />
+      <div className="btn-row">
+        {shareable ? (
+          <button
+            className="btn btn-primary"
+            disabled={busy}
+            onClick={() =>
+              void make(async (blob) => {
+                await navigator.share({ files: [new File([blob], CARD_FILE, { type: 'image/png' })], title: 'Matty', text: `${t('cup.shareText')} ${window.location.origin}` })
+              })
+            }
+          >
+            📤 {t('cup.share')}
+          </button>
+        ) : null}
+        <button
+          className={`btn${shareable ? '' : ' btn-primary'}`}
+          disabled={busy}
+          onClick={() =>
+            void make((blob) => {
+              downloadBlob(blob)
+              setNote('saved')
+            })
+          }
+        >
+          📥 {t('cup.download')}
+        </button>
+        <button className="btn" onClick={onClose}>
+          {t('back')}
+        </button>
+      </div>
+      {note ? <p className={note === 'error' ? 'error' : 'done-today'}>{t(note === 'error' ? 'class.error' : 'cup.saved')}</p> : null}
+    </Modal>
   )
 }
 
@@ -244,6 +331,7 @@ export function StopScreen({ index }: { index: number }) {
       startWithHints={startWithHints}
       firstTime={firstTime}
       save={(result) => finishStop(index, result)}
+      cupPlace={`${t(`zone.${stop.zone}`)} · ${stop.boss ? t('level.boss') : t('level.n', { n: (index % 10) + 1 })}`}
       resultExtra={(o) => (stop.boss && o.stars > 0 ? <p className="level-up">{t('res.zoneDone', { zone: t(`zone.${stop.zone}`) })}</p> : null)}
       next={() =>
         // Read the saved state: the level just finished may have opened the next stop.
