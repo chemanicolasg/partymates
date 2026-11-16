@@ -65,10 +65,10 @@ export function TeacherPanel() {
   return (
     <div className="report">
       <section className="card">
-        <h2>🧑‍🏫 {t('teacher.title')}</h2>
+        <h2><span className="emoji">🧑‍🏫 </span>{t('teacher.title')}</h2>
         <p>{t('teacher.intro')}</p>
         <a className="btn btn-small portal-link" href="/docente" target="_blank" rel="noreferrer">
-          💻 {t('portal.link')}
+          <span className="emoji">💻 </span>{t('portal.link')}
         </a>
         {classes.map((c) => (
           <button key={c.code} className="btn class-pick" onClick={() => setOpenCode(c.code)}>
@@ -85,7 +85,7 @@ export function TeacherPanel() {
           void run(async () => (await teacherCreateClass(name)).code)
         }}
       >
-        <h2>➕ {t('class.create')}</h2>
+        <h2><span className="emoji">➕ </span>{t('class.create')}</h2>
         <p>{t('class.createHelp')}</p>
         <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t('class.namePh')} aria-label={t('class.name')} />
         <button className="btn btn-primary" disabled={busy || !name.trim()}>
@@ -100,7 +100,7 @@ export function TeacherPanel() {
           void run(async () => ((await teacherOpenClass(code, key)) ? code : null))
         }}
       >
-        <h2>🔑 {t('teacher.open')}</h2>
+        <h2><span className="emoji">🔑 </span>{t('teacher.open')}</h2>
         <p>{t('teacher.openHelp')}</p>
         <input className="code-input" value={code} onChange={(e) => setCode(normalizeCode(e.target.value))} placeholder="ABC123" aria-label={t('class.code')} autoComplete="off" />
         <input className="code-input" value={key} onChange={(e) => setKey(normalizeCode(e.target.value, 8))} placeholder="ABCD2345" aria-label={t('teacher.key')} autoComplete="off" />
@@ -174,7 +174,7 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
         </div>
         <p>{t('teacher.codesHelp')}</p>
         <button className="btn btn-primary" onClick={() => setCards(true)}>
-          🎫 {t('cards.title')}
+          <span className="emoji">🎫 </span>{t('cards.title')}
         </button>
       </section>
 
@@ -182,7 +182,7 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
       {members?.length ? <PupilTable members={members} week={week} cls={cls} /> : null}
 
       <section className="card">
-        <h2>📚 {t('class.homework')}</h2>
+        <h2><span className="emoji">📚 </span>{t('class.homework')}</h2>
         {hw ? (
           <>
             <p className="hw-current">
@@ -231,7 +231,7 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
       <section className="card">
         <div className="teacher-row-head">
           <h2>
-            👧 {t('teacher.students')} {members ? `(${members.length})` : ''}
+            <span className="emoji">👧 </span>{t('teacher.students')} {members ? `(${members.length})` : ''}
           </h2>
           <button className="icon-btn" onClick={() => void load()} aria-label={t('class.refresh')}>
             ↻
@@ -277,7 +277,7 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
                 <p>
                   {t('teacher.nick')}: <b>{m.name}</b> · {t('teacher.lastSeen')}: {new Date(m.updatedAt).toLocaleDateString(lang)}
                 </p>
-                {repeated.has(m.num) ? <p className="error">⚠ {t('teacher.dupNum')}</p> : null}
+                {repeated.has(m.num) ? <p className="error"><span className="emoji">⚠ </span>{t('teacher.dupNum')}</p> : null}
                 {totals.total ? (
                   <>
                     <p>{t('teacher.kinds')}</p>
@@ -319,7 +319,7 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
       <section className="card">
         <label className="toggle">
           <input type="checkbox" checked={online} onChange={(e) => void setRosterOnline(e.target.checked).catch(() => setFailed(true))} />
-          <span>☁️ {t('roster.online')}</span>
+          <span><span className="emoji">☁️ </span>{t('roster.online')}</span>
         </label>
         <small>{t('roster.help')}</small>
       </section>
@@ -330,7 +330,7 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
         {t('teacher.forget')}
       </button>
       <button className="btn btn-danger" onClick={() => setDeleting(true)}>
-        🗑️ {t('teacher.delete')}
+        <span className="emoji">🗑️ </span>{t('teacher.delete')}
       </button>
 
       {deleting ? (
@@ -402,7 +402,7 @@ function HomeworkEditor({
 
   return (
     <Modal onClose={onClose}>
-      <h2>📚 {t('teacher.pick')}</h2>
+      <h2><span className="emoji">📚 </span>{t('teacher.pick')}</h2>
       <div className="chips">
         {AREAS.map((a) => (
           <button key={a} className={`chip-btn${a === area ? ' on' : ''}`} onClick={() => setArea(a)} aria-pressed={a === area}>
@@ -481,9 +481,9 @@ function ScreeningSection({
 
   return (
     <section className="card">
-      <h2>🔭 {t('teacher.screen.title')}</h2>
+      <h2><span className="emoji">🔭 </span>{t('teacher.screen.title')}</h2>
       <p>{t('teacher.screen.about')}</p>
-      <p className="screen-warn">⚠️ {t('teacher.screen.warn')}</p>
+      <p className="screen-warn"><span className="emoji">⚠️ </span>{t('teacher.screen.warn')}</p>
       <p className="hw-current">{active ? t('teacher.screen.on', { day: until(active.until) }) : t('teacher.screen.off')}</p>
       <div className="btn-row">
         <button className="btn btn-primary" disabled={busy} onClick={() => void run({ id: crypto.randomUUID(), until: sunday(1) })}>
@@ -509,7 +509,7 @@ function ScreeningSection({
                   <span className="student-num">{m.num}</span>
                   <span className="student-name">
                     <strong>{names[m.num] || m.name}</strong>
-                    {read?.observe ? <small className="observe">👀 {t('teacher.screen.observe')}</small> : null}
+                    {read?.observe ? <small className="observe"><span className="emoji">👀 </span>{t('teacher.screen.observe')}</small> : null}
                   </span>
                   <span className="task-dots">
                     {TASKS.map((k) => (

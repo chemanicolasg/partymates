@@ -113,10 +113,9 @@
 
 .week-chart {
   display: flex;
-  align-items: flex-end;
+  align-items: stretch;
   gap: 2px;
-  height: 150px;
-  padding-top: 20px;
+  height: 160px;
 }
 .week-col {
   flex: 1;
@@ -132,6 +131,15 @@
 .week-col:focus-visible .week-bar {
   filter: brightness(1.15);
 }
+.week-plot {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+}
 .week-value {
   min-height: 1.2em;
   font-size: 0.8rem;
@@ -139,6 +147,8 @@
   white-space: nowrap;
 }
 .week-bar {
+  /* The tallest week fills the plot, less the room its label needs. */
+  height: calc((100% - 1.4em) * var(--h, 0));
   width: min(24px, 70%);
   background: var(--data);
   border-radius: 4px 4px 0 0;
@@ -594,4 +604,528 @@ button.class-card:hover {
   border-radius: 14px;
   background: #fff;
   font-size: 1.05rem;
+}
+
+/* ───────────── A calmer skin for the portal ─────────────
+   The game is loud on purpose; a teacher's workplace should not be. Everything under .portal
+   drops the thick outlines, hard shadows, paper grain and rounded display type of the game
+   for hairlines, soft shadows and the system's own text face. */
+
+.portal {
+  --p-bg: #f5f6fa;
+  --p-surface: #ffffff;
+  --p-line: #e3e6ee;
+  --p-line-strong: #d0d5e1;
+  --p-text: #1d2136;
+  --p-muted: #636a83;
+  --p-accent: #5a4bd1;
+  --p-accent-soft: #efedfb;
+  --p-shadow: 0 1px 2px rgba(20, 24, 45, 0.05), 0 6px 20px rgba(20, 24, 45, 0.05);
+  --ink: var(--p-text);
+  --ink-soft: var(--p-muted);
+  --hard: var(--p-shadow);
+  --rule: var(--p-line);
+  --data: var(--p-accent);
+  --data-soft: var(--p-accent-soft);
+  --radius: 14px;
+  background: var(--p-bg);
+  color: var(--p-text);
+  font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 15px;
+  line-height: 1.45;
+  -webkit-font-smoothing: antialiased;
+}
+.portal h1,
+.portal h2,
+.portal h3,
+.portal strong,
+.portal b {
+  font-weight: 650;
+}
+.portal h1 {
+  font-size: 1.5rem;
+  letter-spacing: -0.015em;
+}
+.portal h2 {
+  font-size: 1.08rem;
+  letter-spacing: -0.01em;
+}
+.portal .insights h3,
+.portal h3 {
+  margin: 18px 0 8px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--p-muted);
+}
+.portal p,
+.portal small {
+  color: var(--p-muted);
+}
+.portal small {
+  font-size: 0.84rem;
+}
+
+/* Surfaces */
+.portal .card,
+.portal .modal {
+  padding: 20px 22px;
+  border: 1px solid var(--p-line);
+  border-radius: 14px;
+  background: var(--p-surface);
+  background-image: none;
+  box-shadow: var(--p-shadow);
+  color: var(--p-text);
+}
+.portal .modal-backdrop {
+  background: rgba(18, 21, 40, 0.42);
+  backdrop-filter: blur(2px);
+}
+.portal .modal {
+  animation: none;
+}
+.portal .report {
+  gap: 18px;
+}
+.portal .report > .card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* Header */
+.portal .portal-top {
+  padding-block: 10px;
+  border-bottom: 1px solid var(--p-line);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+}
+.portal .portal-brand {
+  font-family: 'Fredoka Variable', system-ui, sans-serif;
+  font-size: 1.35rem;
+}
+.portal .portal-brand small {
+  font-family: Inter, system-ui, sans-serif;
+  font-weight: 600;
+  color: var(--p-accent);
+  background: var(--p-accent-soft);
+}
+.portal .portal-user small {
+  color: var(--p-muted);
+}
+
+/* Buttons */
+.portal .btn,
+.portal .icon-btn,
+.portal .chip-btn,
+.portal .topic,
+.portal .scene-pick,
+.portal .tab,
+.portal .th-sort {
+  font-family: inherit;
+}
+.portal .btn {
+  min-height: 38px;
+  padding: 7px 14px;
+  border: 1px solid var(--p-line-strong);
+  border-radius: 9px;
+  background: var(--p-surface);
+  background-image: none;
+  box-shadow: 0 1px 1px rgba(20, 24, 45, 0.04);
+  color: var(--p-text);
+  font-size: 0.92rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.portal .btn:hover:not(:disabled) {
+  background: #f3f4f9;
+}
+.portal .btn:active:not(:disabled) {
+  transform: none;
+  box-shadow: none;
+  background: #eceef5;
+}
+.portal .btn-primary {
+  border-color: var(--p-accent);
+  background: var(--p-accent);
+  color: #fff;
+}
+.portal .btn-primary:hover:not(:disabled) {
+  background: #4d3fc0;
+}
+.portal .btn-primary:active:not(:disabled) {
+  background: #4336ad;
+}
+.portal .btn-big {
+  min-height: 44px;
+  font-size: 1rem;
+}
+.portal .btn-small {
+  min-height: 32px;
+  padding: 4px 11px;
+  border-width: 1px;
+  box-shadow: none;
+  font-size: 0.86rem;
+}
+.portal .btn-danger {
+  border-color: #efc6cd;
+  background: #fff;
+  color: #b4233c;
+}
+.portal .btn-danger:hover:not(:disabled) {
+  background: #fdf1f3;
+}
+.portal .btn-quiet {
+  border-color: transparent;
+  background: none;
+  box-shadow: none;
+  color: var(--p-muted);
+  font-weight: 500;
+}
+.portal .icon-btn {
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--p-line-strong);
+  border-radius: 9px;
+  background: var(--p-surface);
+  box-shadow: none;
+  color: var(--p-text);
+  font-size: 0.95rem;
+}
+
+/* Form controls */
+.portal input,
+.portal select,
+.portal textarea,
+.portal .pupil-table input.note-input,
+.portal .world-stop select,
+.portal .world-stop textarea,
+.portal .note-area,
+.portal .cards-count input {
+  padding: 8px 11px;
+  border: 1px solid var(--p-line-strong);
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: none;
+  color: var(--p-text);
+  font-family: inherit;
+  font-size: 0.94rem;
+  font-weight: 400;
+}
+.portal input:focus-visible,
+.portal select:focus-visible,
+.portal textarea:focus-visible,
+.portal button:focus-visible,
+.portal summary:focus-visible {
+  outline: 3px solid rgba(90, 75, 209, 0.28);
+  outline-offset: 1px;
+  border-color: var(--p-accent);
+}
+.portal .code-input {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  letter-spacing: 0.18em;
+  text-align: center;
+  font-weight: 600;
+}
+.portal .field > span,
+.portal .field-label {
+  font-size: 0.86rem;
+  font-weight: 600;
+  color: var(--p-text);
+}
+.portal input[type='checkbox'] {
+  accent-color: var(--p-accent);
+}
+
+/* Segmented controls and chips */
+.portal .tabs,
+.portal .lang-picker {
+  padding: 3px;
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  background: #eef0f6;
+  box-shadow: none;
+}
+.portal .tab,
+.portal .lang-picker button {
+  min-height: 30px;
+  padding: 4px 12px;
+  border: 0;
+  border-radius: 8px;
+  background: none;
+  box-shadow: none;
+  color: var(--p-muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+.portal .tab.on,
+.portal .lang-picker button.on,
+.portal .lang-picker button[aria-pressed='true'] {
+  background: #fff;
+  box-shadow: 0 1px 2px rgba(20, 24, 45, 0.12);
+  color: var(--p-text);
+}
+.portal .chip-btn,
+.portal .topic,
+.portal .scene-pick {
+  border: 1px solid var(--p-line-strong);
+  border-radius: 9px;
+  background: #fff;
+  box-shadow: none;
+  color: var(--p-text);
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+.portal .chip-btn {
+  border-radius: 999px;
+}
+.portal .chip-btn.on,
+.portal .topic.on,
+.portal .scene-pick.on {
+  border-color: var(--p-accent);
+  background: var(--p-accent-soft);
+  box-shadow: none;
+  color: var(--p-accent);
+  font-weight: 600;
+}
+
+/* Class codes */
+.portal .class-code,
+.portal .class-code.key {
+  padding: 8px 14px;
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  background: #f7f8fb;
+  box-shadow: none;
+}
+.portal .class-code small {
+  font-size: 0.76rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.portal .class-code strong {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 1.25rem;
+  letter-spacing: 0.14em;
+}
+
+/* Figures */
+.portal .kpi {
+  padding: 12px 14px;
+  border: 1px solid var(--p-line);
+  border-radius: 12px;
+  background: #fbfbfd;
+  box-shadow: none;
+}
+.portal .kpi span {
+  font-size: 1.15rem;
+  filter: grayscale(0.35);
+}
+.portal .kpi strong {
+  font-size: 1.5rem;
+  font-weight: 650;
+  letter-spacing: -0.02em;
+}
+.portal .skill-track {
+  height: 10px;
+  border-left: 0;
+  border-radius: 999px;
+  background: #eceef5;
+  overflow: hidden;
+}
+.portal .skill-track i {
+  border-radius: 999px;
+}
+.portal .skill-value,
+.portal .week-value {
+  font-weight: 600;
+}
+.portal .insight-line {
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--p-accent-soft);
+  color: var(--p-text);
+  font-weight: 500;
+}
+.portal .plan-note {
+  font-size: 0.86rem;
+}
+.portal .weak-facts span,
+.portal .pupil-weak b {
+  border: 0;
+  border-radius: 6px;
+  background: #f1f2f7;
+  box-shadow: none;
+  color: var(--p-text);
+  font-weight: 500;
+}
+
+/* Table */
+.portal .pupil-table th {
+  font-size: 0.76rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+.portal .th-sort {
+  font-size: inherit;
+  font-weight: 600;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  text-decoration: none;
+}
+.portal .th-sort.on {
+  color: var(--p-accent);
+}
+.portal .th-sort.on::after {
+  content: ' ↓';
+}
+.portal .pupil-table td {
+  padding: 9px 8px;
+}
+.portal .pupil-table tbody tr:hover {
+  background: #fafbfd;
+}
+.portal .pupil-who {
+  font-weight: 600;
+}
+
+/* Class cards on the list */
+.portal .class-card {
+  transition: box-shadow 0.15s, border-color 0.15s;
+}
+.portal button.class-card:hover {
+  transform: none;
+  border-color: var(--p-line-strong);
+  box-shadow: 0 2px 4px rgba(20, 24, 45, 0.06), 0 12px 28px rgba(20, 24, 45, 0.09);
+}
+.portal .class-card-top {
+  font-size: 1.1rem;
+}
+.portal .class-card-top code {
+  font-family: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--p-accent);
+}
+.portal .class-card-kpis b {
+  font-size: 1.2rem;
+  font-weight: 650;
+  letter-spacing: -0.01em;
+}
+.portal .class-card.new {
+  border-style: dashed;
+  border-color: var(--p-line-strong);
+  background: transparent;
+  box-shadow: none;
+}
+.portal .portal-local {
+  border: 1px solid #f1e2b0;
+  background: #fff9e6;
+  color: #6b5510;
+}
+
+/* Sign-in */
+.portal .portal-pitch h1 {
+  font-size: clamp(1.6rem, 3.6vw, 2.1rem);
+  letter-spacing: -0.02em;
+}
+.portal .portal-pitch ul {
+  color: var(--p-muted);
+  font-size: 1rem;
+}
+.portal .sign-card {
+  gap: 14px;
+  padding: 26px;
+}
+
+/* Pupils as an expandable list, world editor, messages */
+.portal .student,
+.portal .world-stop,
+.portal details {
+  border: 1px solid var(--p-line);
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: none;
+}
+.portal .student-num,
+.portal .world-stop-n {
+  border: 0;
+  background: var(--p-accent-soft);
+  color: var(--p-accent);
+  box-shadow: none;
+  font-weight: 600;
+}
+.portal .world-preview li {
+  border-radius: 6px;
+  background: #eef7f1;
+}
+.portal .world-preview li.bad {
+  background: #fdf1f3;
+}
+.portal .hw-current {
+  padding: 10px 12px;
+  border: 0;
+  border-radius: 10px;
+  background: #f5f6fa;
+  color: var(--p-text);
+  font-weight: 500;
+}
+.portal .screen-warn {
+  border: 1px solid #f1e2b0;
+  border-radius: 10px;
+  background: #fff9e6;
+  color: #6b5510;
+}
+.portal .error {
+  color: #b4233c;
+  font-weight: 500;
+}
+.portal .done-today {
+  color: #1c7a4b;
+  font-weight: 500;
+}
+.portal .meter {
+  border: 0;
+  border-radius: 999px;
+  background: #eceef5;
+}
+.portal .meter i {
+  background: var(--p-accent);
+}
+.portal .access-card {
+  border: 1px dashed var(--p-line-strong);
+}
+
+/* Icons that are fun in the game are noise here. */
+.portal .emoji {
+  display: none;
+}
+.portal .kpi {
+  grid-template-columns: 1fr;
+}
+
+/* Cards of different heights pack into two columns without leaving holes. */
+.portal .report {
+  display: block;
+  columns: 2 430px;
+  column-gap: 18px;
+}
+.portal .report > * {
+  break-inside: avoid;
+  margin: 0 0 18px;
+}
+.portal .report > .teacher-head,
+.portal .report > .insights,
+.portal .report > .pupil-table-card {
+  column-span: all;
+}
+.portal .report > .btn {
+  display: flex;
+  width: fit-content;
+}
+.portal .student-more {
+  padding-right: 14px;
 }

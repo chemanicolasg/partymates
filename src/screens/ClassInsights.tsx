@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import type { MemberReport } from '../core/backend'
 import { factLabel } from '../core/format'
@@ -26,7 +26,7 @@ export function ClassInsights({ members, week }: { members: MemberReport[]; week
   ]
   return (
     <section className="card insights">
-      <h2>📊 {t('teacher.summary')}</h2>
+      <h2><span className="emoji">📊 </span>{t('teacher.summary')}</h2>
       <div className="kpis">
         {tiles.map(([icon, value, label]) => (
           <div className="kpi" key={label}>
@@ -52,7 +52,8 @@ export function ClassInsights({ members, week }: { members: MemberReport[]; week
       </div>
       {k.strongest && k.weakest ? (
         <p className="insight-line">
-          💪 {t('insights.strong', { skill: t(`skill.${k.strongest}`) })} · 🧩 {t('insights.weak', { skill: t(`skill.${k.weakest}`) })}
+          <span className="emoji">💪 </span>{t('insights.strong', { skill: t(`skill.${k.strongest}`) })} · <span className="emoji">🧩 </span>
+          {t('insights.weak', { skill: t(`skill.${k.weakest}`) })}
         </p>
       ) : null}
 
@@ -63,8 +64,10 @@ export function ClassInsights({ members, week }: { members: MemberReport[]; week
             {k.series.map((w, i) => (
               <div className="week-col" key={w.week} tabIndex={0} data-tip={t('insights.weekTip', { day: shortDay(w.week, lang), min: fmtMinutes(w.min), n: w.active })}>
                 {/* Only the latest week carries its number: the rest are a hover away and in the export. */}
-                <span className="week-value">{i === k.series.length - 1 ? fmtMinutes(w.min) : ''}</span>
-                <span className="week-bar" style={{ height: `${Math.max(2, (w.min / peak) * 100)}%` }} />
+                <span className="week-plot">
+                  <span className="week-value">{i === k.series.length - 1 ? fmtMinutes(w.min) : ''}</span>
+                  <span className="week-bar" style={{ '--h': Math.max(0.02, w.min / peak) } as CSSProperties} />
+                </span>
                 <small>{shortDay(w.week, lang)}</small>
               </div>
             ))}
@@ -124,9 +127,9 @@ export function PupilTable({ members, week, cls }: { members: MemberReport[]; we
   return (
     <section className="card pupil-table-card">
       <div className="teacher-row-head">
-        <h2>📋 {t('table.title')}</h2>
+        <h2><span className="emoji">📋 </span>{t('table.title')}</h2>
         <button className="btn btn-small" onClick={exportCsv}>
-          ⬇️ {t('table.export')}
+          <span className="emoji">⬇️ </span>{t('table.export')}
         </button>
       </div>
       <div className="pupil-table">
@@ -175,7 +178,7 @@ export function PupilTable({ members, week, cls }: { members: MemberReport[]; we
                     className="note-input"
                     defaultValue={cls.notes[l.m.num] ?? ''}
                     maxLength={600}
-                    placeholder="✏️"
+                    placeholder={t('table.addNote')}
                     aria-label={`${t('csv.note')} ${l.m.num}`}
                     onBlur={(e) => {
                       if (e.target.value.trim() !== (cls.notes[l.m.num] ?? '')) teacherWriteStudent(cls.code, l.m.num, { note: e.target.value.trim() })
@@ -248,7 +251,7 @@ export function AccessCards({ cls, pupils, onClose }: { cls: TeacherClass; pupil
   return (
     <>
       <Modal onClose={onClose}>
-        <h2>🎫 {t('cards.title')}</h2>
+        <h2><span className="emoji">🎫 </span>{t('cards.title')}</h2>
         <p>{t('cards.about')}</p>
         <label className="field cards-count">
           <span>{t('cards.count')}</span>
@@ -257,7 +260,7 @@ export function AccessCards({ cls, pupils, onClose }: { cls: TeacherClass; pupil
         <div className="access-preview">{card(1)}</div>
         <div className="btn-row">
           <button className="btn btn-primary" disabled={!qr} onClick={() => window.print()}>
-            🖨️ {t('cards.print')}
+            <span className="emoji">🖨️ </span>{t('cards.print')}
           </button>
           <button className="btn" onClick={onClose}>
             {t('back')}

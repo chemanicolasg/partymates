@@ -92,7 +92,7 @@ export function TeacherPortal() {
           </span>
         ) : null}
         <a className="btn btn-small" href="/">
-          🎮 {t('portal.toGame')}
+          <span className="emoji">🎮 </span>{t('portal.toGame')}
         </a>
       </header>
 
@@ -185,7 +185,7 @@ function SignIn() {
             {t('account.forgot')}
           </button>
         )}
-        <small className="sign-privacy">🔐 {t('account.privacy')}</small>
+        <small className="sign-privacy"><span className="emoji">🔐 </span>{t('account.privacy')}</small>
       </form>
     </div>
   )
@@ -242,7 +242,7 @@ function ClassList({ classes, signedIn, onOpen }: { classes: TeacherClass[]; sig
   return (
     <div className="portal-classes">
       <div className="portal-head">
-        <h1>🏫 {t('portal.classes')}</h1>
+        <h1><span className="emoji">🏫 </span>{t('portal.classes')}</h1>
         {signedIn ? null : <p className="portal-local">{t('portal.local')}</p>}
       </div>
       <div className="class-cards">
@@ -250,7 +250,7 @@ function ClassList({ classes, signedIn, onOpen }: { classes: TeacherClass[]; sig
           <ClassCard key={c.code} cls={c} onOpen={() => onOpen(c.code)} />
         ))}
         <form className="card class-card new" onSubmit={(e) => void create(e)}>
-          <h2>➕ {t('class.create')}</h2>
+          <h2><span className="emoji">➕ </span>{t('class.create')}</h2>
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t('class.namePh')} aria-label={t('class.name')} />
           <button className="btn btn-primary" disabled={busy || !name.trim()}>
             {t('class.createBtn')}

@@ -556,4 +556,5 @@ export const en: Dict = {
   'account.err.other': 'It could not be completed. Please try again.',
   'join.banner': 'You are about to join class {code}. Choose or create your player.',
   'plan.week': '{n} of {plan} days this week',
+  'table.addNote': 'Add a note',
 }

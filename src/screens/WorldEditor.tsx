@@ -66,7 +66,7 @@ export function WorldSection({
 
   return (
     <section className="card">
-      <h2>🌍 {t('teacher.world.title')}</h2>
+      <h2><span className="emoji">🌍 </span>{t('teacher.world.title')}</h2>
       <p>{t('teacher.world.about')}</p>
       <p className="hw-current">
         {world ? `${SCENE_ICON[world.scene]} ${t('teacher.world.live', { name: world.name, n: world.stops.length })}` : t('teacher.world.none')}
@@ -191,7 +191,7 @@ function WorldEditor({ current, onSave, onClose }: { current: World | null; onSa
   return (
     <Modal onClose={onClose}>
       <div className="world-editor">
-        <h2>🌍 {t('teacher.world.title')}</h2>
+        <h2><span className="emoji">🌍 </span>{t('teacher.world.title')}</h2>
         <label className="field">
           <span className="field-label">{t('teacher.world.name')}</span>
           <input value={name} maxLength={40} placeholder={t('teacher.world.namePh')} onChange={(e) => setName(e.target.value)} />
@@ -251,7 +251,7 @@ function WorldEditor({ current, onSave, onClose }: { current: World | null; onSa
                       ))}
                     </select>
                   ) : (
-                    <strong>✏️ {t('teacher.world.addOwn')}</strong>
+                    <strong><span className="emoji">✏️ </span>{t('teacher.world.addOwn')}</strong>
                   )}
                   <button type="button" className="icon-btn" disabled={i === 0} onClick={() => move(i, -1)} aria-label={t('teacher.world.up')}>
                     ↑
@@ -300,10 +300,10 @@ function WorldEditor({ current, onSave, onClose }: { current: World | null; onSa
 
         <div className="btn-row">
           <button type="button" className="btn" disabled={full} onClick={() => setStops([...stops, { t: 'topic', topic: TOPIC_BY_ID.addCarry ? 'addCarry' : TOPICS[0].id }])}>
-            ➕ {t('teacher.world.addTopic')}
+            <span className="emoji">➕ </span>{t('teacher.world.addTopic')}
           </button>
           <button type="button" className="btn" disabled={full} onClick={() => setStops([...stops, { t: 'own', text: '' }])}>
-            ✏️ {t('teacher.world.addOwn')}
+            <span className="emoji">✏️ </span>{t('teacher.world.addOwn')}
           </button>
         </div>
         <small>{t('teacher.world.max', { n: MAX_STOPS, m: MAX_ITEMS })}</small>
@@ -311,7 +311,7 @@ function WorldEditor({ current, onSave, onClose }: { current: World | null; onSa
         {failed ? <p className="error">{t('class.error')}</p> : null}
         <div className="btn-row">
           <button type="button" className="btn btn-primary" disabled={busy || stops.length === 0} onClick={() => void launch()}>
-            🚀 {t('teacher.world.launch')}
+            <span className="emoji">🚀 </span>{t('teacher.world.launch')}
           </button>
           <button type="button" className="btn" onClick={onClose}>
             {t('teacher.world.cancel')}

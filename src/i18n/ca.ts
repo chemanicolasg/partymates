@@ -555,4 +555,5 @@ export const ca = {
   'account.err.other': 'No s’ha pogut completar. Torna-ho a provar.',
   'join.banner': 'Entraràs a la classe {code}. Tria o crea el teu jugador.',
   'plan.week': '{n} de {plan} dies aquesta setmana',
+  'table.addNote': 'Afegeix una nota',
 }
