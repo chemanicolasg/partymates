@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react'
+import { Icon } from './icons'
 import { sfx } from '../core/audio'
 import { useT } from '../i18n'
 
@@ -36,7 +37,7 @@ export function PadButton() {
       aria-pressed={isOpen}
       aria-label={t('pad')}
     >
-      ✏️
+      <Icon name="pencil" size={22} />
     </button>
   )
 }

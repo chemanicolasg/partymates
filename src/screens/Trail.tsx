@@ -3,6 +3,7 @@ import type { SeasonId } from '../core/seasons'
 import type { Profile } from '../core/store'
 import type { SceneId } from '../core/worlds'
 import { ProfileAvatar } from '../ui/Character'
+import { Icon } from '../ui/icons'
 import { Stars } from '../ui/kit'
 import { Sprite, Terrain, TRAIL_PROPS } from '../ui/scene'
 
@@ -101,8 +102,12 @@ export function TrailNode({
           <ProfileAvatar p={hero} size={46} bounce />
         </span>
       ) : null}
-      <span className="node-disc">{open ? icon : '🔒'}</span>
-      {boss && open ? <span className="node-crown">👑</span> : null}
+      <span className="node-disc">{open ? icon : <Icon name="lock" size={26} />}</span>
+      {boss && open ? (
+        <span className="node-crown">
+          <Icon name="crown" size={30} />
+        </span>
+      ) : null}
       <Stars n={stars} />
     </button>
   )

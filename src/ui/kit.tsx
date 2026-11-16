@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { sfx, sfxStreak } from '../core/audio'
 import { fmtNum, fmtQty, fracParts } from '../core/format'
+import { Icon } from './icons'
 import { MattyFace } from './Matty'
 import { PadButton, Scratchpad } from './Scratchpad'
 import { getState } from '../core/store'
@@ -12,7 +13,9 @@ export function Stars({ n, max = 3, big }: { n: number; max?: number; big?: bool
     <span className={`stars${big ? ' big' : ''}`} aria-label={`${n}/${max}`}>
       {Array.from({ length: max }, (_, i) => (
         <span key={i} className={i < n ? 'star on' : 'star'} style={{ animationDelay: `${i * 0.25}s` }}>
-          ★
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 1.8l3 6.300 6.900.9-5 4.800 1.200 6.900L12 17.400 5.900 20.700l1.200-6.900-5-4.800 6.900-.9z" />
+          </svg>
         </span>
       ))}
     </span>
@@ -213,7 +216,7 @@ export function SayButton({ text }: { text: string }) {
   if (!canSpeak()) return null
   return (
     <button type="button" className="say" onClick={() => speak(text, lang)} aria-label={t('say')}>
-      🔊
+      <Icon name="sound" size={20} />
     </button>
   )
 }
@@ -282,7 +285,7 @@ export function TopBar({ title, onBack, children }: { title: ReactNode; onBack?:
   )
 }
 
-export function Chip({ icon, children, label }: { icon: string; children: ReactNode; label?: string }) {
+export function Chip({ icon, children, label }: { icon: ReactNode; children: ReactNode; label?: string }) {
   return (
     <span className="chip" aria-label={label}>
       <span aria-hidden="true">{icon}</span>

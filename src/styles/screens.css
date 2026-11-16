@@ -15,7 +15,7 @@
   display: inline-flex;
   gap: 6px;
   padding: 5px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: #fff;
   align-self: center;
@@ -52,14 +52,14 @@
   align-items: center;
   gap: 4px;
   padding: 12px 6px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 18px;
   background: #fff;
   box-shadow: var(--hard);
 }
 .who:active {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 var(--lip);
 }
 .who strong {
   max-width: 100%;
@@ -79,7 +79,7 @@
   height: 64px;
   border-radius: 50%;
   background: var(--sun);
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   font-size: 2.2rem;
   font-weight: 700;
   line-height: 1;
@@ -125,16 +125,16 @@
   line-height: 1;
 }
 .pick.on {
-  border-color: var(--ink);
+  border-color: var(--accent);
   background: var(--sun);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 3px 0 var(--lip);
 }
 .pick.swatch {
   border-radius: 50%;
   border-color: rgba(35, 22, 79, 0.25);
 }
 .pick.swatch.on {
-  border-color: var(--ink);
+  border-color: var(--accent);
   outline: 3px solid var(--sun);
 }
 .bands {
@@ -147,7 +147,7 @@
   flex-direction: column;
   align-items: center;
   padding: 10px 6px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 16px;
   background: #fff;
 }
@@ -159,7 +159,7 @@
 }
 .band.on {
   background: var(--sun);
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
 }
 .bands.compact {
   grid-template-columns: repeat(4, 1fr);
@@ -190,10 +190,10 @@
   align-items: center;
   gap: 10px;
   padding: 5px 16px 5px 5px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: #fff;
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   text-align: left;
 }
 .hub-me-text {
@@ -240,7 +240,7 @@
   gap: 4px;
   padding: 8px 8px calc(8px + var(--safe-bottom));
   background: var(--paper);
-  border-top: 3px solid var(--ink);
+  border-top: var(--bw) solid var(--edge);
 }
 .dock-btn {
   position: relative;
@@ -264,8 +264,8 @@
 }
 .dock-btn.dojo {
   background: var(--sun);
-  border: 3px solid var(--ink);
-  box-shadow: 0 3px 0 var(--ink);
+  border: var(--bw) solid var(--edge);
+  box-shadow: 0 3px 0 var(--lip);
 }
 .dock-btn.dojo.due {
   animation: pulse 1.6s infinite;
@@ -319,7 +319,7 @@
 }
 .result-loot span {
   padding: 4px 14px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: #fff;
   font-weight: 700;
@@ -399,10 +399,10 @@
   align-items: center;
   gap: 4px;
   padding: 12px 4px 8px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 18px;
   background: #fff;
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   font-weight: 600;
 }
 .shop-item.on {
@@ -588,7 +588,7 @@
   letter-spacing: -0.02em;
   line-height: 1;
   color: #fff;
-  text-shadow: 0 6px 0 var(--ink);
+  text-shadow: 0 6px 0 var(--lip);
   -webkit-text-stroke: 2.5px var(--ink);
   paint-order: stroke fill;
 }
@@ -624,9 +624,9 @@
   line-height: 1;
 }
 .avatar-tab.on {
-  border-color: var(--ink);
+  border-color: var(--accent);
   background: var(--sun);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 3px 0 var(--lip);
 }
 .avatar-tab.dice {
   background: #d6f7e3;
@@ -654,10 +654,10 @@
   gap: 10px;
   margin: 0 14px 8px;
   padding: 8px 14px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 16px;
   background: var(--sun);
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   font-size: 1.05rem;
   text-align: left;
 }
@@ -675,7 +675,7 @@
   flex: 1;
   min-height: 0;
   overflow-y: auto;
-  border-top: 3px solid var(--ink);
+  border-top: var(--bw) solid var(--edge);
 }
 .zone {
   position: relative;
@@ -712,10 +712,10 @@
   align-items: center;
   gap: 8px;
   padding: 6px 18px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: var(--paper);
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   white-space: nowrap;
   z-index: 2;
 }
@@ -742,10 +742,10 @@
   place-items: center;
   width: 74px;
   height: 74px;
-  border: 4px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 50%;
   background: #fff;
-  box-shadow: 0 6px 0 var(--ink);
+  box-shadow: 0 6px 0 var(--lip);
   font-size: 2rem;
   line-height: 1;
 }
@@ -771,7 +771,7 @@
 }
 .node:active:not(:disabled) .node-disc {
   transform: translateY(5px);
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 var(--lip);
 }
 .node-hero {
   position: absolute;
@@ -879,7 +879,7 @@
   flex-direction: column;
   align-items: center;
   padding: 4px 14px;
-  border: 3px dashed var(--ink);
+  border: 3px dashed var(--edge-strong);
   border-radius: 14px;
   background: var(--sun);
 }
@@ -1027,7 +1027,7 @@
 .topic {
   min-height: 44px;
   padding: 6px 12px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 12px;
   background: #fff;
   font-weight: 600;
@@ -1151,7 +1151,7 @@
   align-items: center;
   gap: 6px;
   padding: 10px;
-  border: 3px dashed var(--ink);
+  border: 3px dashed var(--edge-strong);
   border-radius: 18px;
   background: #e6fff7;
 }
@@ -1196,15 +1196,15 @@
   justify-content: center;
   gap: 12px;
   padding: 8px 14px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 18px;
   background: linear-gradient(135deg, #fff3c2, #ffd23f);
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow: 0 5px 0 var(--lip);
   text-align: left;
 }
 .cup-btn:active {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 var(--lip);
 }
 .cup-btn span {
   display: flex;
@@ -1221,7 +1221,7 @@
   display: block;
   width: 100%;
   height: auto;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 18px;
 }
 .modal:has(.trophy-card) {

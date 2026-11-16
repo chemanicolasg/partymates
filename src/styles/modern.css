@@ -1,0 +1,341 @@
+/*
+ * The look of the game: soft and clean. No dark outlines, no hard black shadows, no paper
+ * grain — surfaces are white and float on soft shadows, things that can be pressed have a
+ * coloured lip under them, and one violet accent marks what is selected.
+ * The older stylesheets describe layout; this one decides how things look.
+ */
+
+:root {
+  --bw: 2px;
+  --edge: rgba(35, 22, 79, 0.08);
+  --edge-strong: rgba(35, 22, 79, 0.28);
+  --lip: rgba(35, 22, 79, 0.15);
+  --accent: #7c4dff;
+  --lift: 0 10px 28px rgba(35, 22, 79, 0.16);
+  --lift-sm: 0 6px 16px rgba(35, 22, 79, 0.13);
+  --radius: 26px;
+  --paper: #ffffff;
+}
+
+.grain {
+  display: none;
+}
+
+/* ───────────── Surfaces ───────────── */
+
+.card {
+  border: 0;
+  background-image: none;
+  box-shadow: var(--lift);
+}
+.modal-backdrop {
+  background: rgba(24, 16, 62, 0.5);
+  backdrop-filter: blur(4px);
+}
+.prompt,
+.matty-bubble,
+.hw-banner,
+.zone-sign {
+  border: 0;
+  box-shadow: var(--lift-sm);
+}
+.prompt {
+  border-radius: 24px;
+  background: #fff;
+}
+.matty-bubble {
+  background: #fff;
+}
+.matty-bubble::before {
+  border: 0;
+  background: #fff;
+}
+.zone-sign {
+  background: #fff;
+}
+
+/* ───────────── Things to press ───────────── */
+
+.btn {
+  border: 0;
+  border-radius: 18px;
+  background: #fff;
+  background-image: none;
+  box-shadow:
+    0 4px 0 #dad5ee,
+    0 10px 20px rgba(35, 22, 79, 0.12);
+}
+.btn:active:not(:disabled) {
+  transform: translateY(3px);
+  box-shadow:
+    0 1px 0 #dad5ee,
+    0 4px 10px rgba(35, 22, 79, 0.12);
+}
+.btn-primary {
+  background: linear-gradient(#ffdd5c, #ffc61a);
+  box-shadow:
+    0 4px 0 #dfa100,
+    0 10px 22px rgba(223, 161, 0, 0.32);
+}
+.btn-primary:active:not(:disabled) {
+  box-shadow:
+    0 1px 0 #dfa100,
+    0 4px 10px rgba(223, 161, 0, 0.3);
+}
+.btn-danger {
+  background: linear-gradient(#ff7b8f, #ef4660);
+  box-shadow:
+    0 4px 0 #c22740,
+    0 10px 20px rgba(194, 39, 64, 0.25);
+}
+.btn-danger:active:not(:disabled) {
+  box-shadow: 0 1px 0 #c22740;
+}
+.btn-small {
+  border-radius: 14px;
+  box-shadow:
+    0 3px 0 #dad5ee,
+    0 6px 14px rgba(35, 22, 79, 0.1);
+}
+.btn-quiet,
+.btn-quiet:active:not(:disabled) {
+  background: none;
+  box-shadow: none;
+}
+.btn:disabled {
+  opacity: 0.5;
+}
+.btn .icon,
+.dock-btn .icon,
+.chip .icon,
+.hw-banner .icon {
+  display: block;
+}
+
+.icon-btn,
+.say {
+  border: 0;
+  box-shadow:
+    0 3px 0 var(--lip),
+    0 6px 14px rgba(35, 22, 79, 0.14);
+}
+.say {
+  background: linear-gradient(#9a76ff, #7c4dff);
+  box-shadow:
+    0 3px 0 #5a35c9,
+    0 6px 14px rgba(90, 53, 201, 0.3);
+}
+
+.chip,
+.hub-me {
+  border: 0;
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow:
+    0 2px 0 var(--lip),
+    0 6px 16px rgba(35, 22, 79, 0.12);
+}
+.chip {
+  gap: 6px;
+  padding: 6px 13px;
+}
+.hub-chips {
+  align-items: center;
+}
+.music-toggle.off {
+  opacity: 0.85;
+}
+
+.tabs {
+  border: 0;
+  box-shadow: var(--lift-sm);
+}
+.tab.on {
+  background: var(--accent);
+}
+
+
+/* ───────────── Stars ───────────── */
+
+.star {
+  display: inline-block;
+  -webkit-text-stroke: 0;
+  line-height: 0;
+}
+.star svg {
+  display: block;
+  width: 1em;
+  height: 1em;
+  fill: #dcd8ec;
+}
+.star.on svg {
+  fill: #ffc21a;
+  filter: drop-shadow(0 0.08em 0 #e0a100);
+}
+
+.logo-word {
+  -webkit-text-stroke: 0;
+  text-shadow:
+    0 5px 0 rgba(35, 22, 79, 0.22),
+    0 14px 26px rgba(35, 22, 79, 0.3);
+}
+
+/* ───────────── Progress in a game ───────────── */
+
+.pip {
+  height: 10px;
+  border: 0;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 2px rgba(35, 22, 79, 0.12);
+}
+
+/* ───────────── The map ───────────── */
+
+.hub-top {
+  position: relative;
+  z-index: 4;
+}
+.map {
+  border-top: 0;
+  /* The sea goes on under the floating bar at the bottom. */
+  padding-bottom: 96px;
+  background: #2b7fc6;
+}
+.map-wrap {
+  box-shadow: 0 -6px 20px rgba(35, 22, 79, 0.14);
+}
+.world-screen .map {
+  padding-bottom: 0;
+  background: none;
+}
+
+.node-disc {
+  border: 5px solid #fff;
+  background: linear-gradient(#ffffff, #eeeffa);
+  box-shadow:
+    0 6px 0 rgba(35, 22, 79, 0.2),
+    0 16px 20px rgba(35, 22, 79, 0.28);
+}
+.node-disc::before {
+  display: none;
+}
+/* The badge always sits on white; the ring says whether the stop is done or next. */
+.node.done .node-disc {
+  border-color: #5fd9a0;
+  background: linear-gradient(#ffffff, #effaf4);
+}
+.node.current .node-disc {
+  border-color: #ffc928;
+  background: linear-gradient(#ffffff, #fff8dc);
+  box-shadow:
+    0 0 0 6px rgba(255, 201, 40, 0.35),
+    0 6px 0 rgba(35, 22, 79, 0.2),
+    0 16px 20px rgba(35, 22, 79, 0.28);
+}
+.node.locked .node-disc {
+  border-color: rgba(255, 255, 255, 0.75);
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: 0 6px 16px rgba(35, 22, 79, 0.16);
+  backdrop-filter: blur(3px);
+}
+.node:active:not(:disabled) .node-disc {
+  box-shadow:
+    0 1px 0 rgba(35, 22, 79, 0.2),
+    0 6px 10px rgba(35, 22, 79, 0.25);
+}
+.node .stars {
+  padding: 2px 8px;
+  background: #fff;
+  box-shadow: 0 3px 8px rgba(35, 22, 79, 0.16);
+}
+.node-crown {
+  top: -18px;
+  right: -8px;
+  filter: drop-shadow(0 3px 3px rgba(35, 22, 79, 0.3));
+}
+
+/* The bar at the bottom floats over the map. */
+.hub {
+  position: relative;
+}
+.dock {
+  position: absolute;
+  left: 50%;
+  bottom: calc(10px + var(--safe-bottom));
+  z-index: 6;
+  width: min(560px, calc(100% - 20px));
+  transform: translateX(-50%);
+  padding: 6px;
+  border: 0;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 12px 34px rgba(35, 22, 79, 0.28);
+  backdrop-filter: blur(10px);
+}
+.dock-btn {
+  gap: 2px;
+  padding: 7px 2px 6px;
+  border-radius: 20px;
+  color: var(--ink);
+}
+.dock-btn:active {
+  background: #f1eefb;
+}
+.dock-btn.dojo {
+  border: 0;
+  background: linear-gradient(#ffdd5c, #ffc61a);
+  box-shadow: 0 3px 0 #dfa100;
+}
+.dock-btn.dojo .icon {
+  padding: 3px;
+  border-radius: 50%;
+  background: #fff;
+}
+.map-buddy {
+  bottom: 96px;
+}
+.world-screen .map-buddy {
+  bottom: 8px;
+}
+
+/* On a wide screen the game keeps the proportions of a tablet instead of stretching. */
+@media (min-width: 900px) {
+  .hub {
+    align-items: center;
+    background: linear-gradient(#6fcfff, #3f97ee 55%, #2f6fd6);
+  }
+  .hub > .hub-top,
+  .hub > .hw-banner,
+  .hub > .map-wrap {
+    width: min(860px, 100%);
+  }
+  .hub > .hw-banner {
+    margin-inline: 0;
+  }
+  .hub > .map-wrap {
+    border-radius: 30px 30px 0 0;
+    overflow: hidden;
+    box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.35), 0 20px 60px rgba(20, 30, 90, 0.35);
+  }
+  .world-screen {
+    align-items: center;
+  }
+  .world-screen > * {
+    width: min(860px, 100%);
+  }
+}
+
+/* ───────────── Teachers' portal keeps its own tokens ───────────── */
+
+.portal {
+  --bw: 1px;
+  --edge: var(--p-line);
+  --edge-strong: var(--p-line-strong);
+  --lip: transparent;
+  --accent: var(--p-accent);
+  --lift: var(--p-shadow);
+  --lift-sm: var(--p-shadow);
+}
+.portal .star svg {
+  width: 0.95em;
+  height: 0.95em;
+}

@@ -35,9 +35,9 @@ import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
 import { Chip, Modal, speak } from '../ui/kit'
 import { Matty, type MattyPose } from '../ui/Matty'
-import { SCENE_ICON, Sprite } from '../ui/scene'
+import { Icon, KindIcon } from '../ui/icons'
+import { SceneBadge, Sprite } from '../ui/scene'
 import { SeasonSky } from '../ui/Season'
-import { KIND_ICON, ZONE_ICON } from './art'
 import { TrailGround, TrailNode, TrailRoad, trailHeight } from './Trail'
 
 /** The journey: one long trail from the beach up to space, with the player waiting at the next stop. */
@@ -89,34 +89,34 @@ export function MapScreen() {
           </span>
         </button>
         <div className="hub-chips">
-          <Chip icon="⭐" label={t('hub.stars')}>
+          <Chip icon={<Icon name="star" size={20} />} label={t('hub.stars')}>
             {totalStars(p)}
           </Chip>
-          <Chip icon="🪙" label={t('hub.coins')}>
+          <Chip icon={<Icon name="coin" size={20} />} label={t('hub.coins')}>
             {p.coins}
           </Chip>
           <span className="chip plan-chip" role="img" aria-label={t('plan.week', { n: weekDays(p), plan: PLAN.days })} title={t('plan.week', { n: weekDays(p), plan: PLAN.days })}>
-            📅
+            <Icon name="calendar" size={20} />
             {Array.from({ length: PLAN.days }, (_, i) => (
               <i key={i} className={i < weekDays(p) ? 'on' : ''} />
             ))}
           </span>
           <button className={`chip music-toggle${music ? '' : ' off'}`} onClick={() => setMusic(!music)} aria-pressed={music} aria-label={t('music')}>
-            {music ? '🎵' : '🔇'}
+            <Icon name={music ? 'music' : 'musicOff'} size={20} />
           </button>
         </div>
       </header>
 
       {mission ? (
         <button className="hw-banner mission" onClick={open(() => go({ id: 'screen' }))}>
-          <span>🚀</span>
+          <Icon name="rocket" size={26} />
           <strong>{t('screen.title')}</strong>
           <span className="hw-count">{t('screen.banner')}</span>
         </button>
       ) : null}
       {hw ? (
         <button className="hw-banner" onClick={open(() => go({ id: 'class' }))}>
-          <span>📚</span>
+          <Icon name="book" size={26} />
           <strong>{t(`topic.${hw.topic}` as 'topic.n20')}</strong>
           <span className="hw-count">
             ⭐ {Math.min(homeworkStars(p, hw), hw.goal)}/{hw.goal}
@@ -126,7 +126,7 @@ export function MapScreen() {
 
       {lesson ? (
         <button className="hw-banner world" onClick={open(() => go({ id: 'world', src: 'class' }))}>
-          <span>{SCENE_ICON[lesson.scene]}</span>
+          <SceneBadge scene={lesson.scene} size={28} />
           <strong>{lesson.name}</strong>
           <span className="hw-count">
             ⭐ {worldStars(p, lesson)}/{lesson.stops.length * 3}
@@ -135,7 +135,7 @@ export function MapScreen() {
       ) : null}
       {festive && season ? (
         <button className={`hw-banner world season-${season.id}`} onClick={open(() => go({ id: 'world', src: 'season' }))}>
-          <span>{SCENE_ICON[festive.scene]}</span>
+          <SceneBadge scene={festive.scene} size={28} />
           <strong>{t(`season.${season.id}.world`)}</strong>
           <span className="hw-count">{worldDone(p, festive) ? '🎁 ✔' : `⭐ ${worldStars(p, festive)}/${festive.stops.length * 3}`}</span>
         </button>
@@ -154,7 +154,7 @@ export function MapScreen() {
               <div className="zone-inner">
                 <TrailRoad stops={STOPS_PER_ZONE} />
                 <div className="zone-sign">
-                  <span>{ZONE_ICON[zone]}</span>
+                  <SceneBadge scene={zone} size={30} />
                   <strong>{t(`zone.${zone}`)}</strong>
                   <small>
                     ⭐ {zoneStars(p, zone)}/{ZONE_MAX_STARS}
@@ -170,7 +170,7 @@ export function MapScreen() {
                     here={stop.index === here}
                     boss={stop.boss}
                     stars={stopStars(p, stop)}
-                    icon={KIND_ICON[stop.kind]}
+                    icon={<KindIcon kind={stop.kind} />}
                     label={`${t(`mission.${stop.kind}`)} ${stop.index + 1}`}
                     hero={p}
                     onClick={open(() => go({ id: 'play', stop: stop.index }))}
@@ -214,19 +214,19 @@ export function MapScreen() {
 
       <nav className="dock">
         <button className={`dock-btn dojo${dojoDue ? ' due' : ''}`} onClick={open(() => go({ id: 'dojo' }))}>
-          <span>⚡</span>
+          <Icon name="bolt" size={28} />
           {t('nav.dojo')}
         </button>
         <button className="dock-btn" onClick={open(() => go({ id: 'class' }))}>
-          <span>🏫</span>
+          <Icon name="school" size={28} />
           {t('nav.class')}
         </button>
         <button className="dock-btn" onClick={open(() => go({ id: 'shop' }))}>
-          <span>👕</span>
+          <Icon name="shirt" size={28} />
           {t('nav.shop')}
         </button>
         <button className="dock-btn" onClick={open(() => go({ id: 'grownups' }))}>
-          <span>🧑‍🏫</span>
+          <Icon name="adult" size={28} />
           {t('nav.grownups')}
         </button>
         <button
@@ -236,7 +236,7 @@ export function MapScreen() {
             go({ id: 'welcome' }, { reset: true })
           })}
         >
-          <span>👥</span>
+          <Icon name="players" size={28} />
           {t('nav.switch')}
         </button>
       </nav>

@@ -142,7 +142,7 @@
   box-shadow:
     inset 0 4px 0 rgba(255, 255, 255, 0.85),
     inset 0 -6px 0 rgba(26, 15, 69, 0.1),
-    0 6px 0 var(--ink),
+    0 6px 0 var(--lip),
     0 14px 12px rgba(26, 15, 69, 0.32);
 }
 .node-disc::before {
@@ -173,13 +173,13 @@
 .node:active:not(:disabled) .node-disc {
   box-shadow:
     inset 0 4px 0 rgba(255, 255, 255, 0.85),
-    0 1px 0 var(--ink),
+    0 1px 0 var(--lip),
     0 4px 6px rgba(26, 15, 69, 0.3);
 }
 .zone-sign {
   background: linear-gradient(#fffdf7, #f3ecd9);
   box-shadow:
-    0 4px 0 var(--ink),
+    0 4px 0 var(--lip),
     0 12px 14px rgba(26, 15, 69, 0.28);
 }
 
@@ -198,16 +198,6 @@
 .backdrop-prop {
   position: absolute;
   filter: drop-shadow(0 8px 6px rgba(26, 15, 69, 0.22));
-}
-
-/* Cards and panels take a little of the same paper. */
-.card {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0) 38%),
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n' x='0' y='0' width='100%25' height='100%25'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .25 0 0 0 0 .1 1.1 0 0 0 -.5'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23n)'/%3E%3C/svg%3E");
-  box-shadow:
-    var(--hard),
-    0 16px 22px rgba(26, 15, 69, 0.22);
 }
 
 /* ───────────── Extra worlds ───────────── */
@@ -229,7 +219,7 @@
   align-items: flex-start;
   padding: 16px 14px calc(22px + var(--safe-bottom));
   background: var(--paper);
-  border-top: 3px solid var(--ink);
+  border-top: var(--bw) solid var(--edge);
 }
 .world-prize {
   display: block;
@@ -370,7 +360,7 @@
   min-width: 0;
   min-height: 40px;
   padding: 4px 8px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 10px;
   background: #fff;
   font: inherit;
@@ -390,7 +380,7 @@
   padding: 0;
 }
 .world-stop {
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 16px;
   background: #fff;
   padding: 10px 12px;
@@ -415,14 +405,14 @@
   height: 30px;
   border-radius: 50%;
   background: var(--sun);
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   font-weight: 700;
 }
 .world-stop textarea {
   width: 100%;
   min-height: 132px;
   padding: 10px 12px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 12px;
   font: inherit;
   font-size: 1rem;
@@ -464,7 +454,7 @@
   gap: 2px;
   min-width: 74px;
   padding: 8px 10px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 14px;
   background: #fff;
   font-size: 0.85rem;
@@ -476,7 +466,7 @@
 }
 .scene-pick.on {
   background: var(--sun);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 3px 0 var(--lip);
 }
 .world-grid {
   overflow-x: auto;
@@ -506,13 +496,6 @@
    The same layouts as in games.css, lit from the top left: gradients, a lit edge and a soft
    shadow under everything that can be touched. */
 
-.btn,
-.btn-primary,
-.key,
-.dodge-option,
-.piece {
-  background-image: linear-gradient(rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0) 58%);
-}
 
 /* Answers in a row: a flame that pops under the progress dots. */
 .hud {
@@ -525,10 +508,10 @@
   z-index: 5;
   transform: translateX(-50%);
   padding: 2px 12px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: linear-gradient(#ffe98a, #ffb400);
-  box-shadow: 0 3px 0 var(--ink);
+  box-shadow: 0 3px 0 var(--lip);
   color: var(--ink);
   font-weight: 700;
   font-size: 1.05rem;
@@ -582,7 +565,7 @@
   display: flex;
   gap: 5px;
   padding: 6px 12px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: #fff;
   font-size: 1.1rem;
@@ -665,7 +648,7 @@
     linear-gradient(#bd7c42, #8f5a2c);
   box-shadow:
     inset 0 3px 0 rgba(255, 255, 255, 0.3),
-    0 5px 0 var(--ink),
+    0 5px 0 var(--lip),
     0 13px 10px rgba(70, 45, 10, 0.35);
 }
 .chest-gems i {
@@ -694,7 +677,7 @@
   background: radial-gradient(ellipse at 34% 24%, #ffffff 0, #eceef5 32%, #bcc2d2 78%, #9aa1b6 100%);
   box-shadow:
     inset 0 -6px 0 rgba(0, 0, 0, 0.07),
-    0 6px 0 var(--ink),
+    0 6px 0 var(--lip),
     0 15px 10px rgba(10, 40, 90, 0.42);
 }
 .stone.done {
@@ -705,6 +688,6 @@
   background: linear-gradient(#ffffff, #eceefa);
   box-shadow:
     inset 0 3px 0 #fff,
-    0 5px 0 var(--ink),
+    0 5px 0 var(--lip),
     0 13px 10px rgba(26, 15, 69, 0.24);
 }

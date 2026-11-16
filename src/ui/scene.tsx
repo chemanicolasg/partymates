@@ -490,6 +490,13 @@ const SPRITES: Record<string, ReactNode> = {
   ),
 }
 
+const SCENE_SPRITE: Record<SceneId, string> = { beach: 'parasol', jungle: 'tree', mountain: 'peak', space: 'rocket', halloween: 'pumpkin', xmas: 'xtree' }
+
+/** The little picture that stands for a place on signs and banners. */
+export function SceneBadge({ scene, size = 28 }: { scene: SceneId; size?: number }) {
+  return <Sprite name={SCENE_SPRITE[scene]} size={size} />
+}
+
 export function Sprite({ name, size }: { name: string; size: number }) {
   return (
     <svg className="sprite" viewBox="0 0 100 100" width={size} height={size} aria-hidden="true">

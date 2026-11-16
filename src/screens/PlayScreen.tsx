@@ -43,7 +43,8 @@ import { Confetti, CountUp, HelpContext, HowSteps, Modal, SayButton, speak, Star
 import { Matty, MattySays } from '../ui/Matty'
 import { canShareFile, CARD_FILE, cardTexts, cardToPng, downloadBlob, tierFor, Trophy, TrophyCard, type CardCopy } from '../ui/Trophy'
 import { Backdrop, SCENE_ICON } from '../ui/scene'
-import { HOW_ICONS, KIND_ICON, ZONE_ICON } from './art'
+import { Icon, KindIcon } from '../ui/icons'
+import { HOW_ICONS, ZONE_ICON } from './art'
 
 /** How many stops at the start of the journey are shortened on the first visit, and to how many rounds. */
 const WARM_UP_STOPS = 3
@@ -170,10 +171,10 @@ function Activity({
           <p className="result-score">{t('res.score', { ok: result.correct, total: result.total })}</p>
           <div className="result-loot">
             <span>
-              🪙 +<CountUp to={outcome.coins} lang={lang} />
+              <Icon name="coin" size={22} /> +<CountUp to={outcome.coins} lang={lang} />
             </span>
             <span>
-              ⚡ +<CountUp to={outcome.xp} lang={lang} />
+              <Icon name="bolt" size={22} /> +<CountUp to={outcome.xp} lang={lang} />
             </span>
           </div>
           {outcome.leveledUp ? <p className="level-up">🎉 {t('res.levelUp', { n: playerLevel(profile.xp) })}</p> : null}
@@ -231,10 +232,10 @@ function Activity({
                 play()
               }}
             >
-              🔁 {t('res.retry')}
+              <Icon name="retry" size={20} /> {t('res.retry')}
             </button>
             <button className="btn" onClick={back}>
-              🗺️ {t('res.map')}
+              <Icon name="map" size={22} /> {t('res.map')}
             </button>
           </div>
         </div>
@@ -258,7 +259,9 @@ function Activity({
         </button>
         <small>{eyebrow}</small>
         <MattySays pose="point" size={86} className="brief">
-          <span className="brief-icon">{KIND_ICON[kind]}</span>
+          <span className="brief-icon">
+            <KindIcon kind={kind} size={34} />
+          </span>
           <strong>{mission}</strong>
           <SayButton text={briefing} />
         </MattySays>
@@ -268,7 +271,7 @@ function Activity({
           <span>💡 {t('intro.hints')}</span>
         </label>
         <button className="btn btn-primary btn-big" onClick={play}>
-          ▶ {t('intro.play')}
+          <Icon name="play" size={22} /> {t('intro.play')}
         </button>
       </div>
     </div>

@@ -27,7 +27,7 @@
 .pip {
   flex: 1;
   height: 12px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.55);
 }
@@ -53,7 +53,7 @@
   align-items: center;
   gap: 0.35em;
   padding: 7px 18px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: #fff;
   color: var(--ink);
@@ -79,17 +79,17 @@
 }
 .key {
   min-height: 54px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 16px;
   background: #fff;
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   color: var(--ink);
   font-size: 1.6rem;
   font-weight: 700;
 }
 .key:active:not(:disabled) {
   transform: translateY(3px);
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 var(--lip);
 }
 .key:disabled {
   opacity: 0.6;
@@ -104,7 +104,7 @@
 .piece-minus {
   width: 36px;
   height: 36px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 50%;
   background: #fff;
   color: var(--ink);
@@ -123,7 +123,7 @@
   flex: 1;
   min-height: 150px;
   max-height: 340px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: var(--radius);
   overflow: hidden;
   background: linear-gradient(#bdeeff, #e8fbff 62%);
@@ -139,11 +139,11 @@
 }
 .cliff.left {
   left: 0;
-  border-right: 3px solid var(--ink);
+  border-right: var(--bw) solid var(--edge);
 }
 .cliff.right {
   right: 0;
-  border-left: 3px solid var(--ink);
+  border-left: var(--bw) solid var(--edge);
 }
 .sign {
   position: absolute;
@@ -153,7 +153,7 @@
   align-items: center;
   gap: 4px;
   padding: 3px 10px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 12px;
   background: #fff;
   font-size: 1.25rem;
@@ -190,7 +190,7 @@
   position: absolute;
   bottom: calc(52% - 4px);
   height: 20px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 5px;
 }
 .bridge.old {
@@ -202,7 +202,7 @@
   position: absolute;
   bottom: 22px;
   padding: 0 8px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 10px;
   background: #e7e3f3;
   font-weight: 700;
@@ -273,7 +273,7 @@
 .mini {
   width: 12px;
   height: 12px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 3px;
 }
 .piece-count {
@@ -290,12 +290,12 @@
   min-height: 58px;
   display: grid;
   place-items: center;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 12px;
   box-shadow:
     inset -5px -6px 0 rgba(0, 0, 0, 0.16),
     inset 4px 4px 0 rgba(255, 255, 255, 0.4),
-    0 5px 0 var(--ink);
+    0 5px 0 var(--lip);
   color: var(--ink);
   font-size: 1.3rem;
   font-weight: 700;
@@ -305,7 +305,7 @@
   box-shadow:
     inset -5px -6px 0 rgba(0, 0, 0, 0.16),
     inset 4px 4px 0 rgba(255, 255, 255, 0.4),
-    0 1px 0 var(--ink);
+    0 1px 0 var(--lip);
 }
 .rank-0 {
   background: #ffd23f;
@@ -353,7 +353,7 @@
 }
 .formula .here {
   padding: 2px 12px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 14px;
   background: var(--violet);
   color: #fff;
@@ -368,10 +368,10 @@
   place-items: center;
   width: 50px;
   height: 50px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 12px;
   background: #fff;
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   font-size: 1.45rem;
 }
 .die.hue-1 {
@@ -414,7 +414,7 @@
 .tile {
   display: grid;
   place-items: center;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 12px;
   background: #fff8e1;
   color: var(--ink);
@@ -441,7 +441,7 @@
 }
 .board.active .tile:not(.here),
 .platforms.active .platform {
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
 }
 .tile.here,
 .tile:disabled,
@@ -477,7 +477,7 @@
 }
 .platform {
   min-height: 76px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 40% 40% 24px 24px / 30% 30% 24px 24px;
   border-top: 12px solid #56c04c;
   background: #fff8e1;
@@ -592,12 +592,12 @@
 }
 .slot.full {
   border-style: solid;
-  border-color: var(--ink);
+  border-color: var(--accent);
   background: var(--sun);
 }
 .slot.result {
   border-style: solid;
-  border-color: var(--ink);
+  border-color: var(--accent);
   background: #f0ecfb;
 }
 .slot.result.ok {
@@ -637,7 +637,7 @@
   transform: translateY(-8px);
   background: var(--sun);
   color: var(--ink);
-  border-color: var(--ink);
+  border-color: var(--accent);
 }
 .power-card.glow {
   animation: pulse 1s infinite;
@@ -671,7 +671,7 @@
 .dojo-input {
   min-width: 1.6em;
   padding: 0 6px;
-  border-bottom: 5px solid var(--ink);
+  border-bottom: var(--bw) solid var(--edge);
   text-align: center;
 }
 .dojo-fact.ok {
@@ -751,14 +751,14 @@
   width: 100%;
   min-height: 84px;
   padding: 16px 6px 6px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 14px 14px 10px 10px;
   background: linear-gradient(#c98a4b 0 12px, #ffd23f 12px 16px, #a9703f 16px);
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow: 0 5px 0 var(--lip);
 }
 .chest:active {
   transform: translateY(4px);
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 var(--lip);
 }
 .chest b {
   position: absolute;
@@ -766,7 +766,7 @@
   right: -8px;
   min-width: 28px;
   padding: 0 6px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 999px;
   background: #fff;
   color: var(--ink);
@@ -781,7 +781,7 @@
 .chest-gems i {
   width: 11px;
   height: 11px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   background: #7df9ff;
   transform: rotate(45deg);
   animation: pop 0.2s;
@@ -829,7 +829,7 @@
   content: '';
   width: 100%;
   height: 10px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-bottom: 0;
   border-radius: 10px 10px 0 0;
 }
@@ -842,7 +842,7 @@
   min-height: 42px;
   display: grid;
   place-items: center;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   margin-right: -3px;
   background: #fff;
   font-size: 0.95rem;
@@ -875,7 +875,7 @@
   flex-direction: column;
   align-items: center;
   padding: 6px 10px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 18px;
   background: #fff;
   color: var(--ink);
@@ -930,10 +930,10 @@
   justify-content: center;
   gap: 10px;
   padding: 12px 16px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 20px;
   background: var(--paper);
-  box-shadow: 0 4px 0 var(--ink);
+  box-shadow: 0 4px 0 var(--lip);
   color: var(--ink);
   font-size: 1.32rem;
   font-weight: 600;
@@ -962,7 +962,7 @@
   place-items: center;
   width: 40px;
   height: 40px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 50%;
   background: var(--sky);
   font-size: 1.15rem;
@@ -990,7 +990,7 @@
   height: min(58vh, 480px);
   display: none;
   flex-direction: column;
-  border-top: 4px solid var(--ink);
+  border-top: var(--bw) solid var(--edge);
   border-radius: 22px 22px 0 0;
   background:
     linear-gradient(rgba(92, 200, 255, 0.35) 1px, transparent 1px) 0 0 / 22px 22px,
@@ -1016,7 +1016,7 @@
   height: 42px;
   display: grid;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 50%;
   background: #fff;
   font-size: 1.2rem;
@@ -1048,7 +1048,7 @@
   place-items: center;
   width: 50px;
   height: 50px;
-  border: 3px dashed var(--ink);
+  border: 3px dashed var(--edge-strong);
   border-radius: 14px;
   background: var(--sun);
   font-size: 1.4rem;
@@ -1085,7 +1085,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: var(--radius);
   overflow: hidden;
   background:
@@ -1102,11 +1102,11 @@
 }
 .bank.start {
   order: 3;
-  border-top: 3px solid var(--ink);
+  border-top: var(--bw) solid var(--edge);
 }
 .bank.end {
   order: 1;
-  border-bottom: 3px solid var(--ink);
+  border-bottom: var(--bw) solid var(--edge);
 }
 .stones {
   order: 2;
@@ -1126,10 +1126,10 @@
   aspect-ratio: 1.25;
   display: grid;
   place-items: center;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 48% 52% 46% 54% / 56% 50% 50% 44%;
   background: linear-gradient(#f1f1f6, #c7cbd8);
-  box-shadow: 0 6px 0 var(--ink);
+  box-shadow: 0 6px 0 var(--lip);
   color: var(--ink);
   animation: bob 4s ease-in-out infinite;
 }
@@ -1149,14 +1149,14 @@
   height: 26px;
   display: grid;
   place-items: center;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 50%;
   background: #fff;
   font-weight: 700;
 }
 .stone:active:not(:disabled) {
   transform: translateY(4px);
-  box-shadow: 0 2px 0 var(--ink);
+  box-shadow: 0 2px 0 var(--lip);
 }
 .stone.done {
   background: linear-gradient(#b9f3cf, #6fe3a5);
@@ -1199,10 +1199,10 @@
 .pair-card {
   min-height: 60px;
   padding: 6px 8px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 16px;
   background: #fff;
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow: 0 5px 0 var(--lip);
   color: var(--ink);
   font-size: 1.5rem;
   font-weight: 700;
@@ -1341,10 +1341,10 @@
 }
 .dodge-option {
   min-height: 84px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 20px;
   background: #fff;
-  box-shadow: 0 6px 0 var(--ink);
+  box-shadow: 0 6px 0 var(--lip);
   color: var(--ink);
   font-size: 2.2rem;
   font-weight: 700;
@@ -1352,7 +1352,7 @@
 }
 .dodge-option:active:not(:disabled) {
   transform: translateY(5px);
-  box-shadow: 0 1px 0 var(--ink);
+  box-shadow: 0 1px 0 var(--lip);
 }
 .dodge-option.ok,
 .dodge-option.answer {
@@ -1428,7 +1428,7 @@
   width: 100%;
   max-width: 420px;
   max-height: 100%;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 22px;
   background: var(--paper);
 }
@@ -1451,7 +1451,7 @@
 }
 .screen-side.number {
   min-height: 170px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   background: var(--paper);
   color: var(--ink);
   font-size: 4.4rem;
@@ -1492,7 +1492,7 @@
   bottom: 8px;
   width: 10px;
   margin-left: -5px;
-  border: 2px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 5px;
   background: var(--sun);
 }
@@ -1539,10 +1539,10 @@
   align-items: center;
   gap: 10px;
   padding: 10px 14px;
-  border: 3px solid var(--ink);
+  border: var(--bw) solid var(--edge);
   border-radius: 18px;
   background: #e6fff7;
-  box-shadow: 0 5px 0 var(--ink);
+  box-shadow: 0 5px 0 var(--lip);
   color: var(--ink);
   font-size: 1.08rem;
   font-weight: 600;

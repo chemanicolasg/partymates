@@ -7,6 +7,7 @@ import './styles/base.css'
 import './styles/screens.css'
 import './styles/games.css'
 import './styles/scenes.css'
+import './styles/modern.css'
 import './styles/portal.css'
 
 registerSW({ immediate: true })

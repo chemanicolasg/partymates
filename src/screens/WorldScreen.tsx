@@ -11,7 +11,7 @@ import { MattySays } from '../ui/Matty'
 import { SCENE_ICON } from '../ui/scene'
 import { SeasonSky } from '../ui/Season'
 import { ITEM_BY_ID, itemName } from '../core/look'
-import { KIND_ICON } from './art'
+import { KindIcon } from '../ui/icons'
 import { TrailGround, TrailNode, TrailRoad, trailHeight } from './Trail'
 
 /** A short extra trail: the world the teacher made for the class, or the one a season brings. */
@@ -65,7 +65,7 @@ export function WorldScreen({ src }: { src: 'class' | 'season' }) {
                     here={i === here && !done}
                     boss={i === stops - 1}
                     stars={rec.stars[i] ?? 0}
-                    icon={topic ? KIND_ICON[topic.activities[turn % topic.activities.length].kind] : KIND_ICON.quiz}
+                    icon={<KindIcon kind={topic ? topic.activities[turn % topic.activities.length].kind : 'quiz'} />}
                     label={`${stop.t === 'topic' ? t(`topic.${stop.topic}` as 'topic.n20') : t('mission.quiz')} ${i + 1}`}
                     hero={p}
                     onClick={() => {
