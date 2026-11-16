@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
-import { sfx } from '../core/audio'
+import { sfx, sfxStreak } from '../core/audio'
 import { fmtNum, fmtQty, fracParts } from '../core/format'
 import { MattyFace } from './Matty'
 import { PadButton, Scratchpad } from './Scratchpad'
@@ -120,8 +120,20 @@ export function Hud({
   children?: ReactNode
 }) {
   const { t } = useT()
+  // Right answers in a row, counted back from the latest one.
+  let streak = 0
+  while (streak < results.length && results[results.length - 1 - streak]) streak++
+  useEffect(() => {
+    if (streak >= 2) sfxStreak(streak)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [results.length])
   return (
     <header className="hud">
+      {streak >= 2 ? (
+        <span className="streak" key={results.length} role="status" aria-label={t('streak', { n: streak })}>
+          🔥 ×{streak}
+        </span>
+      ) : null}
       <button className="icon-btn" onClick={onExit} aria-label={t('exit')}>
         ✕
       </button>

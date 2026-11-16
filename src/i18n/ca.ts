@@ -457,4 +457,19 @@ export const ca = {
   'teacher.world.up': 'Puja',
   'teacher.world.down': 'Baixa',
   'teacher.world.del': 'Treu',
+
+  'avatar.face': 'Forma de la cara',
+  'avatar.eyes': 'Ulls',
+  'avatar.eyeColor': 'Color dels ulls',
+  'avatar.brows': 'Celles',
+  'avatar.nose': 'Nas',
+  'avatar.mouth': 'Boca',
+  'avatar.cheeks': 'Galtes',
+  'avatar.random': 'Sorprèn-me',
+
+  'streak': '{n} seguides',
+  'matty.wear': 'Me’l poso!',
+  'story.title': 'Hola, {name}! Soc en Matty',
+  'story.text': 'El meu coet s’ha quedat sense energia i només funciona amb estrelles. Cada repte que superis el recarrega. M’ajudes a tornar a l’Estació Estel?',
+  'story.go': 'Anem a per la primera!',
 }

@@ -2,7 +2,7 @@ import { useSyncExternalStore } from 'react'
 import { setSoundEnabled } from './audio'
 import { getBackend, type ClassInfo, type Homework, type MemberStats, type MemberUpsert, type Screening } from './backend'
 import { DOJO, DOJO_START, JOURNEY, levelKey, STOPS_PER_ZONE, type Stop } from './curriculum'
-import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, ITEMS, LEGACY_SKINS, type ItemType, type Look } from './look'
+import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, ITEMS, LEGACY_SKINS, type ItemType, type KidPatch, type Look } from './look'
 import { setMusicEnabled } from './music'
 import { dayKey, dojoPassed, giftCoins, rewardsFor, weekStart, type Rewards } from './scoring'
 import type { ScreenResult, TaskId, TaskScore } from './screening'
@@ -114,7 +114,8 @@ export function upgradeProfile(raw: Record<string, unknown>): Profile {
   }
   return {
     ...old,
-    look,
+    // Faces gained features over time: whatever a saved look lacks takes the default.
+    look: { ...DEFAULT_LOOK, ...look },
     owned,
     coins,
     stats: {
@@ -539,7 +540,7 @@ export function takeOff(type: 'hat' | 'glasses' | 'pet') {
 }
 
 /** Skin tone, hair style and hair colour are always free. */
-export function styleKid(patch: Partial<Pick<Look, 'tone' | 'hair' | 'hairColor'>>) {
+export function styleKid(patch: KidPatch) {
   const p = activeProfile()
   if (!p) return
   patchProfile(p.id, (cur) => ({ ...cur, look: { ...cur.look, ...patch } }))

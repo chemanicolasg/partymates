@@ -459,4 +459,19 @@ export const es: Dict = {
   'teacher.world.up': 'Subir',
   'teacher.world.down': 'Bajar',
   'teacher.world.del': 'Quitar',
+
+  'avatar.face': 'Forma de la cara',
+  'avatar.eyes': 'Ojos',
+  'avatar.eyeColor': 'Color de los ojos',
+  'avatar.brows': 'Cejas',
+  'avatar.nose': 'Nariz',
+  'avatar.mouth': 'Boca',
+  'avatar.cheeks': 'Mejillas',
+  'avatar.random': 'Sorpréndeme',
+
+  'streak': '{n} seguidas',
+  'matty.wear': '¡Me lo pongo!',
+  'story.title': '¡Hola, {name}! Soy Matty',
+  'story.text': 'Mi cohete se ha quedado sin energía y solo funciona con estrellas. Cada reto que superes lo recarga. ¿Me ayudas a volver a la Estación Estelar?',
+  'story.go': '¡Vamos a por la primera!',
 }

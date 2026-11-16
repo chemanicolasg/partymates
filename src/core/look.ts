@@ -23,6 +23,14 @@ export interface Look {
   tone: number
   hair: string
   hairColor: number
+  /** Kid only, all free as well: the features of the face. */
+  face: string
+  eyes: string
+  eyeColor: number
+  brows: string
+  nose: string
+  mouth: string
+  cheeks: string
   hat: string | null
   glasses: string | null
   outfit: string
@@ -32,7 +40,37 @@ export interface Look {
 
 export const SKIN_TONES = ['#ffe0c2', '#f6c9a0', '#e3a977', '#c68a5a', '#9a6238', '#6b4226']
 export const HAIR_COLORS = ['#3a2a1e', '#7a4a21', '#d8a03a', '#e8643c', '#1d1b26', '#b06cff', '#ff7ab8']
-export const HAIR_STYLES = ['short', 'swept', 'spiky', 'curly', 'bob', 'long', 'buns', 'pony']
+export const HAIR_STYLES = ['short', 'swept', 'side', 'spiky', 'mohawk', 'curly', 'afro', 'bob', 'long', 'waves', 'braids', 'buns', 'pony', 'topbun', 'bald']
+export const FACES = ['round', 'oval', 'square', 'heart']
+export const EYES = ['dot', 'round', 'lash', 'almond', 'sleepy', 'happy']
+export const EYE_COLORS = ['#23164f', '#5a3a1e', '#2f7fd6', '#2f9a5c', '#9a6a2a', '#6b7388']
+export const BROWS = ['none', 'soft', 'straight', 'thick', 'keen']
+export const NOSES = ['none', 'dot', 'button', 'round']
+export const MOUTHS = ['smile', 'grin', 'gap', 'laugh', 'smirk', 'oh']
+export const CHEEKS = ['blush', 'freckles', 'both', 'none']
+
+/** The parts of a kid's face a child can choose, with the options of each. */
+export const FACE_PARTS = { face: FACES, hair: HAIR_STYLES, eyes: EYES, brows: BROWS, nose: NOSES, mouth: MOUTHS, cheeks: CHEEKS } as const
+export type FacePart = keyof typeof FACE_PARTS
+export type KidPatch = Partial<Pick<Look, FacePart | 'tone' | 'hairColor' | 'eyeColor'>>
+
+/** A face put together by chance, for the "surprise me" button. */
+export function randomKid(rnd: () => number = Math.random): KidPatch {
+  const pick = <T,>(xs: readonly T[]) => xs[Math.floor(rnd() * xs.length)]
+  const index = (xs: readonly unknown[]) => Math.floor(rnd() * xs.length)
+  return {
+    tone: index(SKIN_TONES),
+    hairColor: index(HAIR_COLORS),
+    eyeColor: index(EYE_COLORS),
+    face: pick(FACES),
+    hair: pick(HAIR_STYLES),
+    eyes: pick(EYES),
+    brows: pick(BROWS),
+    nose: pick(NOSES),
+    mouth: pick(MOUTHS),
+    cheeks: pick(CHEEKS),
+  }
+}
 
 const item = (type: ItemType, name: string, price = 0, extra: Partial<Item> = {}): Item => ({ id: `${type}:${name}`, type, price, ...extra })
 const starItem = (type: ItemType, name: string, stars: number): Item => ({ id: `${type}:${name}`, type, price: 0, stars })
@@ -46,14 +84,14 @@ export const ITEMS: Item[] = [
   item('base', 'koala', 80), item('base', 'penguin', 100), item('base', 'robot', 140), item('base', 'alien', 160),
   item('base', 'unicorn', 200), item('base', 'dragon', 240),
 
-  item('hat', 'cap', 30), item('hat', 'beanie', 30), item('hat', 'bow', 40), item('hat', 'party', 40), item('hat', 'headphones', 60),
+  item('hat', 'cap', 30), item('hat', 'beanie', 30), item('hat', 'bow', 40), starItem('hat', 'party', 1), item('hat', 'headphones', 60),
   item('hat', 'cowboy', 70), item('hat', 'tophat', 80), item('hat', 'pirate', 90), item('hat', 'chef', 90), item('hat', 'wizard', 120),
   item('hat', 'viking', 130), item('hat', 'astro', 150), starItem('hat', 'matty', 12), starItem('hat', 'grad', 30), starItem('hat', 'crown', 60),
 
   // Seasonal: on sale only during their season (see core/seasons.ts), kept for ever.
   item('hat', 'witch', 60), prizeItem('hat', 'pumpkin'), item('hat', 'santa', 60), item('hat', 'antlers', 60), prizeItem('hat', 'elf'),
 
-  item('glasses', 'round', 30), item('glasses', 'sun', 50), item('glasses', 'patch', 60), item('glasses', 'star', 70),
+  item('glasses', 'round', 30), item('glasses', 'sun', 50), item('glasses', 'patch', 60), starItem('glasses', 'star', 6),
   item('glasses', 'heart', 70), item('glasses', 'goggles', 80), item('glasses', '3d', 90), item('glasses', 'monocle', 100),
 
   item('outfit', 'tee-blue'), item('outfit', 'tee-red'), item('outfit', 'tee-green'), item('outfit', 'tee-yellow'), item('outfit', 'tee-purple'),
@@ -84,6 +122,13 @@ export const DEFAULT_LOOK: Look = {
   tone: 1,
   hair: 'short',
   hairColor: 0,
+  face: 'round',
+  eyes: 'dot',
+  eyeColor: 0,
+  brows: 'none',
+  nose: 'none',
+  mouth: 'smile',
+  cheeks: 'blush',
   hat: null,
   glasses: null,
   outfit: 'tee-blue',
@@ -93,12 +138,21 @@ export const DEFAULT_LOOK: Look = {
 
 /** Compact text form, sent to the class so the teacher sees each child's character. */
 export const encodeLook = (l: Look) =>
-  [l.base, l.tone, l.hair, l.hairColor, l.hat ?? '', l.glasses ?? '', l.outfit, l.pet ?? '', l.bg].join('|')
+  [l.base, l.tone, l.hair, l.hairColor, l.hat ?? '', l.glasses ?? '', l.outfit, l.pet ?? '', l.bg, l.face, l.eyes, l.eyeColor, l.brows, l.nose, l.mouth, l.cheeks].join('|')
 
 export function decodeLook(text: string | null | undefined): Look {
   const p = (text ?? '').split('|')
   if (p.length < 9 || !ITEM_BY_ID[`base:${p[0]}`]) return DEFAULT_LOOK
+  // The face came later: text from before it simply has fewer parts and gets the default face.
+  const one = (list: readonly string[], value: string | undefined, fallback: string) => (value && list.includes(value) ? value : fallback)
   return {
+    face: one(FACES, p[9], DEFAULT_LOOK.face),
+    eyes: one(EYES, p[10], DEFAULT_LOOK.eyes),
+    eyeColor: Number(p[11]) || 0,
+    brows: one(BROWS, p[12], DEFAULT_LOOK.brows),
+    nose: one(NOSES, p[13], DEFAULT_LOOK.nose),
+    mouth: one(MOUTHS, p[14], DEFAULT_LOOK.mouth),
+    cheeks: one(CHEEKS, p[15], DEFAULT_LOOK.cheeks),
     base: p[0],
     tone: Number(p[1]) || 0,
     hair: HAIR_STYLES.includes(p[2]) ? p[2] : 'short',

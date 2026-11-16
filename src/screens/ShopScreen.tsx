@@ -1,11 +1,11 @@
 import { useState } from 'react'
 import { sfx } from '../core/audio'
-import { HAIR_COLORS, HAIR_STYLES, ITEMS, itemName, SKIN_TONES, type Item, type ItemType, type Look } from '../core/look'
+import { EYE_COLORS, FACE_PARTS, HAIR_COLORS, ITEMS, itemName, randomKid, SKIN_TONES, type FacePart, type Item, type ItemType, type KidPatch, type Look } from '../core/look'
 import { back } from '../core/nav'
 import { SEASON_OF_ITEM } from '../core/seasons'
 import { isItemOnOffer, isItemUnlocked, styleKid, takeOff, totalStars, useProfile, useSeason, wearItem } from '../core/store'
 import { useT } from '../i18n'
-import { Character } from '../ui/Character'
+import { Character, CharacterFace } from '../ui/Character'
 import { Chip, TopBar } from '../ui/kit'
 
 const TABS: ItemType[] = ['base', 'hat', 'glasses', 'outfit', 'pet', 'bg']
@@ -98,33 +98,73 @@ export function ShopScreen() {
   )
 }
 
-/** Skin, hair style and hair colour of the child character: always free. */
+type Part = 'tone' | FacePart
+const PARTS: { id: Part; icon: string }[] = [
+  { id: 'tone', icon: '🎨' },
+  { id: 'face', icon: '🙂' },
+  { id: 'hair', icon: '💇' },
+  { id: 'eyes', icon: '👀' },
+  { id: 'brows', icon: '〰️' },
+  { id: 'nose', icon: '👃' },
+  { id: 'mouth', icon: '👄' },
+  { id: 'cheeks', icon: '✨' },
+]
+
+/**
+ * The face of the child character, part by part: skin, shape, hair, eyes, eyebrows, nose, mouth
+ * and cheeks. Everything here is free, and every option is shown on the child's own face.
+ */
 export function KidStyle({ look, onChange }: { look: Look; onChange?: (patch: Partial<Look>) => void }) {
   const { t } = useT()
-  const set = (patch: Partial<Pick<Look, 'tone' | 'hair' | 'hairColor'>>) => {
+  const [part, setPart] = useState<Part>('face')
+  const set = (patch: KidPatch) => {
     sfx('tap')
     if (onChange) onChange(patch)
     else styleKid(patch)
   }
+  const label = (id: Part) => t(id === 'tone' ? 'shop.skin' : id === 'hair' ? 'shop.hair' : `avatar.${id}`)
+  const swatches = (colors: string[], field: 'tone' | 'hairColor' | 'eyeColor', name: string) => (
+    <div className="pick-row" role="group" aria-label={name}>
+      {colors.map((c, i) => (
+        <button type="button" key={c} className={`pick swatch${look[field] === i ? ' on' : ''}`} style={{ background: c }} onClick={() => set({ [field]: i })} aria-pressed={look[field] === i} aria-label={`${name} ${i + 1}`} />
+      ))}
+    </div>
+  )
   return (
     <div className="kid-style card">
-      <div className="pick-row" role="group" aria-label={t('shop.skin')}>
-        {SKIN_TONES.map((c, i) => (
-          <button type="button" key={c} className={`pick swatch${look.tone === i ? ' on' : ''}`} style={{ background: c }} onClick={() => set({ tone: i })} aria-pressed={look.tone === i} aria-label={`${t('shop.skin')} ${i + 1}`} />
-        ))}
-      </div>
-      <div className="pick-row" role="group" aria-label={t('shop.hair')}>
-        {HAIR_STYLES.map((h) => (
-          <button type="button" key={h} className={`pick face${look.hair === h ? ' on' : ''}`} onClick={() => set({ hair: h })} aria-pressed={look.hair === h} aria-label={`${t('shop.hair')} ${h}`}>
-            <Character look={{ ...look, hair: h, hat: null, glasses: null, pet: null }} size={44} />
+      <div className="avatar-tabs" role="tablist">
+        {PARTS.map((x) => (
+          <button type="button" key={x.id} role="tab" aria-selected={x.id === part} aria-label={label(x.id)} className={`avatar-tab${x.id === part ? ' on' : ''}`} onClick={() => setPart(x.id)}>
+            {x.icon}
           </button>
         ))}
+        <button
+          type="button"
+          className="avatar-tab dice"
+          aria-label={t('avatar.random')}
+          onClick={() => {
+            sfx('coin')
+            if (onChange) onChange(randomKid())
+            else styleKid(randomKid())
+          }}
+        >
+          🎲
+        </button>
       </div>
-      <div className="pick-row" role="group" aria-label={t('shop.hairColor')}>
-        {HAIR_COLORS.map((c, i) => (
-          <button type="button" key={c} className={`pick swatch${look.hairColor === i ? ' on' : ''}`} style={{ background: c }} onClick={() => set({ hairColor: i })} aria-pressed={look.hairColor === i} aria-label={`${t('shop.hairColor')} ${i + 1}`} />
-        ))}
-      </div>
+      <strong className="avatar-part">{label(part)}</strong>
+      {part === 'tone' ? (
+        swatches(SKIN_TONES, 'tone', t('shop.skin'))
+      ) : (
+        <div className="pick-row" role="group" aria-label={label(part)}>
+          {FACE_PARTS[part].map((option) => (
+            <button type="button" key={option} className={`pick face${look[part] === option ? ' on' : ''}`} onClick={() => set({ [part]: option })} aria-pressed={look[part] === option} aria-label={`${label(part)} ${option}`}>
+              <CharacterFace look={{ ...look, [part]: option }} size={part === 'hair' ? 50 : 52} wide={part === 'hair' || part === 'face'} />
+            </button>
+          ))}
+        </div>
+      )}
+      {part === 'hair' ? swatches(HAIR_COLORS, 'hairColor', t('shop.hairColor')) : null}
+      {part === 'eyes' ? swatches(EYE_COLORS, 'eyeColor', t('avatar.eyeColor')) : null}
     </div>
   )
 }

@@ -1,5 +1,5 @@
 import { useId, type CSSProperties, type ReactNode } from 'react'
-import { bgValue, HAIR_COLORS, SKIN_TONES, type Look } from '../core/look'
+import { bgValue, EYE_COLORS, HAIR_COLORS, SKIN_TONES, type Look } from '../core/look'
 import type { Profile } from '../core/store'
 
 /**
@@ -116,6 +116,22 @@ function BackHair({ style, color }: { style: string; color: string }) {
       </g>
     )
   if (style === 'pony') return <path d="M70 30 C86 30 90 46 84 62 C80 54 76 48 70 46Z" {...p} />
+  if (style === 'afro') return <circle cx="50" cy="35" r="30.5" {...p} />
+  if (style === 'topbun') return <circle cx="50" cy="13.5" r="9.5" {...p} />
+  if (style === 'waves')
+    return <path d="M25 46 C20 14 80 14 75 46 C81 55 76 62 80 70 C83 79 76 85 69 82 L62 80 L62 48 L38 48 L38 80 L31 82 C24 85 17 79 20 70 C24 62 19 55 25 46Z" {...p} />
+  if (style === 'braids')
+    return (
+      <>
+        <g {...p}>
+          <path d="M25 44 C19 54 19 70 22.5 82 L30.5 82 C28 70 29 56 32 46Z" />
+          <path d="M75 44 C81 54 81 70 77.5 82 L69.5 82 C72 70 71 56 68 46Z" />
+        </g>
+        <path d="M21.5 58 L29.5 61 M21 68 L29.5 71 M78.5 58 L70.5 61 M79 68 L70.5 71" fill="none" {...thin} opacity=".45" />
+        <circle cx="26.5" cy="82.5" r="3.6" fill="#ff6b9d" {...line} />
+        <circle cx="73.5" cy="82.5" r="3.6" fill="#ff6b9d" {...line} />
+      </>
+    )
   return null
 }
 
@@ -133,12 +149,23 @@ function FrontHair({ style, color }: { style: string; color: string }) {
           <path d="M30 38 C34 26 66 26 70 38 C62 32 38 32 30 38Z" {...none} />
         </g>
       )
+    case 'bald':
+      return null
+    case 'mohawk':
+      return <path d="M42.5 31 C41 14 45.5 5.5 50 4.5 C54.5 5.5 59 14 57.5 31 C54 27.5 46 27.5 42.5 31Z" {...p} />
+    case 'side':
+      return <path d="M27 45 C22 19 49 13 66 19.5 C74.5 23.5 75.5 36 73 45 C70.5 38 66.5 33 60 31 C48 35 36 34.5 27 45Z" {...p} />
+    case 'braids':
+      return <path d="M27 44 C24 22 40 18 50 20.5 C60 18 76 22 73 44 C70 34.5 60 29.5 50 27.5 C40 29.5 30 34.5 27 44Z" {...p} />
+    case 'afro':
+      return <path d="M27.5 44 C26 28 38 23 50 23 C62 23 74 28 72.5 44 C68.5 35 60 31.5 50 31.5 C40 31.5 31.5 35 27.5 44Z" {...p} />
     case 'swept':
+    case 'waves':
     case 'long':
     case 'bob':
       return <path d="M27 45 C23 18 77 16 73 45 C72 37 66 30 58 29 C50 36 37 39 27 45Z" {...p} />
     default:
-      // short, buns and pony share the same neat fringe
+      // short, buns, pony and the top bun share the same neat fringe
       return <path d="M27 44 C23 20 38 18 50 18 C62 18 77 20 73 44 C69 34 60 31 50 31 C40 31 31 34 27 44Z" {...p} />
   }
 }
@@ -564,6 +591,106 @@ function Face({ eyeColor = INK, y = 47 }: { eyeColor?: string; y?: number }) {
 }
 
 const smile = <path d="M44 58 Q50 63.5 56 58" fill="none" {...line} />
+
+/** Outline of a child's head. Every shape keeps the same crown and temples, so any hat or hair fits. */
+const HEAD_SHAPE: Record<string, string> = {
+  oval: 'M28.5 44 C28.5 30 37.5 22.5 50 22.5 C62.5 22.5 71.5 30 71.5 44 C71.5 58 62.5 71.5 50 71.5 C37.5 71.5 28.5 58 28.5 44Z',
+  square: 'M27.5 44 C27.5 30 37 22.5 50 22.5 C63 22.5 72.5 30 72.5 44 L72.5 55 C72.5 64 65.5 69.5 56.5 69.5 H43.5 C34.5 69.5 27.5 64 27.5 55Z',
+  heart: 'M27.5 43 C27.5 29 37 22.5 50 22.5 C63 22.5 72.5 29 72.5 43 C72.5 55 58.5 68.5 50 71 C41.5 68.5 27.5 55 27.5 43Z',
+}
+
+const MOUTH_FILL = '#7a1f3d'
+
+/** One eye, drawn for the left side and mirrored for the right. */
+function Eye({ style, color, skin, x }: { style: string; color: string; skin: string; x: number }) {
+  const y = 47
+  const flip = x > 50 ? `translate(${2 * x} 0) scale(-1 1)` : undefined
+  const iris = (r: number, dy = 0) => (
+    <>
+      <circle cx={x} cy={y + dy} r={r} fill={color} />
+      <circle cx={x} cy={y + dy} r={r * 0.5} fill={INK} />
+      <circle cx={x - 1} cy={y + dy - 1.1} r={r * 0.36} fill="#fff" />
+    </>
+  )
+  switch (style) {
+    case 'round':
+    case 'lash':
+    case 'sleepy':
+      return (
+        <>
+          <ellipse cx={x} cy={y} rx="4.3" ry="4.9" fill="#fff" {...thin} />
+          {iris(2.8, 0.4)}
+          {style === 'lash' ? <path d={`M${x - 4.4} ${y - 2.6} L${x - 6.6} ${y - 4.8} M${x - 2.6} ${y - 4.6} L${x - 3.6} ${y - 7.2}`} fill="none" {...thin} transform={flip} /> : null}
+          {style === 'sleepy' ? <path d={`M${x - 4.6} ${y - 0.4} A4.6 5.2 0 0 1 ${x + 4.6} ${y - 0.4}Z`} fill={skin} {...thin} /> : null}
+        </>
+      )
+    case 'almond':
+      return (
+        <>
+          <path d={`M${x - 5.2} ${y + 0.4} Q${x} ${y - 5.4} ${x + 5.2} ${y + 0.4} Q${x} ${y + 4.4} ${x - 5.2} ${y + 0.4}Z`} fill="#fff" {...thin} />
+          {iris(2.2)}
+        </>
+      )
+    case 'happy':
+      return <path d={`M${x - 3.8} ${y + 1.4} Q${x} ${y - 4} ${x + 3.8} ${y + 1.4}`} fill="none" {...line} />
+    default:
+      return (
+        <>
+          {/* A dark centre keeps the eye readable on every skin tone, whatever the colour around it. */}
+          <circle cx={x} cy={y} r="3.4" fill={color} />
+          <circle cx={x} cy={y} r="2.2" fill={INK} />
+          <circle cx={x - 1.1} cy={y - 1.1} r="1.1" fill="#fff" />
+        </>
+      )
+  }
+}
+
+/** Everything on a child's face, from the parts chosen in the look. */
+function KidFace({ look, skin, hair }: { look: Look; skin: string; hair: string }) {
+  const eye = EYE_COLORS[look.eyeColor] ?? EYE_COLORS[0]
+  const brow = { fill: 'none', stroke: hair, strokeWidth: look.brows === 'thick' ? 3.6 : 2.3, strokeLinecap: 'round' as const }
+  const blush = look.cheeks === 'blush' || look.cheeks === 'both'
+  const freckles = look.cheeks === 'freckles' || look.cheeks === 'both'
+  return (
+    <>
+      {blush ? (
+        <>
+          <circle cx="35" cy="56" r="4.2" fill="#ff8fa3" opacity=".5" />
+          <circle cx="65" cy="56" r="4.2" fill="#ff8fa3" opacity=".5" />
+        </>
+      ) : null}
+      {freckles
+        ? [[33.5, 53.6], [36.6, 55.6], [33, 57.6], [66.5, 53.6], [63.4, 55.6], [67, 57.6]].map(([x, y]) => <circle key={`${x}-${y}`} cx={x} cy={y} r="0.95" fill="#8a4a25" opacity=".7" />)
+        : null}
+      <Eye style={look.eyes} color={eye} skin={skin} x={41} />
+      <Eye style={look.eyes} color={eye} skin={skin} x={59} />
+      {look.brows === 'soft' || look.brows === 'thick' ? <path d="M36.5 40.6 Q41 37.6 45.5 40.6 M54.5 40.6 Q59 37.6 63.5 40.6" {...brow} /> : null}
+      {look.brows === 'straight' ? <path d="M36.5 39.8 H45.5 M54.5 39.8 H63.5" {...brow} /> : null}
+      {look.brows === 'keen' ? <path d="M36.5 38.4 L45.5 40.8 M63.5 38.4 L54.5 40.8" {...brow} /> : null}
+      {look.nose === 'dot' ? <path d="M48.6 53 Q50 54.8 51.4 53" fill="none" {...thin} /> : null}
+      {look.nose === 'button' ? <path d="M47.4 51.6 Q50 56 52.6 51.6" fill="none" {...thin} /> : null}
+      {look.nose === 'round' ? <ellipse cx="50" cy="53" rx="2.5" ry="1.9" fill={INK} opacity=".2" /> : null}
+      {look.mouth === 'grin' || look.mouth === 'gap' ? (
+        <>
+          <path d="M42.8 57 H57.2 Q56 65.4 50 65.4 Q44 65.4 42.8 57Z" fill={MOUTH_FILL} {...line} />
+          <path d="M44.6 58.2 H55.4 L54.7 60.6 H45.3Z" fill="#fff" />
+          {look.mouth === 'gap' ? <path d="M50 58.2 V60.6" stroke={MOUTH_FILL} strokeWidth="1.6" /> : null}
+        </>
+      ) : look.mouth === 'laugh' ? (
+        <>
+          <path d="M42 56.4 H58 Q57.4 66.6 50 66.6 Q42.6 66.6 42 56.4Z" fill={MOUTH_FILL} {...line} />
+          <ellipse cx="50" cy="63.6" rx="3.8" ry="2" fill="#ff7a9a" />
+        </>
+      ) : look.mouth === 'smirk' ? (
+        <path d="M45 59.4 Q52 61.6 56.6 56.6" fill="none" {...line} />
+      ) : look.mouth === 'oh' ? (
+        <ellipse cx="50" cy="60" rx="2.7" ry="3.2" fill={MOUTH_FILL} {...line} />
+      ) : (
+        smile
+      )}
+    </>
+  )
+}
 const snout = (
   <>
     <ellipse cx="50" cy="53.4" rx="3.4" ry="2.5" fill={INK} />
@@ -581,9 +708,8 @@ function Head({ look }: { look: Look }) {
         <rect x="44" y="64" width="12" height="13" rx="4" fill={skin} {...line} />
         <circle cx="27.5" cy="48.5" r="4.4" fill={skin} {...line} />
         <circle cx="72.5" cy="48.5" r="4.4" fill={skin} {...line} />
-        <ellipse cx="50" cy="46" rx="22.5" ry="23.5" fill={skin} {...line} />
-        <Face />
-        {smile}
+        {HEAD_SHAPE[look.face] ? <path d={HEAD_SHAPE[look.face]} fill={skin} {...line} /> : <ellipse cx="50" cy="46" rx="22.5" ry="23.5" fill={skin} {...line} />}
+        <KidFace look={look} skin={skin} hair={hair} />
         <FrontHair style={look.hair} color={hair} />
       </>
     )
@@ -837,6 +963,15 @@ export function Character({ look, size = 56, bounce }: { look: Look; size?: numb
       </svg>
       {pet}
     </span>
+  )
+}
+
+/** A close-up of the head, for choosing features where a whole character would be too small to tell apart. */
+export function CharacterFace({ look, size = 52, wide }: { look: Look; size?: number; wide?: boolean }) {
+  return (
+    <svg className="character-face" viewBox={wide ? '8 -2 84 90' : '22 18 56 56'} width={size} height={wide ? (size * 90) / 84 : size} aria-hidden="true">
+      <CharacterArt look={{ ...look, hat: null, glasses: null }} />
+    </svg>
   )
 }
 

@@ -606,6 +606,40 @@
   gap: 10px;
   padding: 12px;
 }
+.avatar-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 6px;
+}
+.avatar-tab {
+  width: 44px;
+  height: 44px;
+  display: grid;
+  place-items: center;
+  border: 3px solid transparent;
+  border-radius: 14px;
+  background: #f0ecfb;
+  font-size: 1.35rem;
+  line-height: 1;
+}
+.avatar-tab.on {
+  border-color: var(--ink);
+  background: var(--sun);
+  box-shadow: 0 3px 0 var(--ink);
+}
+.avatar-tab.dice {
+  background: #d6f7e3;
+  border-color: rgba(35, 22, 79, 0.25);
+}
+.avatar-part {
+  text-align: center;
+}
+.character-face {
+  display: block;
+  border-radius: 12px;
+  overflow: hidden;
+}
 .new-card .kid-style {
   border-width: 2px;
   box-shadow: none;

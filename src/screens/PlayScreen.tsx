@@ -21,6 +21,7 @@ import {
   stopStars,
   useProfile,
   useSeason,
+  wearItem,
   worldRecord,
   type Profile,
 } from '../core/store'
@@ -43,6 +44,10 @@ import { Matty, MattySays } from '../ui/Matty'
 import { canShareFile, CARD_FILE, cardTexts, cardToPng, downloadBlob, tierFor, Trophy, TrophyCard, type CardCopy } from '../ui/Trophy'
 import { Backdrop, SCENE_ICON } from '../ui/scene'
 import { HOW_ICONS, KIND_ICON, ZONE_ICON } from './art'
+
+/** How many stops at the start of the journey are shortened on the first visit, and to how many rounds. */
+const WARM_UP_STOPS = 3
+const WARM_UP_ROUNDS = 4
 
 const MUSIC: Record<PlayKind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party', quiz: 'bay' }
 
@@ -196,6 +201,19 @@ function Activity({
                 ))}
               </div>
               <small>{t('matty.inWardrobe')}</small>
+              {outcome.gifts.every((id) => profile.look[ITEM_BY_ID[id].type] === itemName(id)) ? (
+                <strong className="done-today">✔ {t('shop.on')}</strong>
+              ) : (
+                <button
+                  className="btn btn-small gift-wear"
+                  onClick={() => {
+                    sfx('coin')
+                    outcome.gifts.forEach((id) => wearItem(id))
+                  }}
+                >
+                  👕 {t('matty.wear')}
+                </button>
+              )}
             </div>
           ) : null}
           {resultExtra?.(outcome)}
@@ -322,7 +340,10 @@ export function StopScreen({ index }: { index: number }) {
   const { t } = useT()
   const profile = useProfile()
   const stop = JOURNEY[index]
-  const cfg = getLevel(stop.kind, profile.band, stop.level)
+  const full = getLevel(stop.kind, profile.band, stop.level)
+  // The very first visits to the first stops are short: a quick win before the full-length levels.
+  const [warmUp] = useState(() => index < WARM_UP_STOPS && stopPlays(profile, stop) === 0)
+  const cfg = warmUp && 'rounds' in full ? { ...full, rounds: Math.min(full.rounds, WARM_UP_ROUNDS) } : full
   const [event, setEvent] = useState(() => rollEvent())
   // Decided once on arrival, so finishing the level does not change how it is presented.
   const [startWithHints] = useState(() => stopPlays(profile, stop) > 0 && stopStars(profile, stop) === 0)

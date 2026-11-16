@@ -31,16 +31,19 @@ import {
 import { ZONES } from '../core/types'
 import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
-import { Chip, speak } from '../ui/kit'
+import { Chip, Modal, speak } from '../ui/kit'
 import { Matty, type MattyPose } from '../ui/Matty'
-import { SCENE_ICON } from '../ui/scene'
+import { SCENE_ICON, Sprite } from '../ui/scene'
 import { SeasonSky } from '../ui/Season'
 import { KIND_ICON, ZONE_ICON } from './art'
 import { TrailGround, TrailNode, TrailRoad, trailHeight } from './Trail'
 
 /** The journey: one long trail from the beach up to space, with the player waiting at the next stop. */
+/** Players who have already been told the opening story since the app was opened. */
+const storyTold = new Set<string>()
+
 export function MapScreen() {
-  const { t } = useT()
+  const { t, lang } = useT()
   const p = useProfile()
   const music = useApp((s) => s.music)
   const current = useRef<HTMLButtonElement>(null)
@@ -51,6 +54,14 @@ export function MapScreen() {
   const season = useSeason()
   const festive = seasonWorldOf(p, season)
   const lesson = classWorld(p)
+  // A brand-new player is told why the journey matters before anything else, once per visit.
+  const [story, setStory] = useState(() => Object.keys(p.levels).length === 0 && !storyTold.has(p.id))
+  useEffect(() => {
+    if (!story) return
+    storyTold.add(p.id)
+    if (p.band === 'A') speak(`${t('story.title', { name: p.name })}. ${t('story.text')}`, lang)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [story])
   const open = (fn: () => void) => () => {
     sfx('tap')
     fn()
@@ -164,6 +175,34 @@ export function MapScreen() {
       </main>
       <MapBuddy p={p} hw={hw && homeworkStars(p, hw) < hw.goal ? hw : null} mission={mission} dojoDue={dojoDue} />
       </div>
+
+      {story ? (
+        <Modal onClose={() => setStory(false)}>
+          <div className="story">
+            <div className="story-rocket">
+              <Matty pose="hi" size={104} bounce />
+              <Sprite name="rocket" size={84} />
+            </div>
+            <h2>{t('story.title', { name: p.name })}</h2>
+            <p>{t('story.text')}</p>
+            <span className="fuel" aria-hidden="true">
+              {Array.from({ length: 5 }, (_, i) => (
+                <i key={i}>⭐</i>
+              ))}
+            </span>
+            <button
+              className="btn btn-primary btn-big"
+              onClick={() => {
+                sfx('star')
+                setStory(false)
+                go({ id: 'play', stop: 0 })
+              }}
+            >
+              🚀 {t('story.go')}
+            </button>
+          </div>
+        </Modal>
+      ) : null}
 
       <nav className="dock">
         <button className={`dock-btn dojo${dojoDue ? ' due' : ''}`} onClick={open(() => go({ id: 'dojo' }))}>

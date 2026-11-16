@@ -49,6 +49,20 @@ export function audioContext(): AudioContext | null {
   }
 }
 
+/** Answers in a row: a chime that climbs a little with each one. */
+export function sfxStreak(n: number) {
+  if (!enabled) return
+  try {
+    const audio = audioContext()
+    if (!audio) return
+    const f = 784 * 2 ** (Math.min(n, 9) / 12)
+    tone(f, 0.26, 0.1)
+    tone(f * 1.5, 0.34, 0.2)
+  } catch {
+    /* sound is a nice-to-have */
+  }
+}
+
 export function sfx(name: Sound) {
   if (!enabled) return
   try {

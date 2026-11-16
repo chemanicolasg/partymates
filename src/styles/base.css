@@ -134,6 +134,8 @@ input:not([type]) {
 /* ───────────── Building blocks ───────────── */
 
 .card {
+  /* Paper is always written on in ink, whatever the colour of the screen behind. */
+  color: var(--ink);
   background: var(--paper);
   border: 3px solid var(--ink);
   border-radius: var(--radius);
@@ -151,6 +153,7 @@ input:not([type]) {
   border: 3px solid var(--ink);
   border-radius: 16px;
   background: #fff;
+  color: var(--ink);
   box-shadow: var(--hard);
   font-weight: 600;
   font-size: 1.05rem;

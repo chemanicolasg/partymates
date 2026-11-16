@@ -417,8 +417,9 @@ export const STOPS_PER_ZONE = 10
  */
 export const JOURNEY: Stop[] = ZONES.flatMap((zone, z) => {
   const order: [Kind, number][] = [
-    ['blocks', 2 * z],
+    // The dice race opens every zone: it is the most game-like way in.
     ['party', 2 * z],
+    ['blocks', 2 * z],
     ['stones', z],
     ['arena', 2 * z],
     ['bay', 2 * z],
