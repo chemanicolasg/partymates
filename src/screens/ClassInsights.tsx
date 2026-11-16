@@ -30,7 +30,9 @@ export function ClassInsights({ members, week }: { members: MemberReport[]; week
       <div className="kpis">
         {tiles.map(([icon, value, label]) => (
           <div className="kpi" key={label}>
-            <span aria-hidden="true">{icon}</span>
+            <span className="emoji" aria-hidden="true">
+              {icon}
+            </span>
             <strong>{value}</strong>
             <small>{label}</small>
           </div>
@@ -43,7 +45,8 @@ export function ClassInsights({ members, week }: { members: MemberReport[]; week
         {k.skills.map((s) => (
           <div className="skill" key={s.kind} tabIndex={0} data-tip={s.pct === null ? t('insights.fewData') : t('insights.skillTip', { pct: s.pct, n: s.answers })}>
             <span className="skill-name">
-              {KIND_ICON[s.kind]} {t(`skill.${s.kind}`)}
+              <span className="emoji">{KIND_ICON[s.kind]} </span>
+              {t(`skill.${s.kind}`)}
             </span>
             <span className="skill-track">{s.pct === null ? null : <i style={{ width: `${s.pct}%` }} />}</span>
             <span className="skill-value">{s.pct === null ? '—' : `${s.pct} %`}</span>
