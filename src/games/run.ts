@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react'
 import type { Profile } from '../core/store'
 import type { Fact, FactResult, GameResult } from '../core/types'
+import type { SceneId } from '../core/worlds'
 
 export interface GameProps<C> {
   cfg: C
@@ -9,6 +10,8 @@ export interface GameProps<C> {
   hints: boolean
   /** The child has never played this kind of activity: point at the first thing to tap. */
   firstTime: boolean
+  /** Where on the journey this is being played, for games that set their stage there. */
+  scene?: SceneId
   onFinish: (result: GameResult) => void
   onExit: () => void
 }

@@ -62,7 +62,7 @@ interface Outcome {
   gifts: string[]
 }
 
-function Game({ cfg, ...props }: { cfg: PlayCfg; profile: Profile; hints: boolean; firstTime: boolean; onFinish: (r: GameResult) => void; onExit: () => void }) {
+function Game({ cfg, ...props }: { cfg: PlayCfg; profile: Profile; hints: boolean; firstTime: boolean; scene?: SceneId; onFinish: (r: GameResult) => void; onExit: () => void }) {
   switch (cfg.kind) {
     case 'blocks':
       return <BridgeGame cfg={cfg} {...props} />
@@ -152,7 +152,7 @@ function Activity({
         {/* The journey's games bring their own setting; the teacher's exercises borrow the world's. */}
         {kind === 'quiz' ? backdrop : null}
         <HelpContext.Provider value={{ tip: t(`tip.${kind}`), ask: () => setHints(true) }}>
-          <Game cfg={cfg} profile={profile} hints={hints} firstTime={firstTime && attempt === 1} onFinish={onFinish} onExit={back} />
+          <Game cfg={cfg} profile={profile} hints={hints} firstTime={firstTime && attempt === 1} scene={scene} onFinish={onFinish} onExit={back} />
         </HelpContext.Provider>
       </div>
     )

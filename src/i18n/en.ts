@@ -557,4 +557,16 @@ export const en: Dict = {
   'join.banner': 'You are about to join class {code}. Choose or create your player.',
   'plan.week': '{n} of {plan} days this week',
   'table.addNote': 'Add a note',
+
+  'party.say.start': 'Let’s go, {name}! Roll the dice.',
+  'party.say.again': 'Another jump! Roll the dice.',
+  'party.say.rolling': 'Rolling, rolling…!',
+  'party.say.choose': 'Where do you land?',
+  'party.say.good0': 'What a jump!',
+  'party.say.good1': 'Right on target!',
+  'party.say.good2': 'That’s the way!',
+  'party.say.good3': 'You’re flying!',
+  'party.say.bad': 'Oops! It was {n}. The next one is yours!',
+  'party.say.treasure': 'You reached the present!',
+  'party.goal': '{n} jumps to the present',
 }

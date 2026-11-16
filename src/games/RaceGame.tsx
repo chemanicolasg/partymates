@@ -5,7 +5,10 @@ import { genPartyRound, isFullBoard, partyStart, pick, type PartyRound } from '.
 import type { Lang, PartyCfg } from '../core/types'
 import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
+import { Icon } from '../ui/icons'
 import { Feedback, Hud, Prompt, useTimeouts } from '../ui/kit'
+import { Matty, type MattyPose } from '../ui/Matty'
+import { Sprite, Terrain } from '../ui/scene'
 import { useRun, type GameProps } from './run'
 
 type Phase = 'ready' | 'rolling' | 'choose' | 'good' | 'bad'
@@ -40,8 +43,10 @@ function Die({ v, rolling, lang, hue }: { v: number | null; rolling: boolean; la
 }
 
 /** Dice board: roll, work out where you land, tap that square. Every perfect landing is a star. */
-export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProps<PartyCfg>) {
+export function RaceGame({ cfg, profile, firstTime, scene = 'beach', onFinish, onExit }: GameProps<PartyCfg>) {
   const { t, lang } = useT()
+  // Which cheer Matty picks is settled per round, so it does not change while it is on screen.
+  const [cheer, setCheer] = useState(0)
   const run = useRun(cfg.rounds, onFinish)
   const later = useTimeouts()
   const full = isFullBoard(cfg)
@@ -70,6 +75,7 @@ export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProp
     if (ok) {
       setLanded(landed + 1)
       setPos(round.dest)
+      setCheer((cheer + 1 + Math.floor(Math.random() * 3)) % 4)
     }
     const over = run.record(ok, round.fact)
     later(() => {
@@ -101,7 +107,8 @@ export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProp
 
   const formula: ReactNode[] = [
     <span className="here" key="pos">
-      📍{fmtNum(pos, lang)}
+      <ProfileAvatar p={profile} size={26} />
+      {fmtNum(pos, lang)}
     </span>,
   ]
   switch (round.rule) {
@@ -135,10 +142,32 @@ export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProp
     `${v === pos ? ' here' : ''}${picked === v ? (phase === 'good' ? ' ok' : ' ko') : ''}${phase === 'bad' && v === round.dest ? ' answer' : ''}`
   const rule = t(`party.rule.${round.rule}`)
 
+  // Matty is in the race too: he says what to do next, cheers every landing and softens a miss.
+  const done = run.results.length
+  const left = cfg.rounds - done
+  const finished = left === 0 && phase === 'good'
+  const say =
+    phase === 'good'
+      ? finished
+        ? t('party.say.treasure')
+        : t(`party.say.good${(cheer % 4) as 0 | 1 | 2 | 3}`)
+      : phase === 'bad'
+        ? t('party.say.bad', { n: fmtNum(round.dest, lang) })
+        : phase === 'rolling'
+          ? t('party.say.rolling')
+          : phase === 'choose'
+            ? t('party.say.choose')
+            : done === 0
+              ? t('party.say.start', { name: profile.name })
+              : t('party.say.again')
+  const mattyPose: MattyPose = phase === 'good' ? 'cheer' : phase === 'bad' ? 'oops' : phase === 'choose' ? 'think' : phase === 'rolling' ? 'wow' : 'point'
+
   return (
     <div className="game game-party">
       <Hud onExit={onExit} results={run.results} total={cfg.rounds}>
-        <span className="chip">⭐ {landed}</span>
+        <span className="chip">
+          <Icon name="star" size={18} /> {landed}
+        </span>
       </Hud>
       <Prompt text={round.warped && phase === 'ready' ? `${t('party.warp', { n: fmtNum(pos, lang) })} ${rule}` : `${rule} ${t('party.choose')}`} />
 
@@ -150,6 +179,24 @@ export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProp
         </div>
       </div>
 
+      <div className={`race-stage phase-${phase}`}>
+        <Terrain scene={scene} height={420} view />
+        <div className="race-top">
+          <div className={`race-me${phase === 'good' ? ' leap' : ''}`} key={`me${done}`}>
+            <ProfileAvatar p={profile} size={50} />
+            <b>{fmtNum(pos, lang)}</b>
+          </div>
+          <div className="race-buddy">
+            <span className="matty-bubble" key={`${phase}${done}`}>
+              {say}
+            </span>
+            <Matty pose={mattyPose} size={62} bounce={phase === 'good'} />
+          </div>
+          <div className={`race-goal${finished ? ' open' : ''}`} aria-label={t('party.goal', { n: left })}>
+            <Sprite name="gift" size={46} />
+            <b>{finished ? '🎉' : left}</b>
+          </div>
+        </div>
       {full ? (
         <div className={`board${phase === 'choose' ? ' active' : ''}`} style={{ '--cols': cfg.max - cfg.min > 20 ? 10 : 5 } as CSSProperties}>
           {Array.from({ length: cfg.max - cfg.min + 1 }, (_, i) => cfg.min + i).map((v) => (
@@ -163,11 +210,17 @@ export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProp
         <div className={`platforms${phase === 'choose' ? ' active' : ''}`}>
           {(round.options ?? []).map((v) => (
             <button key={v} className={`platform${tileClass(v)}`} onClick={() => choose(v)} disabled={phase !== 'choose'}>
+              {phase === 'good' && picked === v ? (
+                <span className="race-landed">
+                  <ProfileAvatar p={profile} size={38} />
+                </span>
+              ) : null}
               {fmtNum(v, lang)}
             </button>
           ))}
         </div>
       )}
+      </div>
 
       <div className="status-line">
         {phase === 'good' ? <Feedback kind="good">{t('party.landed')}</Feedback> : null}
@@ -175,7 +228,7 @@ export function RaceGame({ cfg, profile, firstTime, onFinish, onExit }: GameProp
       </div>
 
       <button className={`btn btn-primary btn-big${firstTime && run.results.length === 0 && phase === 'ready' ? ' nudge' : ''}`} onClick={roll} disabled={phase !== 'ready'}>
-        🎲 {t('party.roll')}
+        <Icon name="dice" size={26} /> {t('party.roll')}
       </button>
     </div>
   )

@@ -339,3 +339,213 @@
   width: 0.95em;
   height: 0.95em;
 }
+
+
+/* ───────────── The dice race, as a place rather than a worksheet ─────────────
+   The player stands in the zone's landscape, Matty talks them through every jump and a present
+   waits at the end. The sums are exactly the same. */
+
+.race-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 10px 12px 14px;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: var(--lift-sm);
+}
+.race-stage .terrain {
+  z-index: 0;
+}
+.race-stage > :not(.terrain) {
+  position: relative;
+  z-index: 1;
+}
+.race-top {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+.race-me,
+.race-goal {
+  flex: none;
+  position: relative;
+  display: grid;
+  justify-items: center;
+}
+.race-me b,
+.race-goal b {
+  margin-top: -8px;
+  min-width: 34px;
+  padding: 1px 9px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 3px 0 #5a35c9;
+  color: #fff;
+  font-size: 1.05rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  z-index: 1;
+}
+.race-goal b {
+  background: #fff;
+  box-shadow: 0 3px 0 var(--lip);
+  color: var(--ink);
+}
+.race-me {
+  animation: race-arrive 0.45s cubic-bezier(0.3, 1.5, 0.5, 1);
+}
+.race-me.leap .character {
+  animation: race-leap 0.6s ease-in forwards;
+}
+.race-goal .sprite {
+  animation: bob 2.6s ease-in-out infinite;
+}
+.race-goal.open .sprite {
+  animation: race-open 0.9s ease-out;
+}
+.race-buddy {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 2px;
+}
+.race-buddy .matty-bubble {
+  margin-bottom: 18px;
+  padding: 7px 12px;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  animation: pop 0.25s ease-out;
+}
+.race-buddy .matty-bubble::before {
+  left: auto;
+  right: -7px;
+  bottom: 9px;
+  width: 14px;
+  height: 14px;
+  transform: rotate(45deg);
+}
+.race-stage .platforms,
+.race-stage .board {
+  flex: 1;
+  min-height: 0;
+}
+.race-stage .platform {
+  position: relative;
+  border: 0;
+  border-bottom: 7px solid #d9c6a0;
+  border-radius: 22px;
+  background: linear-gradient(#ffffff, #fff6df);
+  box-shadow: 0 10px 14px rgba(20, 60, 110, 0.22);
+}
+.race-stage .platforms.active .platform {
+  animation: bob 3s ease-in-out infinite;
+  box-shadow: 0 12px 16px rgba(20, 60, 110, 0.28);
+}
+.race-stage .platforms.active .platform:nth-child(2n) {
+  animation-delay: -1s;
+}
+.race-stage .platforms.active .platform:nth-child(3n) {
+  animation-delay: -2s;
+}
+.race-stage .platforms:not(.active) .platform:not(.ok):not(.ko):not(.answer) {
+  opacity: 0.7;
+}
+.race-stage .platform.ok {
+  border-bottom-color: #3fbf7f;
+  background: linear-gradient(#e9fff3, #b9f3cf);
+  animation: pop 0.3s;
+}
+.race-stage .platform.ko {
+  border-bottom-color: #c22740;
+  background: linear-gradient(#ff8fa3, #ef4660);
+  animation: shake 0.4s;
+}
+.race-stage .platform.answer {
+  border-bottom-color: #3fbf7f;
+  background: linear-gradient(#e9fff3, #b9f3cf);
+}
+.race-landed {
+  position: absolute;
+  left: 50%;
+  bottom: 68%;
+  transform: translateX(-50%);
+  animation: race-land 0.5s cubic-bezier(0.3, 1.4, 0.5, 1) 0.25s backwards;
+  pointer-events: none;
+}
+.race-stage .board {
+  padding: 8px;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.55);
+}
+.game-party .status-line {
+  /* Matty says it in the scene; this stays for screen readers. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+.formula .here {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 12px 2px 4px;
+  border: 0;
+  border-radius: 999px;
+}
+.btn .icon {
+  margin-right: 2px;
+}
+@keyframes race-leap {
+  40% {
+    transform: translateY(-34px) scale(1.05);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(40px, 30px) scale(0.5);
+    opacity: 0;
+  }
+}
+@keyframes race-arrive {
+  from {
+    transform: translateY(-18px) scale(0.6);
+    opacity: 0;
+  }
+}
+@keyframes race-land {
+  from {
+    transform: translate(-50%, -46px) scale(0.6);
+    opacity: 0;
+  }
+}
+@keyframes race-open {
+  30% {
+    transform: scale(1.35) rotate(-8deg);
+  }
+  60% {
+    transform: scale(1.2) rotate(8deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .race-me,
+  .race-me.leap .character,
+  .race-goal .sprite,
+  .race-landed,
+  .race-stage .platforms.active .platform {
+    animation: none;
+  }
+}
+.race-stage .platforms {
+  align-content: space-evenly;
+  gap: 14px 12px;
+}
+.race-stage .platform {
+  min-height: 88px;
+}

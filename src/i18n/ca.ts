@@ -556,4 +556,16 @@ export const ca = {
   'join.banner': 'Entraràs a la classe {code}. Tria o crea el teu jugador.',
   'plan.week': '{n} de {plan} dies aquesta setmana',
   'table.addNote': 'Afegeix una nota',
+
+  'party.say.start': 'Som-hi, {name}! Tira els daus.',
+  'party.say.again': 'Un altre salt! Tira els daus.',
+  'party.say.rolling': 'Roden, roden…!',
+  'party.say.choose': 'On aterres?',
+  'party.say.good0': 'Quin salt!',
+  'party.say.good1': 'Al bell mig!',
+  'party.say.good2': 'Així es fa!',
+  'party.say.good3': 'Vas volant!',
+  'party.say.bad': 'Ui! Era el {n}. El següent és teu!',
+  'party.say.treasure': 'Has arribat al regal!',
+  'party.goal': 'Falten {n} salts per al regal',
 }

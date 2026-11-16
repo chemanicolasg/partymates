@@ -558,4 +558,16 @@ export const es: Dict = {
   'join.banner': 'Vas a entrar en la clase {code}. Elige o crea tu jugador.',
   'plan.week': '{n} de {plan} días esta semana',
   'table.addNote': 'Añadir nota',
+
+  'party.say.start': '¡Vamos, {name}! Tira los dados.',
+  'party.say.again': '¡Otro salto! Tira los dados.',
+  'party.say.rolling': '¡Ruedan, ruedan…!',
+  'party.say.choose': '¿Dónde aterrizas?',
+  'party.say.good0': '¡Qué salto!',
+  'party.say.good1': '¡Justo en el blanco!',
+  'party.say.good2': '¡Así se hace!',
+  'party.say.good3': '¡Vas volando!',
+  'party.say.bad': '¡Uy! Era el {n}. ¡El siguiente es tuyo!',
+  'party.say.treasure': '¡Has llegado al regalo!',
+  'party.goal': 'Faltan {n} saltos para el regalo',
 }
