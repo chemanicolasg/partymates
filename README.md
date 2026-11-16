@@ -6,6 +6,12 @@ En **catalán, castellano e inglés**. Web app instalable (PWA) pensada para mó
 > El niño no «hace ejercicios»: construye puentes, cruza ríos, rompe escudos y reparte tesoros.
 > Para conseguirlo tiene que contar, ordenar, componer números, calcular y memorizar.
 
+## Matty
+
+La mascota: un explorador turquesa con bufanda amarilla que guía el viaje, da pistas desde la barra de cada
+juego, anima cuando algo falla, trae un regalo cada día y entrega prendas especiales al alcanzar estrellas.
+La guía del personaje, la hoja de modelo y los vectores de cada pose están en [`brand/`](brand/README.md).
+
 ## El viaje
 
 Cuatro zonas seguidas —**Playa Sol → Selva Eco → Montaña Trueno → Estación Estelar**— con diez paradas cada

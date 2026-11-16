@@ -7,6 +7,7 @@ import type { Band, FactResult, FactSpec, ZoneId } from '../core/types'
 import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
 import { Feedback, useTimeouts } from '../ui/kit'
+import { Matty } from '../ui/Matty'
 
 /** What comes hurtling along in each zone. */
 export const HAZARD: Record<ZoneId, string> = { beach: '🌊', jungle: '🥥', mountain: '🪨', space: '☄️' }
@@ -96,6 +97,7 @@ export function DodgeGame({
           <span className="dodge-big">{hazard}</span>
           <h1>{t(`event.${zone}`)}</h1>
           <p>{t('event.how')}</p>
+          <Matty pose="wow" size={96} />
         </div>
       </div>
     )
@@ -104,7 +106,7 @@ export function DodgeGame({
     return (
       <div className="game game-dodge center-col">
         <div className="card dodge-summary">
-          <span className="dodge-big">{dodged >= 3 ? '🎉' : '💪'}</span>
+          <Matty pose={dodged >= 3 ? 'cheer' : 'happy'} size={110} />
           <h1>{t('event.done', { ok: dodged, total: ROUNDS })}</h1>
           <p className="result-loot">
             <span>🪙 +{dodged * 3}</span>

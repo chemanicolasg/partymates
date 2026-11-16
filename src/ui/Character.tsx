@@ -466,6 +466,17 @@ function Hat({ id }: { id: string }) {
           <circle cx="61" cy="25.5" r="2.4" fill="#5fd38d" {...none} />
         </g>
       )
+    case 'matty':
+      return (
+        <g {...line}>
+          <path d="M27 37 C26 13 74 13 73 37" fill="none" strokeWidth="7.5" />
+          <path d="M27 37 C26 13 74 13 73 37" fill="none" stroke="#35c9b8" strokeWidth="3.6" />
+          <path d="M31 27 C23 15 26 3 33 0 C40 4 44 13 45 21Z" fill="#35c9b8" />
+          <path d="M69 27 C77 15 74 3 67 0 C60 4 56 13 55 21Z" fill="#35c9b8" />
+          <path d="M32.5 22 C28.5 15 30 8 33.5 5 C37.5 8.5 40 14 41 19Z" fill="#ffd23f" stroke="none" />
+          <path d="M67.5 22 C71.5 15 70 8 66.5 5 C62.5 8.5 60 14 59 19Z" fill="#ffd23f" stroke="none" />
+        </g>
+      )
     case 'astro':
       return (
         <g>

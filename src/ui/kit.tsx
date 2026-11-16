@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react'
 import { sfx } from '../core/audio'
 import { fmtNum, fmtQty, fracParts } from '../core/format'
+import { MattyFace } from './Matty'
 import { PadButton, Scratchpad } from './Scratchpad'
 import { getState } from '../core/store'
 import type { Lang, Unit } from '../core/types'
@@ -65,7 +66,45 @@ export function Numpad({ onKey, okLabel, disabled }: { onKey: (key: string) => v
   )
 }
 
-/** Top bar of every mini-game: exit, one pip per round, the notepad and any extra (timer…). */
+/** Lets a game's top bar ask Matty for help: switches the on-screen hints on and shows a tip. */
+export const HelpContext = createContext<{ tip: string; ask: () => void } | null>(null)
+
+function MattyHelp() {
+  const help = useContext(HelpContext)
+  const { t, lang } = useT()
+  const [open, setOpen] = useState(false)
+  const timer = useRef<number | undefined>(undefined)
+  useEffect(() => () => clearTimeout(timer.current), [])
+  if (!help) return null
+  return (
+    <>
+      <button
+        className={`icon-btn matty-btn${open ? ' on' : ''}`}
+        aria-label={t('matty.help')}
+        onClick={() => {
+          sfx('star')
+          help.ask()
+          setOpen(true)
+          speak(help.tip, lang)
+          clearTimeout(timer.current)
+          timer.current = window.setTimeout(() => setOpen(false), 7000)
+        }}
+      >
+        <MattyFace pose="think" size={34} />
+      </button>
+      {open ? (
+        <button className="matty-tip" onClick={() => setOpen(false)}>
+          <MattyFace pose="happy" size={44} />
+          <span>
+            {help.tip} <small>{t('matty.helpOn')}</small>
+          </span>
+        </button>
+      ) : null}
+    </>
+  )
+}
+
+/** Top bar of every mini-game: exit, one pip per round, Matty's hint, the notepad and any extra (timer…). */
 export function Hud({
   onExit,
   results,
@@ -92,6 +131,7 @@ export function Hud({
         ))}
       </div>
       {children}
+      <MattyHelp />
       {pad ? <PadButton /> : null}
       {pad ? <Scratchpad /> : null}
     </header>
@@ -169,7 +209,8 @@ export function SayButton({ text }: { text: string }) {
 export function Feedback({ kind, children }: { kind: 'good' | 'bad' | 'info'; children: ReactNode }) {
   return (
     <div className={`feedback ${kind}`} role="status">
-      {children}
+      <MattyFace pose={kind === 'good' ? 'cheer' : kind === 'bad' ? 'oops' : 'happy'} size={30} />
+      <span>{children}</span>
     </div>
   )
 }

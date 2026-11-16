@@ -1109,3 +1109,66 @@
   font-size: 0.9rem;
   font-variant-numeric: tabular-nums;
 }
+
+/* ───────────── Matty around the app ───────────── */
+
+.welcome .logo .matty {
+  margin: 0 auto -6px;
+}
+.matty-says.brief {
+  width: 100%;
+  justify-content: center;
+}
+.matty-says.brief .matty-bubble {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 1.3rem;
+  line-height: 1.2;
+}
+.brief-icon {
+  font-size: 1.6rem;
+  line-height: 1;
+}
+.matty-gift {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 10px;
+  border: 3px dashed var(--ink);
+  border-radius: 18px;
+  background: #e6fff7;
+}
+.map-wrap {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+}
+.map-buddy {
+  position: absolute;
+  right: 8px;
+  bottom: 8px;
+  z-index: 5;
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  max-width: min(78%, 330px);
+  text-align: left;
+  filter: drop-shadow(0 5px 6px rgba(21, 12, 61, 0.3));
+}
+.map-buddy .matty-bubble {
+  margin-bottom: 30px;
+  font-size: 0.98rem;
+  animation: pop 0.25s ease-out;
+}
+.map-buddy .matty-bubble::before {
+  left: auto;
+  right: -11px;
+  transform: rotate(-135deg);
+}
+.map-buddy:active .matty {
+  transform: scale(0.94);
+}

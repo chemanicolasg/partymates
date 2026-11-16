@@ -2,9 +2,9 @@ import { useSyncExternalStore } from 'react'
 import { setSoundEnabled } from './audio'
 import { getBackend, type ClassInfo, type Homework, type MemberStats, type MemberUpsert, type Screening } from './backend'
 import { DOJO, DOJO_START, JOURNEY, levelKey, STOPS_PER_ZONE, type Stop } from './curriculum'
-import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, LEGACY_SKINS, type ItemType, type Look } from './look'
+import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, ITEMS, LEGACY_SKINS, type ItemType, type Look } from './look'
 import { setMusicEnabled } from './music'
-import { dayKey, dojoPassed, rewardsFor, weekStart, type Rewards } from './scoring'
+import { dayKey, dojoPassed, giftCoins, rewardsFor, weekStart, type Rewards } from './scoring'
 import type { ScreenResult, TaskId, TaskScore } from './screening'
 import { memoryStats, review, type Memory } from './srs'
 import type { Band, FactResult, GameResult, Lang, ZoneId } from './types'
@@ -44,6 +44,8 @@ export interface Profile {
   hw: { id: string; stars: number; plays: number } | null
   /** Latest number-sense mission the child completed. */
   screen: ScreenResult | null
+  /** Matty's daily present: the last day it was opened and how many days in a row. */
+  gift: { day: string; streak: number } | null
   /** Levels played since the last surprise event. */
   sinceEvent: number
   createdAt: number
@@ -115,6 +117,7 @@ export function upgradeProfile(raw: Record<string, unknown>): Profile {
     classInfo: old.classNum ? (old.classInfo ?? null) : null,
     hw: old.hw ?? null,
     screen: old.screen ?? null,
+    gift: old.gift ?? null,
     sinceEvent: old.sinceEvent ?? 0,
   }
 }
@@ -258,6 +261,7 @@ export function createProfile(name: string, look: Look, band: Band): Profile {
     classInfo: null,
     hw: null,
     screen: null,
+    gift: null,
     sinceEvent: 0,
     createdAt: Date.now(),
   }
@@ -299,13 +303,17 @@ function played(cur: Profile, kind: string, result: GameResult, xp: number): Pro
   }
 }
 
-export function finishStop(index: number, result: GameResult): Rewards & { previous: number } {
+export function finishStop(index: number, result: GameResult): Rewards & { previous: number; gifts: string[] } {
   const p = activeProfile()
   if (!p) throw new Error('No active profile')
   const stop = JOURNEY[index]
   const key = stopKey(p, stop)
   const previous = p.levels[key]?.stars ?? 0
   const rewards = rewardsFor(result, previous)
+  // Star milestones crossed by this level: the things Matty hands over as presents.
+  const before = totalStars(p)
+  const after = before + Math.max(0, rewards.stars - previous)
+  const gifts = ITEMS.filter((i) => i.stars !== undefined && i.stars > before && i.stars <= after).map((i) => i.id)
   patchProfile(p.id, (cur) => ({
     ...cur,
     coins: cur.coins + rewards.coins,
@@ -316,7 +324,21 @@ export function finishStop(index: number, result: GameResult): Rewards & { previ
     sinceEvent: cur.sinceEvent + 1,
   }))
   void syncClass()
-  return { ...rewards, previous }
+  return { ...rewards, previous, gifts }
+}
+
+/** Matty has a present waiting once a day. */
+export const giftReady = (p: Profile, now = Date.now()) => p.gift?.day !== dayKey(now)
+
+/** Opens today's present and returns the points inside (0 if it was already opened). */
+export function claimGift(): number {
+  const p = activeProfile()
+  if (!p || !giftReady(p)) return 0
+  const yesterday = dayKey(Date.now() - 24 * 60 * 60 * 1000)
+  const streak = p.gift?.day === yesterday ? p.gift.streak + 1 : 1
+  const coins = giftCoins(streak)
+  patchProfile(p.id, (cur) => ({ ...cur, coins: cur.coins + coins, gift: { day: dayKey(), streak } }))
+  return coins
 }
 
 /** One homework activity: the stars add up towards the teacher's goal. */

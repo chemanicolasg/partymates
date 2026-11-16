@@ -45,7 +45,7 @@ export const ITEMS: Item[] = [
 
   item('hat', 'cap', 30), item('hat', 'beanie', 30), item('hat', 'bow', 40), item('hat', 'party', 40), item('hat', 'headphones', 60),
   item('hat', 'cowboy', 70), item('hat', 'tophat', 80), item('hat', 'pirate', 90), item('hat', 'chef', 90), item('hat', 'wizard', 120),
-  item('hat', 'viking', 130), item('hat', 'astro', 150), starItem('hat', 'grad', 30), starItem('hat', 'crown', 60),
+  item('hat', 'viking', 130), item('hat', 'astro', 150), starItem('hat', 'matty', 12), starItem('hat', 'grad', 30), starItem('hat', 'crown', 60),
 
   item('glasses', 'round', 30), item('glasses', 'sun', 50), item('glasses', 'patch', 60), item('glasses', 'star', 70),
   item('glasses', 'heart', 70), item('glasses', 'goggles', 80), item('glasses', '3d', 90), item('glasses', 'monocle', 100),

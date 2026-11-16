@@ -9,6 +9,7 @@ import type { Fact, FactResult } from '../core/types'
 import { DojoGame, FactPicture } from '../games/DojoGame'
 import { useT } from '../i18n'
 import { Confetti, Stars } from '../ui/kit'
+import { Matty } from '../ui/Matty'
 
 export function DojoScreen() {
   const { t, lang } = useT()
@@ -48,7 +49,7 @@ export function DojoScreen() {
       <div className="screen world-dojo center">
         {outcome.passed ? <Confetti /> : null}
         <div className="card result-card">
-          <span className="result-art">{outcome.passed ? '⚡' : '💪'}</span>
+          <Matty pose={outcome.passed ? 'cheer' : accurate ? 'happy' : 'think'} size={110} bounce={outcome.passed} />
           <h1>{t(outcome.passed ? 'dojo.passed' : accurate ? 'dojo.faster' : 'dojo.again')}</h1>
           <Stars n={outcome.passed ? 3 : accurate ? 2 : outcome.correct >= outcome.total / 2 ? 1 : 0} big />
           <div className="result-loot">

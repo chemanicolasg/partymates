@@ -25,6 +25,9 @@ export function rewardsFor(result: GameResult, previousStars: number): Rewards {
   }
 }
 
+/** Matty's daily present grows a little for each day in a row, up to five. */
+export const giftCoins = (streak: number) => 10 + 2 * Math.min(Math.max(streak, 1), 5)
+
 export const XP_PER_LEVEL = 250
 export const playerLevel = (xp: number) => Math.floor(xp / XP_PER_LEVEL) + 1
 export const levelProgress = (xp: number) => (xp % XP_PER_LEVEL) / XP_PER_LEVEL

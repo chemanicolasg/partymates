@@ -18,7 +18,7 @@ import {
   partyStart,
 } from '../src/core/generators'
 import { midi, parseTrack, TRACKS, type TrackId } from '../src/core/music'
-import { dojoPassed, rewardsFor, starsFor, weekStart } from '../src/core/scoring'
+import { dojoPassed, giftCoins, rewardsFor, starsFor, weekStart } from '../src/core/scoring'
 import { buildTask, dotLayout, MIN_GROUP, readClass, scoreTask, TASKS, type ScreenResult, type TaskId, type TaskScore } from '../src/core/screening'
 import { INTERVALS, isDue, memoryStats, review } from '../src/core/srs'
 import { decodeLook, DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEMS } from '../src/core/look'
@@ -306,6 +306,18 @@ describe('scoring', () => {
     expect(dojoPassed(11, 12, 50, 50)).toBe(true)
     expect(dojoPassed(10, 12, 30, 50)).toBe(false)
     expect(dojoPassed(12, 12, 51, 50)).toBe(false)
+  })
+
+  it("Matty's daily present grows for five days and then stays put", () => {
+    expect([1, 2, 3, 4, 5, 6, 30].map(giftCoins)).toEqual([12, 14, 16, 18, 20, 20, 20])
+    expect(giftCoins(0)).toBe(12)
+  })
+
+  it('there are star presents to look forward to, the first one early', () => {
+    const presents = ITEMS.filter((i) => i.stars !== undefined).map((i) => i.stars!)
+    expect(presents.length).toBeGreaterThanOrEqual(4)
+    expect(Math.min(...presents)).toBeLessThanOrEqual(15)
+    expect(ITEMS.some((i) => i.id === 'hat:matty' && i.stars !== undefined)).toBe(true)
   })
 
   it('weeks start on Monday', () => {

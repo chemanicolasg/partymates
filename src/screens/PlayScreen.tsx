@@ -18,6 +18,7 @@ import {
   useProfile,
   type Profile,
 } from '../core/store'
+import { ITEM_BY_ID, itemName } from '../core/look'
 import { TOPIC_BY_ID } from '../core/topics'
 import type { GameResult, Kind, LevelCfg } from '../core/types'
 import { ArenaGame } from '../games/ArenaGame'
@@ -28,7 +29,9 @@ import { PairsGame } from '../games/PairsGame'
 import { RaceGame } from '../games/RaceGame'
 import { StonesGame } from '../games/StonesGame'
 import { useT } from '../i18n'
-import { Confetti, CountUp, HowSteps, SayButton, speak, Stars } from '../ui/kit'
+import { Character } from '../ui/Character'
+import { Confetti, CountUp, HelpContext, HowSteps, SayButton, speak, Stars } from '../ui/kit'
+import { Matty, MattySays } from '../ui/Matty'
 import { HOW_ICONS, KIND_ICON, ZONE_ICON } from './art'
 
 const MUSIC: Record<Kind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party' }
@@ -39,6 +42,8 @@ interface Outcome {
   coins: number
   xp: number
   leveledUp: boolean
+  /** Items unlocked by the stars of this level: Matty's presents. */
+  gifts: string[]
 }
 
 function Game({ cfg, ...props }: { cfg: LevelCfg; profile: Profile; hints: boolean; firstTime: boolean; onFinish: (r: GameResult) => void; onExit: () => void }) {
@@ -75,7 +80,7 @@ function Activity({
   eyebrow: string
   startWithHints: boolean
   firstTime: boolean
-  save: (result: GameResult) => { stars: number; coins: number; xp: number }
+  save: (result: GameResult) => { stars: number; coins: number; xp: number; gifts?: string[] }
   resultExtra?: (outcome: Outcome) => ReactNode
   /** Label and action of the "carry on" button, when there is somewhere to carry on to. */
   next?: (outcome: Outcome) => { label: string; go: () => void } | null
@@ -102,7 +107,7 @@ function Activity({
     const before = playerLevel(profile.xp)
     const rewards = save(result)
     sfx(rewards.stars > 0 ? 'win' : 'bad')
-    setOutcome({ result, ...rewards, leveledUp: playerLevel(profile.xp + rewards.xp) > before })
+    setOutcome({ result, ...rewards, gifts: rewards.gifts ?? [], leveledUp: playerLevel(profile.xp + rewards.xp) > before })
     setPhase('result')
   }
   const play = () => {
@@ -114,7 +119,9 @@ function Activity({
   if (phase === 'game')
     return (
       <div className={`screen world-${kind}`} key={attempt}>
-        <Game cfg={cfg} profile={profile} hints={hints} firstTime={firstTime && attempt === 1} onFinish={onFinish} onExit={back} />
+        <HelpContext.Provider value={{ tip: t(`tip.${kind}`), ask: () => setHints(true) }}>
+          <Game cfg={cfg} profile={profile} hints={hints} firstTime={firstTime && attempt === 1} onFinish={onFinish} onExit={back} />
+        </HelpContext.Provider>
       </div>
     )
 
@@ -125,7 +132,7 @@ function Activity({
       <div className={`screen world-${kind} center`}>
         {stars > 0 ? <Confetti /> : null}
         <div className="card result-card">
-          <span className="result-art">{stars > 0 ? KIND_ICON[kind] : '💪'}</span>
+          <Matty pose={stars >= 2 ? 'cheer' : stars === 1 ? 'happy' : 'oops'} size={116} bounce={stars > 0} />
           <h1>{t(`res.s${stars}` as 'res.s0')}</h1>
           <Stars n={stars} big />
           <p className="result-score">{t('res.score', { ok: result.correct, total: result.total })}</p>
@@ -138,6 +145,17 @@ function Activity({
             </span>
           </div>
           {outcome.leveledUp ? <p className="level-up">🎉 {t('res.levelUp', { n: playerLevel(profile.xp) })}</p> : null}
+          {outcome.gifts.length ? (
+            <div className="matty-gift">
+              <strong>🎁 {t('matty.presents')}</strong>
+              <div className="pick-row">
+                {outcome.gifts.map((id) => (
+                  <Character key={id} look={{ ...profile.look, pet: null, [ITEM_BY_ID[id].type]: itemName(id) }} size={72} />
+                ))}
+              </div>
+              <small>{t('matty.inWardrobe')}</small>
+            </div>
+          ) : null}
           {resultExtra?.(outcome)}
           {stars === 0 ? <p>{t('res.hintOn')}</p> : null}
           <div className="btn-col">
@@ -170,11 +188,12 @@ function Activity({
         <button className="icon-btn intro-close" onClick={back} aria-label={t('back')}>
           ←
         </button>
-        <span className="result-art">{KIND_ICON[kind]}</span>
         <small>{eyebrow}</small>
-        <h1>
-          {t(`mission.${kind}`)} <SayButton text={briefing} />
-        </h1>
+        <MattySays pose="point" size={86} className="brief">
+          <span className="brief-icon">{KIND_ICON[kind]}</span>
+          <strong>{t(`mission.${kind}`)}</strong>
+          <SayButton text={briefing} />
+        </MattySays>
         <HowSteps steps={steps} />
         <label className="toggle">
           <input type="checkbox" checked={hints} onChange={(e) => setHints(e.target.checked)} />

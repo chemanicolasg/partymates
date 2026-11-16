@@ -6,6 +6,7 @@ import { createProfile, selectProfile, setLang, totalStars, useApp } from '../co
 import { BANDS, type Band, type Lang } from '../core/types'
 import { LANG_NAMES, useT } from '../i18n'
 import { Character, ProfileAvatar } from '../ui/Character'
+import { Matty } from '../ui/Matty'
 import { KidStyle } from './ShopScreen'
 
 const BAND_ICON: Record<Band, string> = { A: '🐣', B: '🚀', C: '🦸', D: '🧠' }
@@ -44,6 +45,7 @@ export function WelcomeScreen() {
   return (
     <div className="screen welcome center">
       <div className="logo">
+        <Matty pose="hi" size={128} bounce />
         <Logo />
         <p>{t('welcome.tagline')}</p>
       </div>

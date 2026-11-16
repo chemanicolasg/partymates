@@ -1,11 +1,14 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { sfx } from '../core/audio'
 import { JOURNEY, STOPS_PER_ZONE } from '../core/curriculum'
+import type { Homework, Screening } from '../core/backend'
 import { go } from '../core/nav'
 import { dayKey, levelProgress, playerLevel } from '../core/scoring'
 import {
   activeHomework,
+  claimGift,
   frontier,
+  giftReady,
   pendingScreening,
   homeworkStars,
   isStopOpen,
@@ -18,11 +21,13 @@ import {
   useProfile,
   zoneStars,
   ZONE_MAX_STARS,
+  type Profile,
 } from '../core/store'
 import { ZONES } from '../core/types'
 import { useT } from '../i18n'
 import { ProfileAvatar } from '../ui/Character'
-import { Chip, Stars } from '../ui/kit'
+import { Chip, speak, Stars } from '../ui/kit'
+import { Matty, type MattyPose } from '../ui/Matty'
 import { Decor, KIND_ICON, ZONE_DECOR, ZONE_ICON } from './art'
 
 /** Horizontal position (%) of each stop along a zone's winding trail. */
@@ -96,6 +101,7 @@ export function MapScreen() {
         </button>
       ) : null}
 
+      <div className="map-wrap">
       <main className="map">
         {[...ZONES].reverse().map((zone) => {
           const z = ZONES.indexOf(zone)
@@ -149,6 +155,8 @@ export function MapScreen() {
           )
         })}
       </main>
+      <MapBuddy p={p} hw={hw && homeworkStars(p, hw) < hw.goal ? hw : null} mission={mission} dojoDue={dojoDue} />
+      </div>
 
       <nav className="dock">
         <button className={`dock-btn dojo${dojoDue ? ' due' : ''}`} onClick={open(() => go({ id: 'dojo' }))}>
@@ -181,3 +189,54 @@ export function MapScreen() {
     </div>
   )
 }
+
+/**
+ * Matty on the map: once a day there is a present to open; otherwise a nudge towards whatever
+ * is worth doing next. The bubble folds away after a few seconds so it never hides the trail.
+ */
+function MapBuddy({ p, hw, mission, dojoDue }: { p: Profile; hw: Homework | null; mission: Screening | null; dojoDue: boolean }) {
+  const { t, lang } = useT()
+  const [opened, setOpened] = useState<number | null>(null)
+  const [talking, setTalking] = useState(true)
+  const present = giftReady(p)
+  const firstVisit = Object.keys(p.levels).length === 0
+
+  let pose: MattyPose = 'happy'
+  let text = t('matty.go')
+  if (opened !== null) [pose, text] = ['cheer', t('matty.giftOpen', { n: opened })]
+  else if (present) [pose, text] = ['gift', t('matty.gift')]
+  else if (firstVisit) [pose, text] = ['hi', t('matty.start')]
+  else if (mission) [pose, text] = ['point', t('matty.mission')]
+  else if (hw) [pose, text] = ['point', t('matty.homework', { topic: t(`topic.${hw.topic}` as 'topic.n20') })]
+  else if (dojoDue) [pose, text] = ['think', t('matty.dojo')]
+
+  // A present keeps Matty talking; anything else is said once and then he steps back.
+  useEffect(() => {
+    if (present && opened === null) return
+    const id = window.setTimeout(() => setTalking(false), 7000)
+    return () => clearTimeout(id)
+  }, [present, opened, talking])
+
+  const tap = () => {
+    if (present) {
+      const coins = claimGift()
+      if (coins) {
+        sfx('coin')
+        setOpened(coins)
+        setTalking(true)
+        return
+      }
+    }
+    sfx('tap')
+    setTalking(!talking)
+    if (!talking) speak(text, lang)
+  }
+
+  return (
+    <button className={`map-buddy${talking ? ' talking' : ''}`} onClick={tap} aria-label={`Matty: ${text}`}>
+      {talking ? <span className="matty-bubble">{text}</span> : null}
+      <Matty pose={pose} size={72} bounce={present && opened === null} />
+    </button>
+  )
+}
+

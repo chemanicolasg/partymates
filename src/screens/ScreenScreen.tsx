@@ -5,6 +5,7 @@ import { finishScreening, pendingScreening, SCREENING_REWARD, useProfile } from 
 import { ScreenGame } from '../games/ScreenGame'
 import { useT } from '../i18n'
 import { Confetti, SayButton } from '../ui/kit'
+import { Matty } from '../ui/Matty'
 
 /**
  * The Explorer Mission from the child's side: a short story, five stations and a thank-you.
@@ -42,7 +43,7 @@ export function ScreenScreen() {
       <div className="screen world-dojo center">
         <Confetti />
         <div className="card result-card">
-          <span className="result-art">🚀</span>
+          <Matty pose="cheer" size={116} bounce />
           <h1>{t('screen.done')}</h1>
           <p>{t('screen.doneText')}</p>
           <div className="result-loot">
@@ -61,8 +62,8 @@ export function ScreenScreen() {
         <button className="icon-btn intro-close" onClick={back} aria-label={t('back')}>
           ←
         </button>
-        <span className="result-art">🚀</span>
-        <h1>{t('screen.title')}</h1>
+        <Matty pose="hi" size={116} />
+        <h1>🚀 {t('screen.title')}</h1>
         <p>
           {t('screen.intro')} <SayButton text={t('screen.intro')} />
         </p>
