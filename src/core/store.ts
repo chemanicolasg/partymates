@@ -67,6 +67,8 @@ export interface TeacherClass {
   key: string
   name: string
   names: Record<string, string>
+  /** Her notes next to each list number. Like the names, on this device unless she keeps them online. */
+  notes: Record<string, string>
 }
 
 export interface AppState {
@@ -79,6 +81,8 @@ export interface AppState {
   profiles: Profile[]
   activeId: string | null
   teacher: TeacherClass[]
+  /** Keep the names and notes of the classes online too, to see them from any device. Off unless she turns it on. */
+  rosterOnline: boolean
 }
 
 const KEY = 'partymates.v1'
@@ -146,14 +150,15 @@ function load(): AppState {
           ...s,
           music: s.music ?? true,
           season: s.season ?? 'auto',
-          teacher: s.teacher ?? [],
+          teacher: (s.teacher ?? []).map((c) => ({ ...c, notes: c.notes ?? {} })),
+          rosterOnline: s.rosterOnline ?? false,
           profiles: s.profiles.map((p) => upgradeProfile(p as unknown as Record<string, unknown>)),
         }
     }
   } catch {
     /* corrupted or unavailable storage: start fresh */
   }
-  return { v: 1, lang: detectLang(), sound: true, music: true, season: 'auto', profiles: [], activeId: null, teacher: [] }
+  return { v: 1, lang: detectLang(), sound: true, music: true, season: 'auto', profiles: [], activeId: null, teacher: [], rosterOnline: false }
 }
 
 let state: AppState = load()
@@ -226,6 +231,11 @@ function sumWeek(days: Record<string, number>, now = Date.now()): number {
 }
 export const weekXp = (p: Profile) => sumWeek(p.stats.days)
 export const weekMinutes = (p: Profile) => Math.round(sumWeek(p.stats.ms) / 60000)
+/** Days played since Monday. */
+export const weekDays = (p: Profile, now = Date.now()) => {
+  const start = weekStart(now)
+  return Object.entries(p.stats.ms).filter(([day, ms]) => day >= start && ms > 0).length
+}
 
 /** The class homework, if there is one and its week has not ended. */
 export function activeHomework(p: Profile, now = Date.now()): Homework | null {
@@ -554,6 +564,8 @@ export function memberStats(p: Profile): MemberStats {
   return {
     week: weekStart(),
     weekMin: weekMinutes(p),
+    days: weekDays(p),
+    totalMin: Math.round(p.stats.playMs / 60000),
     byKind: p.stats.byKind,
     dojo: p.dojo.step,
     weak: memoryStats(p.facts).weak.slice(0, 6),
@@ -614,7 +626,7 @@ export async function leaveClass(): Promise<void> {
 export async function teacherCreateClass(name: string): Promise<TeacherClass> {
   const backend = await getBackend()
   const { code, teacherKey } = await backend.createClass(name.trim())
-  const entry: TeacherClass = { code, key: teacherKey, name: name.trim(), names: {} }
+  const entry: TeacherClass = { code, key: teacherKey, name: name.trim(), names: {}, notes: {} }
   set({ ...state, teacher: [...state.teacher, entry] })
   return entry
 }
@@ -629,7 +641,7 @@ export async function teacherOpenClass(code: string, key: string): Promise<boole
   }
   const info = await backend.getClass(code)
   if (!info) return false
-  const entry: TeacherClass = { code, key, name: info.name, names: {} }
+  const entry: TeacherClass = { code, key, name: info.name, names: {}, notes: {} }
   set({ ...state, teacher: [...state.teacher.filter((c) => c.code !== code), entry] })
   return true
 }
@@ -653,10 +665,50 @@ export async function teacherSetWorld(code: string, world: World | null): Promis
   await backend.setWorld(cls.code, cls.key, world)
 }
 
-/** The name a teacher writes next to a list number. Stored on this device only. */
-export function teacherNameStudent(code: string, num: number, name: string) {
+/** What a teacher writes next to a list number: a name, a note. On this device, and online only if she chose that. */
+export function teacherWriteStudent(code: string, num: number, patch: { name?: string; note?: string }) {
+  const cls = state.teacher.find((c) => c.code === code)
+  if (!cls) return
+  const name = (patch.name ?? cls.names[num] ?? '').slice(0, 30)
+  const note = (patch.note ?? cls.notes[num] ?? '').slice(0, 600)
   set({
     ...state,
-    teacher: state.teacher.map((c) => (c.code === code ? { ...c, names: { ...c.names, [num]: name.slice(0, 30) } } : c)),
+    teacher: state.teacher.map((c) => (c.code === code ? { ...c, names: { ...c.names, [num]: name }, notes: { ...c.notes, [num]: note } } : c)),
   })
+  if (state.rosterOnline) void getBackend().then((b) => b.setRoster(cls.code, cls.key, num, { name, note })).catch(() => {})
+}
+export const teacherNameStudent = (code: string, num: number, name: string) => teacherWriteStudent(code, num, { name })
+
+/** Brings the names and notes kept online to this device (what is online wins). Does nothing while that is off. */
+export async function teacherPullRoster(code: string): Promise<void> {
+  const cls = state.teacher.find((c) => c.code === code)
+  if (!cls || !state.rosterOnline) return
+  const roster = await (await getBackend()).roster(cls.code, cls.key)
+  const names = { ...cls.names }
+  const notes = { ...cls.notes }
+  for (const [num, entry] of Object.entries(roster)) {
+    names[num] = entry.name
+    notes[num] = entry.note
+  }
+  set({ ...state, teacher: state.teacher.map((c) => (c.code === code ? { ...c, names, notes } : c)) })
+}
+
+/** Turns keeping names and notes online on (uploading what this device has) or off (erasing them from the server). */
+export async function setRosterOnline(on: boolean): Promise<void> {
+  const backend = await getBackend()
+  for (const cls of state.teacher) {
+    if (!on) await backend.clearRoster(cls.code, cls.key)
+    else
+      for (const num of new Set([...Object.keys(cls.names), ...Object.keys(cls.notes)])) {
+        const entry = { name: cls.names[num] ?? '', note: cls.notes[num] ?? '' }
+        if (entry.name || entry.note) await backend.setRoster(cls.code, cls.key, Number(num), entry)
+      }
+  }
+  set({ ...state, rosterOnline: on })
+}
+
+/** Replaces the classes this device manages with the ones of the signed-in account, keeping local names and notes. */
+export function setTeacherClasses(classes: { code: string; key: string; name: string }[]) {
+  const before = new Map(state.teacher.map((c) => [c.code, c]))
+  set({ ...state, teacher: classes.map((c) => ({ ...c, names: before.get(c.code)?.names ?? {}, notes: before.get(c.code)?.notes ?? {} })) })
 }

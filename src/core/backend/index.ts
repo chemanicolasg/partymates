@@ -36,6 +36,10 @@ export interface MemberStats {
   /** Monday of the week the numbers below belong to. */
   week: string
   weekMin: number
+  /** Days played this week: the routine matters more than the minutes. */
+  days?: number
+  /** Minutes played since the beginning. */
+  totalMin?: number
   byKind: Record<string, { ok: number; total: number }>
   dojo: number
   /** Number facts that keep slipping, e.g. "7x8". */
@@ -58,9 +62,26 @@ export interface MemberUpsert {
   stats: MemberStats
 }
 
+/** One week of a pupil's history. */
+export interface WeekLine {
+  week: string
+  min: number
+  days: number
+  stars: number
+}
+
 export interface MemberReport extends MemberUpsert {
   updatedAt: number
+  /** Up to ten weeks, oldest first. */
+  weeks?: WeekLine[]
 }
+
+/** What a teacher writes next to a list number. */
+export interface RosterEntry {
+  name: string
+  note: string
+}
+export type Roster = Record<string, RosterEntry>
 
 export interface Backend {
   /** 'local' keeps classes on this device only; 'cloud' shares them between devices. */
@@ -76,6 +97,10 @@ export interface Backend {
   setScreening(code: string, teacherKey: string, screening: Screening | null): Promise<void>
   setWorld(code: string, teacherKey: string, world: World | null): Promise<void>
   removeMember(code: string, teacherKey: string, memberId: string): Promise<void>
+  /** Names and notes kept with the class, for teachers who choose to keep them online. */
+  roster(code: string, teacherKey: string): Promise<Roster>
+  setRoster(code: string, teacherKey: string, num: number, entry: RosterEntry): Promise<void>
+  clearRoster(code: string, teacherKey: string): Promise<void>
   /** Deletes the class and everything its pupils sent to it. */
   deleteClass(code: string, teacherKey: string): Promise<void>
 }

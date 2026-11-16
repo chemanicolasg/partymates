@@ -1,5 +1,5 @@
 import type { World } from '../worlds'
-import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert, type Screening } from './index'
+import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert, type Roster, type RosterEntry, type Screening } from './index'
 
 const KEY = 'matty.classes.v2'
 
@@ -9,6 +9,7 @@ interface Stored {
   homework: Homework | null
   screening?: Screening | null
   world?: World | null
+  roster?: Roster
   members: Record<string, MemberReport>
 }
 
@@ -52,7 +53,10 @@ export class LocalBackend implements Backend {
   async upsertMember(code: string, member: MemberUpsert) {
     const all = this.read()
     if (!all[code]) throw new Error('class-not-found')
-    all[code].members[member.id] = { ...member, updatedAt: Date.now() }
+    // One line per week, like the cloud keeps: the latest numbers of the week replace the earlier ones.
+    const { week, weekMin, days } = member.stats
+    const weeks = [...(all[code].members[member.id]?.weeks ?? []).filter((w) => w.week !== week), { week, min: weekMin, days: days ?? 0, stars: member.stars }]
+    all[code].members[member.id] = { ...member, updatedAt: Date.now(), weeks: weeks.sort((a, b) => a.week.localeCompare(b.week)).slice(-10) }
     this.write(all)
   }
 
@@ -87,6 +91,25 @@ export class LocalBackend implements Backend {
   async removeMember(code: string, teacherKey: string, memberId: string) {
     const all = this.teacher(code, teacherKey)
     delete all[code].members[memberId]
+    this.write(all)
+  }
+
+  async roster(code: string, teacherKey: string) {
+    return this.teacher(code, teacherKey)[code].roster ?? {}
+  }
+
+  async setRoster(code: string, teacherKey: string, num: number, entry: RosterEntry) {
+    const all = this.teacher(code, teacherKey)
+    const roster = { ...(all[code].roster ?? {}) }
+    if (entry.name.trim() || entry.note.trim()) roster[num] = entry
+    else delete roster[num]
+    all[code].roster = roster
+    this.write(all)
+  }
+
+  async clearRoster(code: string, teacherKey: string) {
+    const all = this.teacher(code, teacherKey)
+    delete all[code].roster
     this.write(all)
   }
 

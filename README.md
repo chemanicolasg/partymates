@@ -36,8 +36,12 @@ Además:
 - **Enunciados grandes** con los números resaltados, botón de lectura en voz alta y tres pictogramas de «cómo se
   juega» antes de cada actividad. La primera vez, una mano señala dónde tocar.
 - **Bloc de notas cuadriculado** dentro de cada juego para hacer las cuentas a mano; pausa el reloj mientras está abierto.
-- **Personajes dibujados** (niños y animales) con peinados, sombreros, gafas, ropa y mascotas. Se consiguen con
-  puntos de juego o se desbloquean con estrellas. No hay dinero real.
+- **Personajes a medida**: la cara se monta pieza a pieza (piel, forma, 15 peinados, ojos y su color, cejas,
+  nariz, boca y mejillas; más de un millón de combinaciones, todas gratis) o se elige un animal. Encima van
+  sombreros, gafas, ropa y mascotas, que se consiguen con puntos de juego o con estrellas. No hay dinero real.
+- **Primeros minutos pensados para enganchar**: Matty cuenta por qué importa el viaje (su cohete funciona con
+  estrellas), cada zona empieza con la carrera de dados, las tres primeras paradas son cortas la primera vez,
+  las respuestas seguidas encienden una racha y la primera estrella trae un regalo que se pone con un toque.
 - **Sin rankings**: no hay posiciones ni comparación entre niños; solo estrellas y puntos propios.
 - **Nadie se queda atascado**: una parada se abre con una estrella en la anterior o tras tres intentos.
 - **Repaso espaciado (Leitner)** de las operaciones falladas y **pistas que retroceden una etapa** en vez de dar la respuesta.
@@ -63,9 +67,43 @@ Lanzar una temporada nueva (carnaval, verano…) es:
 
 Las pruebas comprueban que las temporadas no se solapan y que todo lo que nombran existe.
 
-## Zona de profes
+## Área docente (`/docente`)
 
-En «Adultos → Profes» (no hacen falta cuentas):
+Las docentes tienen su propio sitio en `…/docente`, con **cuenta y contraseña**. Dentro ven todas sus clases con
+sus cifras de la semana y, al abrir una, su panel completo:
+
+- **Indicadores**: cuántos han jugado esta semana, cuántos siguen la rutina, minutos de media y acierto.
+- **Habilidades**: una barra por habilidad (valor posicional, recta numérica, ordenar, cálculo mental, reparto y
+  problemas, memoria de operaciones) con el punto fuerte de la clase y lo que conviene reforzar.
+- **Semana a semana**: los minutos de la clase en las últimas semanas.
+- **Seguimiento por alumno**: tiempo de la semana y total, días jugados frente a la rutina, acierto, qué reforzar,
+  las operaciones que falla y una **nota** de la docente. Se ordena por columnas y se descarga para Excel.
+- **Tarjetas de acceso**: una por alumno, para imprimir, con un **código QR** que lo mete directamente en la clase
+  con su número (en el aula o en casa), y una nota para las familias.
+- Además de lo de siempre: deberes, mundo de la clase y Misión Explorador.
+
+La **rutina recomendada** es de 4 días por semana, unos 15 minutos cada día; el niño la ve en el mapa como
+cuatro puntos junto a sus estrellas. La idea de la rutina corta y constante, la cuenta del centro que reparte
+accesos y los informes por habilidades están tomadas de cómo funciona
+[Dytective](https://www.changedyslexia.org/) (lectoescritura); aquí aplicadas a las matemáticas.
+
+**Privacidad.** Los alumnos siguen sin cuenta: entran con el código de la clase y su número de lista. La cuenta
+de la docente es un llavero: recuerda qué clases son suyas. Los nombres y las notas que escribe junto a cada
+número se quedan en su dispositivo salvo que active «Guardar nombres y notas en la nube», que los sube para
+verlos desde cualquier dispositivo y los borra del servidor al desactivarlo.
+
+**Puesta en marcha de las cuentas** (una vez, en el panel de Supabase → Authentication):
+
+- El correo que Supabase trae por defecto solo envía a los miembros del proyecto. Para que cualquier docente
+  pueda registrarse hay que conectar un servicio de correo propio (SMTP), o bien desactivar «Confirm email»
+  mientras dure el piloto. Recuperar la contraseña también depende del correo.
+- En «URL Configuration», añadir `https://<tu-dominio>/docente` a las direcciones de redirección.
+
+Sin nube configurada (tableta sin internet, desarrollo) `/docente` funciona sin cuenta con las clases del dispositivo.
+
+## Zona de profes dentro del juego
+
+La misma gestión de una clase está también en «Adultos → Profes», sin cuenta, con el código y la clave de la clase:
 
 - **Crear una clase**: se obtiene un código de 6 letras para los alumnos y una clave de profe.
 - **Deberes / tema de la semana**: 24 temas (sumas llevando, restas llevando, tablas, fracciones…) con un objetivo

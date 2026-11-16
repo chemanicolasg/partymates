@@ -6,13 +6,26 @@ import { KINDS } from '../core/types'
 import { factLabel } from '../core/format'
 import { decodeLook } from '../core/look'
 import { dayKey, weekStart } from '../core/scoring'
-import { teacherCreateClass, teacherDeleteClass, teacherForgetClass, teacherNameStudent, teacherOpenClass, teacherSetWorld, useApp, type TeacherClass } from '../core/store'
+import {
+  setRosterOnline,
+  teacherCreateClass,
+  teacherDeleteClass,
+  teacherForgetClass,
+  teacherNameStudent,
+  teacherOpenClass,
+  teacherPullRoster,
+  teacherSetWorld,
+  teacherWriteStudent,
+  useApp,
+  type TeacherClass,
+} from '../core/store'
 import { AREAS, TOPICS, type Topic } from '../core/topics'
 import { cleanWorld } from '../core/worlds'
 import { useT } from '../i18n'
 import { Character } from '../ui/Character'
 import { Modal } from '../ui/kit'
 import { KIND_ICON, TASK_ICON } from './art'
+import { AccessCards, ClassInsights, PupilTable } from './ClassInsights'
 import { WorldSection } from './WorldEditor'
 
 /** Sunday of this week (or a later one) as a day key: homework runs until then. */
@@ -54,6 +67,9 @@ export function TeacherPanel() {
       <section className="card">
         <h2>🧑‍🏫 {t('teacher.title')}</h2>
         <p>{t('teacher.intro')}</p>
+        <a className="btn btn-small portal-link" href="/docente" target="_blank" rel="noreferrer">
+          💻 {t('portal.link')}
+        </a>
         {classes.map((c) => (
           <button key={c.code} className="btn class-pick" onClick={() => setOpenCode(c.code)}>
             <strong>{c.name}</strong>
@@ -97,7 +113,7 @@ export function TeacherPanel() {
   )
 }
 
-function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
+export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
   const { t, lang } = useT()
   const [members, setMembers] = useState<MemberReport[] | null>(null)
   const [info, setInfo] = useState<ClassInfo | null>(null)
@@ -105,6 +121,8 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
   const [editing, setEditing] = useState(false)
   const [removing, setRemoving] = useState<MemberReport | null>(null)
   const [deleting, setDeleting] = useState(false)
+  const [cards, setCards] = useState(false)
+  const online = useApp((s) => s.rosterOnline)
   const week = weekStart()
 
   const load = useCallback(async () => {
@@ -121,7 +139,8 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
 
   useEffect(() => {
     void load()
-  }, [load])
+    void teacherPullRoster(cls.code).catch(() => {})
+  }, [load, cls.code])
 
   const hw = info?.homework && info.homework.until >= dayKey() ? info.homework : null
   const hwStars = (m: MemberReport) => (hw && m.stats?.hw?.id === hw.id ? Math.min(m.stats.hw.stars, hw.goal) : 0)
@@ -154,7 +173,13 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
           </div>
         </div>
         <p>{t('teacher.codesHelp')}</p>
+        <button className="btn btn-primary" onClick={() => setCards(true)}>
+          🎫 {t('cards.title')}
+        </button>
       </section>
+
+      {members?.length ? <ClassInsights members={members} week={week} /> : null}
+      {members?.length ? <PupilTable members={members} week={week} cls={cls} /> : null}
 
       <section className="card">
         <h2>📚 {t('class.homework')}</h2>
@@ -190,7 +215,6 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
         }}
       />
 
-      {members?.length ? <ClassSummary members={members} week={week} /> : null}
 
       <ScreeningSection
         members={members ?? []}
@@ -239,6 +263,17 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
                   <span>{t('teacher.nameLabel')}</span>
                   <input defaultValue={cls.names[m.num] ?? ''} maxLength={30} placeholder={m.name} onBlur={(e) => teacherNameStudent(cls.code, m.num, e.target.value.trim())} />
                 </label>
+                <label className="field">
+                  <span>{t('csv.note')}</span>
+                  <textarea
+                    className="note-area"
+                    defaultValue={cls.notes[m.num] ?? ''}
+                    maxLength={600}
+                    onBlur={(e) => {
+                      if (e.target.value.trim() !== (cls.notes[m.num] ?? '')) teacherWriteStudent(cls.code, m.num, { note: e.target.value.trim() })
+                    }}
+                  />
+                </label>
                 <p>
                   {t('teacher.nick')}: <b>{m.name}</b> · {t('teacher.lastSeen')}: {new Date(m.updatedAt).toLocaleDateString(lang)}
                 </p>
@@ -280,6 +315,16 @@ function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => void }) {
           )
         })}
       </section>
+
+      <section className="card">
+        <label className="toggle">
+          <input type="checkbox" checked={online} onChange={(e) => void setRosterOnline(e.target.checked).catch(() => setFailed(true))} />
+          <span>☁️ {t('roster.online')}</span>
+        </label>
+        <small>{t('roster.help')}</small>
+      </section>
+
+      {cards ? <AccessCards cls={cls} pupils={Math.max(0, ...(members ?? []).map((m) => m.num))} onClose={() => setCards(false)} /> : null}
 
       <button className="btn btn-quiet" onClick={() => (teacherForgetClass(cls.code), onBack())}>
         {t('teacher.forget')}
@@ -505,51 +550,3 @@ function ScreeningSection({
 }
 
 /** The class as a whole: how much it played this week, where it is strong and what most pupils find hard. */
-function ClassSummary({ members, week }: { members: MemberReport[]; week: string }) {
-  const { t, lang } = useT()
-  const active = members.filter((m) => m.stats?.week === week && m.stats.weekMin > 0)
-  const minutes = active.reduce((s, m) => s + m.stats.weekMin, 0)
-  const kinds = KINDS.map((k) => {
-    const sum = members.reduce((acc, m) => ({ ok: acc.ok + (m.stats?.byKind?.[k]?.ok ?? 0), total: acc.total + (m.stats?.byKind?.[k]?.total ?? 0) }), { ok: 0, total: 0 })
-    return { k, pct: sum.total ? Math.round((sum.ok / sum.total) * 100) : null }
-  }).filter((x) => x.pct !== null)
-  // Facts that several pupils keep getting wrong are worth a few minutes on the board.
-  const counts = new Map<string, number>()
-  for (const m of members) for (const key of m.stats?.weak ?? []) counts.set(key, (counts.get(key) ?? 0) + 1)
-  const hard = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 8)
-
-  return (
-    <section className="card">
-      <h2>📊 {t('teacher.summary')}</h2>
-      <p>{t('teacher.summaryWeek', { n: active.length, total: members.length, min: active.length ? Math.round(minutes / active.length) : 0 })}</p>
-      {kinds.length ? (
-        <>
-          <p>{t('teacher.kinds')}</p>
-          <div className="kind-bars">
-            {kinds.map(({ k, pct }) => (
-              <span key={k} title={t(`mission.${k}`)}>
-                {KIND_ICON[k]}
-                <span className="meter">
-                  <i style={{ width: `${pct}%` }} />
-                </span>
-                {pct} %
-              </span>
-            ))}
-          </div>
-        </>
-      ) : null}
-      {hard.length ? (
-        <>
-          <p>{t('teacher.hard')}</p>
-          <div className="weak-facts">
-            {hard.map(([key, n]) => (
-              <span key={key}>
-                {factLabel(key, lang)} <b>· {n}</b>
-              </span>
-            ))}
-          </div>
-        </>
-      ) : null}
-    </section>
-  )
-}

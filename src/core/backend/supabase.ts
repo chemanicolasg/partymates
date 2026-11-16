@@ -1,6 +1,14 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { World } from '../worlds'
-import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert, Screening } from './index'
+import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert, Roster, RosterEntry, Screening } from './index'
+
+/**
+ * The client a signed-in teacher uses. It lives here so that everything that needs the cloud
+ * library sits in this one lazily-loaded file, away from the offline game.
+ */
+export const makeAccountClient = (url: string, key: string): SupabaseClient =>
+  // Its own storage key: the game's anonymous client must never pick up a teacher's session.
+  createClient(url, key, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, storageKey: 'matty.teacher' } })
 
 /**
  * Cloud classes on Supabase. Tables are closed; every call goes through the functions in
@@ -65,6 +73,18 @@ export class SupabaseBackend implements Backend {
 
   async removeMember(code: string, teacherKey: string, memberId: string) {
     await this.rpc('pm_class_remove_member', { p_code: code, p_key: teacherKey, p_member: memberId })
+  }
+
+  roster(code: string, teacherKey: string) {
+    return this.rpc<Roster>('pm_class_roster', { p_code: code, p_key: teacherKey })
+  }
+
+  async setRoster(code: string, teacherKey: string, num: number, entry: RosterEntry) {
+    await this.rpc('pm_class_set_roster', { p_code: code, p_key: teacherKey, p_num: num, p_name: entry.name, p_note: entry.note })
+  }
+
+  async clearRoster(code: string, teacherKey: string) {
+    await this.rpc('pm_class_clear_roster', { p_code: code, p_key: teacherKey })
   }
 
   async deleteClass(code: string, teacherKey: string) {

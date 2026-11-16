@@ -1,0 +1,597 @@
+/*
+ * The teachers' side: the panel of a class (also shown inside the game's grown-ups area) and
+ * the portal at /docente around it. Figures are drawn quietly — one colour, thin marks, ink text —
+ * so the numbers are what stands out.
+ */
+
+:root {
+  --data: #6c4de8;
+  --data-soft: #e9e4fb;
+  --rule: rgba(35, 22, 79, 0.14);
+}
+
+/* ───────────── Figures ───────────── */
+
+.insights h3,
+.pupil-table-card h3 {
+  margin: 14px 0 6px;
+  font-size: 1rem;
+}
+.kpis {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(128px, 1fr));
+  gap: 10px;
+  margin-top: 8px;
+}
+.kpi {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  column-gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: #fff;
+  box-shadow: inset 0 0 0 2px var(--rule);
+}
+.kpi span {
+  grid-row: span 2;
+  font-size: 1.5rem;
+}
+.kpi strong {
+  font-size: 1.45rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+.kpi small {
+  color: var(--ink-soft);
+  line-height: 1.2;
+}
+.plan-note,
+.insight-line {
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+}
+.insight-line {
+  color: var(--ink);
+  font-weight: 600;
+}
+
+[data-tip] {
+  position: relative;
+}
+[data-tip]:hover::after,
+[data-tip]:focus-visible::after {
+  content: attr(data-tip);
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 6px);
+  z-index: 10;
+  transform: translateX(-50%);
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--ink);
+  color: #fff;
+  font-size: 0.8rem;
+  font-weight: 600;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+.skill-bars {
+  display: grid;
+  gap: 8px;
+}
+.skill {
+  display: grid;
+  grid-template-columns: minmax(0, 13.5em) 1fr 3.4em;
+  align-items: center;
+  gap: 10px;
+  border-radius: 8px;
+}
+.skill-name {
+  font-size: 0.95rem;
+  line-height: 1.2;
+}
+.skill-track {
+  height: 14px;
+  background: var(--data-soft);
+  border-radius: 0 4px 4px 0;
+  border-left: 1px solid var(--rule);
+}
+.skill-track i {
+  display: block;
+  height: 100%;
+  background: var(--data);
+  border-radius: 0 4px 4px 0;
+}
+.skill-value {
+  text-align: right;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.week-chart {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 150px;
+  padding-top: 20px;
+}
+.week-col {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  border-radius: 6px;
+}
+.week-col:hover .week-bar,
+.week-col:focus-visible .week-bar {
+  filter: brightness(1.15);
+}
+.week-value {
+  min-height: 1.2em;
+  font-size: 0.8rem;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.week-bar {
+  width: min(24px, 70%);
+  background: var(--data);
+  border-radius: 4px 4px 0 0;
+}
+.week-col small {
+  width: 100%;
+  margin-top: 0;
+  padding-top: 4px;
+  border-top: 1px solid var(--rule);
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 0.75rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ───────────── Pupils on a table ───────────── */
+
+.pupil-table {
+  overflow-x: auto;
+  margin: 8px 0;
+}
+.pupil-table table {
+  width: 100%;
+  border-collapse: collapse;
+  font-variant-numeric: tabular-nums;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.pupil-table th,
+.pupil-table td {
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--rule);
+  text-align: left;
+  white-space: nowrap;
+  vertical-align: middle;
+}
+.pupil-table th {
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+}
+.th-sort {
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-decoration: underline dotted;
+}
+.th-sort.on {
+  color: var(--ink);
+  text-decoration: underline;
+}
+.pupil-table tr.idle td {
+  color: var(--ink-soft);
+}
+.pupil-who {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+.plan-dots {
+  display: inline-flex;
+  gap: 3px;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+.plan-dots i {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--data);
+}
+.plan-dots i.on {
+  background: var(--data);
+}
+.pupil-weak {
+  white-space: normal !important;
+  min-width: 150px;
+}
+.pupil-weak span {
+  display: block;
+  font-size: 0.9rem;
+}
+.pupil-weak b {
+  display: inline-block;
+  margin: 2px 4px 0 0;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: var(--ko-soft);
+  font-size: 0.82rem;
+}
+.pupil-table input.note-input {
+  width: 100%;
+  min-width: 150px;
+  padding: 5px 8px;
+  border: 2px solid var(--rule);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 0.9rem;
+  font-weight: 400;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.note-area {
+  width: 100%;
+  min-height: 70px;
+  padding: 8px 10px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  resize: vertical;
+  -webkit-user-select: text;
+  user-select: text;
+}
+.portal-link {
+  margin: 8px 0 0;
+  text-decoration: none;
+}
+
+/* ───────────── Access cards ───────────── */
+
+.cards-count input {
+  width: 5.5em;
+  padding: 8px 10px;
+  border: 3px solid var(--ink);
+  border-radius: 12px;
+  text-align: center;
+  font-weight: 700;
+}
+.access-preview {
+  display: grid;
+  place-items: center;
+}
+.access-card {
+  width: 100%;
+  max-width: 260px;
+  padding: 10px 12px;
+  border: 2px dashed #23164f;
+  border-radius: 14px;
+  background: #fff;
+  color: #23164f;
+  text-align: left;
+  break-inside: avoid;
+}
+.access-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 0.85rem;
+}
+.access-brand {
+  font-size: 1.25rem;
+}
+.access-brand b {
+  color: #e0a100;
+}
+.access-body {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin: 8px 0;
+}
+.access-qr {
+  flex: none;
+  width: 96px;
+  height: 96px;
+}
+.access-qr svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+.access-num {
+  display: block;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+.access-card p {
+  font-size: 0.72rem;
+  line-height: 1.3;
+}
+.print-only {
+  display: none;
+}
+@media print {
+  html,
+  body {
+    height: auto;
+    background: #fff !important;
+  }
+  #root {
+    display: none !important;
+  }
+  .print-only {
+    display: block;
+    color: #23164f;
+  }
+  .access-letter {
+    display: flex;
+    gap: 14px;
+    align-items: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #23164f;
+  }
+  .access-letter h2 {
+    margin: 0 0 4px;
+  }
+  .access-letter p {
+    margin: 0;
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+  .access-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .access-card {
+    max-width: none;
+  }
+  @page {
+    margin: 12mm;
+  }
+}
+
+/* ───────────── The portal at /docente ───────────── */
+
+.portal {
+  height: 100dvh;
+  overflow-y: auto;
+  background: linear-gradient(#ece6ff, #f7f4ff 240px);
+  color: var(--ink);
+}
+.portal-top {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  padding: 8px clamp(12px, 3vw, 28px);
+  background: var(--paper);
+  border-bottom: 3px solid var(--ink);
+}
+.portal-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--ink);
+  font-size: 1.5rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.portal-brand b {
+  color: var(--sun-dark);
+}
+.portal-brand small {
+  margin-left: 4px;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--data-soft);
+  font-size: 0.85rem;
+}
+.portal-spacer {
+  flex: 1;
+}
+.portal-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.portal-top .btn-small {
+  margin-left: 0;
+  text-decoration: none;
+}
+.portal-main {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: clamp(14px, 3vw, 28px) clamp(12px, 3vw, 28px) 60px;
+}
+.portal-wait {
+  text-align: center;
+  font-size: 2rem;
+}
+.portal-sign {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 28px;
+  align-items: center;
+  max-width: 880px;
+  margin: 3vh auto 0;
+}
+.portal-pitch h1 {
+  margin: 8px 0 12px;
+  font-size: clamp(1.7rem, 4vw, 2.3rem);
+}
+.portal-pitch ul {
+  margin: 0;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 8px;
+  font-size: 1.08rem;
+  line-height: 1.35;
+}
+.sign-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  max-width: 420px;
+  margin: 0 auto;
+}
+.sign-card .btn-big {
+  max-width: none;
+}
+.sign-privacy {
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.sign-card input,
+.class-card.new input {
+  -webkit-user-select: text;
+  user-select: text;
+}
+.portal-head {
+  margin-bottom: 14px;
+}
+.portal-local {
+  margin-top: 6px;
+  padding: 6px 12px;
+  border-radius: 12px;
+  background: #fff4cf;
+  font-size: 0.95rem;
+}
+.portal-empty {
+  margin-top: 16px;
+  color: var(--ink-soft);
+}
+.class-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+  gap: 16px;
+}
+.class-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+button.class-card:hover {
+  transform: translateY(-2px);
+}
+.class-card-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+  font-size: 1.25rem;
+}
+.class-card-top code {
+  padding: 1px 8px;
+  border-radius: 8px;
+  background: var(--data-soft);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+}
+.class-card-kpis {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px 12px;
+}
+.class-card-kpis span {
+  display: flex;
+  flex-direction: column;
+}
+.class-card-kpis b {
+  font-size: 1.3rem;
+  font-variant-numeric: tabular-nums;
+}
+.class-card-kpis small {
+  color: var(--ink-soft);
+  line-height: 1.2;
+}
+.class-card-open {
+  align-self: flex-end;
+  font-weight: 700;
+  color: var(--data);
+}
+.class-card.new {
+  justify-content: center;
+  border-style: dashed;
+}
+
+/* A class's panel spreads over two columns when there is room. */
+.portal .report {
+  max-width: none;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.portal .report > .teacher-head,
+.portal .report > .insights,
+.portal .report > .pupil-table-card {
+  grid-column: 1 / -1;
+}
+.portal .report > .btn {
+  justify-self: start;
+}
+.portal .btn-quiet {
+  color: var(--ink);
+}
+@media (max-width: 760px) {
+  .portal .report {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .skill {
+    grid-template-columns: minmax(0, 9em) 1fr 3.2em;
+  }
+}
+
+/* The weekly routine, next to the stars on the map. */
+.plan-chip i {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  margin-left: 3px;
+  border-radius: 50%;
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+.plan-chip i.on {
+  background: var(--ok);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+.join-banner {
+  padding: 8px 14px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: var(--sun);
+  color: var(--ink);
+  font-weight: 600;
+  text-align: center;
+}
+.sign-card input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 3px solid var(--ink);
+  border-radius: 14px;
+  background: #fff;
+  font-size: 1.05rem;
+}

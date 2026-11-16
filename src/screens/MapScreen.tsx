@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { sfx } from '../core/audio'
 import { JOURNEY, STOPS_PER_ZONE } from '../core/curriculum'
 import type { Homework, Screening } from '../core/backend'
+import { PLAN } from '../core/insights'
 import { go } from '../core/nav'
 import { dayKey, levelProgress, playerLevel } from '../core/scoring'
 import {
@@ -22,6 +23,7 @@ import {
   useApp,
   useProfile,
   useSeason,
+  weekDays,
   worldDone,
   worldStars,
   zoneStars,
@@ -93,6 +95,12 @@ export function MapScreen() {
           <Chip icon="🪙" label={t('hub.coins')}>
             {p.coins}
           </Chip>
+          <span className="chip plan-chip" role="img" aria-label={t('plan.week', { n: weekDays(p), plan: PLAN.days })} title={t('plan.week', { n: weekDays(p), plan: PLAN.days })}>
+            📅
+            {Array.from({ length: PLAN.days }, (_, i) => (
+              <i key={i} className={i < weekDays(p) ? 'on' : ''} />
+            ))}
+          </span>
           <button className={`chip music-toggle${music ? '' : ' off'}`} onClick={() => setMusic(!music)} aria-pressed={music} aria-label={t('music')}>
             {music ? '🎵' : '🔇'}
           </button>

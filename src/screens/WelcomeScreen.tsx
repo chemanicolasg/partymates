@@ -7,6 +7,7 @@ import { BANDS, type Band, type Lang } from '../core/types'
 import { LANG_NAMES, useT } from '../i18n'
 import { Character, ProfileAvatar } from '../ui/Character'
 import { Matty } from '../ui/Matty'
+import { peekInvitation } from '../core/invite'
 import { KidStyle } from './ShopScreen'
 
 const BAND_ICON: Record<Band, string> = { A: '🐣', B: '🚀', C: '🦸', D: '🧠' }
@@ -36,6 +37,7 @@ export function WelcomeScreen() {
   const { t } = useT()
   const profiles = useApp((s) => s.profiles)
   const [creating, setCreating] = useState(profiles.length === 0)
+  const invite = peekInvitation()
   const enter = (id: string) => {
     sfx('good')
     selectProfile(id)
@@ -50,6 +52,7 @@ export function WelcomeScreen() {
         <p>{t('welcome.tagline')}</p>
       </div>
       <LangPicker />
+      {invite ? <p className="join-banner">🏫 {t('join.banner', { code: invite.code })}</p> : null}
       {creating ? (
         <NewPlayer onCancel={profiles.length ? () => setCreating(false) : undefined} />
       ) : (

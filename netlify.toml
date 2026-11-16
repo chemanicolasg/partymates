@@ -10,3 +10,14 @@
   for = "/sw.js"
   [headers.values]
     Cache-Control = "no-cache"
+
+# The teachers' panel is a page of the same app.
+[[redirects]]
+  from = "/docente"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/docente/*"
+  to = "/index.html"
+  status = 200
