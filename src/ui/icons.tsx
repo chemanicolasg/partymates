@@ -33,6 +33,7 @@ export type IconName =
   | 'map'
   | 'play'
   | 'gift'
+  | 'heart'
 
 const ICONS: Record<IconName, ReactNode> = {
   star: (
@@ -226,6 +227,12 @@ const ICONS: Record<IconName, ReactNode> = {
     </>
   ),
   play: <path d="M7 4.200v15.600a1 1 0 0 0 1.500.9l12.400-7.800a1 1 0 0 0 0-1.800L8.500 3.300A1 1 0 0 0 7 4.200z" fill="currentColor" />,
+  heart: (
+    <>
+      <path d="M12 21s-8.6-5.200-8.6-11.400A4.800 4.800 0 0 1 12 6.600a4.800 4.800 0 0 1 8.600 3c0 6.200-8.600 11.400-8.600 11.400z" fill="#ff5d73" />
+      <path d="M12 6.600A4.800 4.800 0 0 0 3.400 9.600c0 1.400.4 2.700 1.100 3.900C6 9.800 9 8 12 9z" fill="#ff8a96" />
+    </>
+  ),
   gift: (
     <>
       <rect x="3.600" y="10" width="16.800" height="11" rx="2.400" fill="#ff5d73" />

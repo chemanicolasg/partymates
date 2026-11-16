@@ -1,13 +1,18 @@
 import { useSyncExternalStore } from 'react'
+export type WorldSrc = 'class' | 'season' | 'family'
+
 export type Screen =
   | { id: 'welcome' }
   | { id: 'hub' }
   /** A stop of the journey, by its position. */
   | { id: 'play'; stop: number }
-  | { id: 'homework' }
+  /** The teacher's homework, or the family's mission. */
+  | { id: 'homework'; src?: 'class' | 'family' }
+  /** What the family has sent: its mission, its world, and where to connect to it. */
+  | { id: 'family' }
   /** An extra world: the teacher's for the class, or the running season's. */
-  | { id: 'world'; src: 'class' | 'season' }
-  | { id: 'worldplay'; src: 'class' | 'season'; stop: number }
+  | { id: 'world'; src: WorldSrc }
+  | { id: 'worldplay'; src: WorldSrc; stop: number }
   /** The number-sense mission a teacher opened for the class. */
   | { id: 'screen' }
   | { id: 'dojo' }

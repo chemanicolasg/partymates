@@ -2,15 +2,17 @@ import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { sfx } from '../core/audio'
 import { eventSpecs, getLevel, JOURNEY } from '../core/curriculum'
 import { playMusic, type TrackId } from '../core/music'
-import { back, go } from '../core/nav'
+import { back, go, type WorldSrc } from '../core/nav'
 import { playerLevel } from '../core/scoring'
 import {
   activeHomework,
   classWorld,
+  familyWorld,
   finishEvent,
   finishHomework,
   finishStop,
   finishWorldStop,
+  homeworkPlays,
   homeworkStars,
   isNewKind,
   isStopOpen,
@@ -23,6 +25,7 @@ import {
   useSeason,
   wearItem,
   worldRecord,
+  type GroupSrc,
   type Profile,
 } from '../core/store'
 import { ITEM_BY_ID, itemName } from '../core/look'
@@ -391,18 +394,19 @@ export function StopScreen({ index }: { index: number }) {
   )
 }
 
-/** The teacher's theme of the week: each visit plays a different activity on the same idea. */
-export function HomeworkScreen() {
+/** The teacher's theme of the week, or the family's mission: each visit plays a different activity on the same idea. */
+export function HomeworkScreen({ src = 'class' }: { src?: GroupSrc }) {
   const { t } = useT()
   const profile = useProfile()
-  const [hw] = useState(() => activeHomework(profile))
+  const [hw] = useState(() => activeHomework(profile, Date.now(), src))
   const topic = hw ? TOPIC_BY_ID[hw.topic] : undefined
   // Fixed for this visit; "play again" keeps the same activity, the next visit rotates.
-  const [turn, setTurn] = useState(() => (profile.hw?.id === hw?.id ? (profile.hw?.plays ?? 0) : 0))
+  const [turn, setTurn] = useState(() => homeworkPlays(profile, hw, src))
+  const home = src === 'family'
 
   useEffect(() => {
-    if (!hw || !topic) go({ id: 'class' }, { replace: true })
-  }, [hw, topic])
+    if (!hw || !topic) go({ id: home ? 'family' : 'class' }, { replace: true })
+  }, [hw, topic, home])
   if (!hw || !topic) return null
 
   const cfg = topic.activities[turn % topic.activities.length]
@@ -410,15 +414,17 @@ export function HomeworkScreen() {
     <Activity
       key={turn}
       cfg={cfg}
-      eyebrow={`📚 ${t('class.homework')} · ${t(`topic.${hw.topic}` as 'topic.n20')}`}
+      eyebrow={`${home ? `❤️ ${t('family.mission')}` : `📚 ${t('class.homework')}`} · ${t(`topic.${hw.topic}` as 'topic.n20')}`}
       startWithHints={false}
       firstTime={false}
-      save={(result) => finishHomework(hw, cfg.kind, result)}
+      save={(result) => finishHomework(hw, cfg.kind, result, src)}
       resultExtra={() => {
-        const stars = Math.min(homeworkStars(profile, hw), hw.goal)
+        const stars = Math.min(homeworkStars(profile, hw, src), hw.goal)
+        const done = stars >= hw.goal
         return (
           <p className="level-up">
-            📚 {stars >= hw.goal ? t('class.hwDone') : t('class.hwProgress', { n: stars, goal: hw.goal })}
+            {home ? '❤️' : '📚'} {done ? t(home ? 'family.missionDone' : 'class.hwDone') : t('class.hwProgress', { n: stars, goal: hw.goal })}
+            {home && done && hw.prize ? ` 🎁 ${hw.prize}` : ''}
           </p>
         )
       }}
@@ -428,12 +434,12 @@ export function HomeworkScreen() {
 }
 
 /** A stop of an extra world: one of the ready-made themes, or the teacher's own exercises. */
-export function WorldStopScreen({ src, index }: { src: 'class' | 'season'; index: number }) {
+export function WorldStopScreen({ src, index }: { src: WorldSrc; index: number }) {
   const { t } = useT()
   const profile = useProfile()
   const season = useSeason()
   // Fixed on arrival: a new world from the teacher must not swap the exercises mid-game.
-  const [world] = useState(() => (src === 'class' ? classWorld(profile) : seasonWorldOf(profile, season)))
+  const [world] = useState(() => (src === 'class' ? classWorld(profile) : src === 'family' ? familyWorld(profile) : seasonWorldOf(profile, season)))
   const stop = world?.stops[index]
   const [turn, setTurn] = useState(() => (world ? (worldRecord(profile, world).plays[index] ?? 0) : 0))
   const topic = stop?.t === 'topic' ? TOPIC_BY_ID[stop.topic] : undefined
@@ -443,7 +449,7 @@ export function WorldStopScreen({ src, index }: { src: 'class' | 'season'; index
   }, [world, stop])
   if (!world || !stop) return null
 
-  const name = src === 'class' ? world.name : t(`season.${season?.id ?? 'xmas'}.world`)
+  const name = src === 'season' ? t(`season.${season?.id ?? 'xmas'}.world`) : world.name
   const cfg: PlayCfg = topic ? topic.activities[turn % topic.activities.length] : { kind: 'quiz', items: stop.t === 'own' ? stop.items : [] }
   const last = index + 1 >= world.stops.length
   return (
@@ -465,7 +471,7 @@ export function WorldStopScreen({ src, index }: { src: 'class' | 'season'; index
         )
       }
       // The teacher's title stays off the picture children may share.
-      cupPlace={`${src === 'class' ? t('world.class') : name} · ${t('level.n', { n: index + 1 })}`}
+      cupPlace={`${src === 'class' ? t('world.class') : src === 'family' ? t('family.world') : name} · ${t('level.n', { n: index + 1 })}`}
       resultExtra={(o) => (o.gifts.length ? null : last && o.stars > 0 ? <p className="level-up">🎉 {t('world.done')}</p> : null)}
       next={() =>
         !last && isWorldStopOpen(profile, world, index + 1)

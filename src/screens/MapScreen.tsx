@@ -2,13 +2,13 @@ import { useEffect, useRef, useState } from 'react'
 import { sfx } from '../core/audio'
 import { JOURNEY, STOPS_PER_ZONE } from '../core/curriculum'
 import type { Homework, Screening } from '../core/backend'
-import { PLAN } from '../core/insights'
 import { go } from '../core/nav'
 import { dayKey, levelProgress, playerLevel } from '../core/scoring'
 import {
   activeHomework,
   claimGift,
   classWorld,
+  familyWorld,
   frontier,
   giftReady,
   pendingScreening,
@@ -24,6 +24,7 @@ import {
   useProfile,
   useSeason,
   weekDays,
+  weeklyGoal,
   worldDone,
   worldStars,
   zoneStars,
@@ -56,6 +57,9 @@ export function MapScreen() {
   const season = useSeason()
   const festive = seasonWorldOf(p, season)
   const lesson = classWorld(p)
+  const mission2 = activeHomework(p, Date.now(), 'family')
+  const homeWorld = familyWorld(p)
+  const goal = weeklyGoal(p)
   // A brand-new player is told why the journey matters before anything else, once per visit.
   const [story, setStory] = useState(() => Object.keys(p.levels).length === 0 && !storyTold.has(p.id))
   useEffect(() => {
@@ -95,9 +99,9 @@ export function MapScreen() {
           <Chip icon={<Icon name="coin" size={20} />} label={t('hub.coins')}>
             {p.coins}
           </Chip>
-          <span className="chip plan-chip" role="img" aria-label={t('plan.week', { n: weekDays(p), plan: PLAN.days })} title={t('plan.week', { n: weekDays(p), plan: PLAN.days })}>
+          <span className="chip plan-chip" role="img" aria-label={t('plan.week', { n: weekDays(p), plan: goal.days })} title={t('plan.week', { n: weekDays(p), plan: goal.days })}>
             <Icon name="calendar" size={20} />
-            {Array.from({ length: PLAN.days }, (_, i) => (
+            {Array.from({ length: goal.days }, (_, i) => (
               <i key={i} className={i < weekDays(p) ? 'on' : ''} />
             ))}
           </span>
@@ -124,6 +128,24 @@ export function MapScreen() {
         </button>
       ) : null}
 
+      {mission2 ? (
+        <button className="hw-banner family" onClick={open(() => go({ id: 'family' }))}>
+          <Icon name="heart" size={26} />
+          <strong>{t(`topic.${mission2.topic}` as 'topic.n20')}</strong>
+          <span className="hw-count">
+            ⭐ {Math.min(homeworkStars(p, mission2, 'family'), mission2.goal)}/{mission2.goal}
+          </span>
+        </button>
+      ) : null}
+      {homeWorld ? (
+        <button className="hw-banner family" onClick={open(() => go({ id: 'world', src: 'family' }))}>
+          <SceneBadge scene={homeWorld.scene} size={28} />
+          <strong>{homeWorld.name}</strong>
+          <span className="hw-count">
+            ⭐ {worldStars(p, homeWorld)}/{homeWorld.stops.length * 3}
+          </span>
+        </button>
+      ) : null}
       {lesson ? (
         <button className="hw-banner world" onClick={open(() => go({ id: 'world', src: 'class' }))}>
           <SceneBadge scene={lesson.scene} size={28} />

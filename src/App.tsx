@@ -1,10 +1,11 @@
 import { useEffect } from 'react'
 import { playMusic } from './core/music'
-import { isPortal, takeInvitation } from './core/invite'
+import { portal, takeInvitation } from './core/invite'
 import { go, useScreen } from './core/nav'
-import { activeProfile, joinClass, useApp, useSeason } from './core/store'
+import { activeProfile, joinClass, joinFamily, useApp, useSeason } from './core/store'
 import { ClassScreen } from './screens/ClassScreen'
 import { DojoScreen } from './screens/DojoScreen'
+import { FamilyScreen } from './screens/FamilyScreen'
 import { GrownUpsScreen } from './screens/GrownUpsScreen'
 import { MapScreen } from './screens/MapScreen'
 import { HomeworkScreen, StopScreen, WorldStopScreen } from './screens/PlayScreen'
@@ -38,7 +39,7 @@ export function App() {
   return (
     <>
       <SceneDefs />
-      {isPortal ? <TeacherPortal /> : <Page />}
+      {portal ? <TeacherPortal audience={portal} /> : <Page />}
     </>
   )
 }
@@ -51,6 +52,12 @@ function Page() {
     if (!profile || screen.id === 'welcome') return
     const invitation = takeInvitation()
     if (!invitation) return
+    if (invitation.kind === 'family') {
+      void joinFamily(invitation.code)
+        .then((ok) => ok && go({ id: 'family' }))
+        .catch(() => {})
+      return
+    }
     const { code, num } = invitation
     if (profile.classCode === code && (num === null || profile.classNum === num)) return
     if (num === null) return go({ id: 'class' })
@@ -68,7 +75,9 @@ function Page() {
     case 'play':
       return <StopScreen key={screen.stop} index={screen.stop} />
     case 'homework':
-      return <HomeworkScreen />
+      return <HomeworkScreen src={screen.src ?? 'class'} />
+    case 'family':
+      return <FamilyScreen />
     case 'world':
       return <WorldScreen src={screen.src} />
     case 'worldplay':

@@ -10,6 +10,18 @@ export interface Homework {
   goal: number
   /** Last day it counts (YYYY-MM-DD). */
   until: string
+  /** From a family: a few words of encouragement and, if they like, what awaits at the end. */
+  note?: string
+  prize?: string
+}
+
+/** A group is a class run by a teacher or a family run by a parent. */
+export type GroupKind = 'class' | 'family'
+
+/** The weekly routine a group aims for. */
+export interface Goal {
+  days: number
+  minutes: number
 }
 
 /** The number-sense mission a teacher opens for the class for a while. */
@@ -22,6 +34,8 @@ export interface Screening {
 export interface ClassInfo {
   code: string
   name: string
+  kind?: GroupKind
+  goal?: Goal | null
   homework: Homework | null
   screening: Screening | null
   /** A world the teacher put together for the class. */
@@ -86,7 +100,7 @@ export type Roster = Record<string, RosterEntry>
 export interface Backend {
   /** 'local' keeps classes on this device only; 'cloud' shares them between devices. */
   mode: 'local' | 'cloud'
-  createClass(name: string): Promise<{ code: string; teacherKey: string }>
+  createClass(name: string, kind?: GroupKind): Promise<{ code: string; teacherKey: string }>
   getClass(code: string): Promise<ClassInfo | null>
   /** Joins the class or refreshes the member's progress. `secret` proves the row is theirs. */
   upsertMember(code: string, member: MemberUpsert, secret: string): Promise<void>
@@ -96,6 +110,7 @@ export interface Backend {
   setHomework(code: string, teacherKey: string, homework: Homework | null): Promise<void>
   setScreening(code: string, teacherKey: string, screening: Screening | null): Promise<void>
   setWorld(code: string, teacherKey: string, world: World | null): Promise<void>
+  setGoal(code: string, teacherKey: string, goal: Goal | null): Promise<void>
   removeMember(code: string, teacherKey: string, memberId: string): Promise<void>
   /** Names and notes kept with the class, for teachers who choose to keep them online. */
   roster(code: string, teacherKey: string): Promise<Roster>

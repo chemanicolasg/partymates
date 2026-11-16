@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react'
 import { sfx } from '../core/audio'
-import { back, go } from '../core/nav'
+import { back, go, type WorldSrc } from '../core/nav'
 import { SEASON_BY_ID } from '../core/seasons'
-import { classWorld, isWorldStopOpen, refreshClass, seasonWorldOf, useProfile, useSeason, worldDone, worldRecord, worldStars } from '../core/store'
+import { classWorld, familyWorld, isWorldStopOpen, refreshClass, seasonWorldOf, useProfile, useSeason, worldDone, worldRecord, worldStars } from '../core/store'
 import { TOPIC_BY_ID } from '../core/topics'
 import { useT } from '../i18n'
 import { Character } from '../ui/Character'
@@ -15,17 +15,17 @@ import { KindIcon } from '../ui/icons'
 import { TrailGround, TrailNode, TrailRoad, trailHeight } from './Trail'
 
 /** A short extra trail: the world the teacher made for the class, or the one a season brings. */
-export function WorldScreen({ src }: { src: 'class' | 'season' }) {
+export function WorldScreen({ src }: { src: WorldSrc }) {
   const { t } = useT()
   const p = useProfile()
   const season = useSeason()
-  const world = src === 'class' ? classWorld(p) : seasonWorldOf(p, season)
+  const world = src === 'class' ? classWorld(p) : src === 'family' ? familyWorld(p) : seasonWorldOf(p, season)
   const current = useRef<HTMLButtonElement>(null)
 
   useEffect(() => {
     if (!world) go({ id: 'hub' }, { replace: true })
     current.current?.scrollIntoView({ block: 'center' })
-    if (src === 'class') void refreshClass().catch(() => {})
+    if (src !== 'season') void refreshClass().catch(() => {})
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
   if (!world) return null
@@ -36,7 +36,7 @@ export function WorldScreen({ src }: { src: 'class' | 'season' }) {
   const here = Math.max(0, world.stops.findIndex((_, i) => !(rec.plays[i] ?? 0)))
   const done = worldDone(p, world)
   const prize = src === 'season' && season ? SEASON_BY_ID[season.id].prize : null
-  const name = src === 'class' ? world.name : t(`season.${season?.id ?? 'xmas'}.world`)
+  const name = src === 'season' ? t(`season.${season?.id ?? 'xmas'}.world`) : world.name
 
   return (
     <div className="screen world-screen">
@@ -79,7 +79,7 @@ export function WorldScreen({ src }: { src: 'class' | 'season' }) {
           </section>
           <div className="world-foot">
             <MattySays pose={done ? 'cheer' : prize ? 'gift' : 'point'} size={78}>
-              {done ? t('world.done') : prize ? t('world.prize') : t('world.intro')}
+              {done ? t('world.done') : prize ? t('world.prize') : t(src === 'family' ? 'family.worldIntro' : 'world.intro')}
               {prize ? (
                 <span className={`world-prize${done ? ' won' : ''}`}>
                   <Character look={{ ...p.look, pet: null, [ITEM_BY_ID[prize].type]: itemName(prize) }} size={64} />

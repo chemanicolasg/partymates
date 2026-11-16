@@ -40,7 +40,10 @@ export function WorldSection({
   members,
   names,
   onSet,
+  family,
 }: {
+  /** Shown to a parent: the same editor, in a family's words. */
+  family?: boolean
   world: World | null
   members: MemberReport[]
   names: Record<string, string>
@@ -66,8 +69,8 @@ export function WorldSection({
 
   return (
     <section className="card">
-      <h2><span className="emoji">🌍 </span>{t('teacher.world.title')}</h2>
-      <p>{t('teacher.world.about')}</p>
+      <h2><span className="emoji">🌍 </span>{t(family ? 'family.worldTitle' : 'teacher.world.title')}</h2>
+      <p>{t(family ? 'family.worldAbout' : 'teacher.world.about')}</p>
       <p className="hw-current">
         {world ? `${SCENE_ICON[world.scene]} ${t('teacher.world.live', { name: world.name, n: world.stops.length })}` : t('teacher.world.none')}
       </p>

@@ -157,6 +157,9 @@ export function csvReport(
 /** The link (and QR code) that takes a child straight into the class with their list number. */
 export const joinLink = (origin: string, code: string, num?: number) => `${origin}/?clase=${code}${num ? `&n=${num}` : ''}`
 
+/** The link (and QR code) that connects a child's game to their family. */
+export const familyLink = (origin: string, code: string) => `${origin}/?familia=${code}`
+
 /** Reads a join link's query. Null unless it carries a well-formed class code. */
 export function readJoinLink(search: string): { code: string; num: number | null } | null {
   const q = new URLSearchParams(search)

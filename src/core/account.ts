@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
-import { cloudConfig } from './backend'
+import { cloudConfig, type GroupKind } from './backend'
 
 /**
  * Teacher accounts (e-mail and password, through Supabase Auth). An account is a keyring: it
@@ -15,6 +15,7 @@ export interface AccountClass {
   name: string
   key: string
   members: number
+  kind?: GroupKind
 }
 
 /** Why signing in or up failed, in terms the screen can explain. */
@@ -95,6 +96,9 @@ async function rpc<T>(fn: string, args: Record<string, unknown> = {}): Promise<T
 }
 
 export const accountClasses = () => rpc<AccountClass[]>('pm_teacher_classes')
-export const accountCreateClass = (name: string) => rpc<{ code: string; teacherKey: string }>('pm_teacher_class_create', { p_name: name })
+export const accountCreateClass = (name: string, kind: GroupKind = 'class') =>
+  kind === 'class'
+    ? rpc<{ code: string; teacherKey: string }>('pm_teacher_class_create', { p_name: name })
+    : rpc<{ code: string; teacherKey: string }>('pm_teacher_group_create', { p_name: name, p_kind: kind })
 export const accountClaim = (code: string, key: string) => rpc<void>('pm_teacher_claim', { p_code: code, p_key: key })
 export const accountRelease = (code: string) => rpc<void>('pm_teacher_release', { p_code: code })

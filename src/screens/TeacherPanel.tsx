@@ -70,12 +70,14 @@ export function TeacherPanel() {
         <a className="btn btn-small portal-link" href="/docente" target="_blank" rel="noreferrer">
           <span className="emoji">💻 </span>{t('portal.link')}
         </a>
-        {classes.map((c) => (
+        {classes
+          .filter((c) => c.kind !== 'family')
+          .map((c) => (
           <button key={c.code} className="btn class-pick" onClick={() => setOpenCode(c.code)}>
             <strong>{c.name}</strong>
             <span>{c.code}</span>
           </button>
-        ))}
+          ))}
       </section>
 
       <form
@@ -380,16 +382,19 @@ export function ClassView({ cls, onBack }: { cls: TeacherClass; onBack: () => vo
   )
 }
 
-function HomeworkEditor({
+export function HomeworkEditor({
   current,
   until,
   onSave,
   onClose,
+  family,
 }: {
   current: Homework | null
   until: (day: string) => string
   onSave: (hw: Homework) => Promise<void>
   onClose: () => void
+  /** A family's mission: it can carry a few words for the child and a promised treat. */
+  family?: boolean
 }) {
   const { t } = useT()
   const first = TOPICS.find((x) => x.id === current?.topic)
@@ -399,10 +404,12 @@ function HomeworkEditor({
   // Set on a Friday or at the weekend, homework is meant for the week that follows.
   const [weeks, setWeeks] = useState(() => ([5, 6, 0].includes(new Date().getDay()) ? 1 : 0))
   const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState(current?.note ?? '')
+  const [prize, setPrize] = useState(current?.prize ?? '')
 
   return (
     <Modal onClose={onClose}>
-      <h2><span className="emoji">📚 </span>{t('teacher.pick')}</h2>
+      <h2><span className="emoji">{family ? '❤️ ' : '📚 '}</span>{t(family ? 'family.pick' : 'teacher.pick')}</h2>
       <div className="chips">
         {AREAS.map((a) => (
           <button key={a} className={`chip-btn${a === area ? ' on' : ''}`} onClick={() => setArea(a)} aria-pressed={a === area}>
@@ -433,6 +440,18 @@ function HomeworkEditor({
           </button>
         ))}
       </div>
+      {family ? (
+        <>
+          <label className="field">
+            <span className="field-label">{t('family.note')}</span>
+            <textarea className="note-area" value={note} maxLength={140} placeholder={t('family.notePh')} onChange={(e) => setNote(e.target.value)} />
+          </label>
+          <label className="field">
+            <span className="field-label">{t('family.prize')}</span>
+            <input value={prize} maxLength={60} placeholder={t('family.prizePh')} onChange={(e) => setPrize(e.target.value)} />
+          </label>
+        </>
+      ) : null}
       <button
         className="btn btn-primary"
         disabled={!topic || busy}
@@ -440,7 +459,8 @@ function HomeworkEditor({
           if (!topic) return
           setBusy(true)
           // A new id restarts every child's count, so re-setting the same topic gives a fresh week.
-          await onSave({ id: crypto.randomUUID(), topic, goal, until: sunday(weeks) }).catch(() => setBusy(false))
+          const extra = family ? { ...(note.trim() ? { note: note.trim() } : {}), ...(prize.trim() ? { prize: prize.trim() } : {}) } : {}
+          await onSave({ id: crypto.randomUUID(), topic, goal, until: sunday(weeks), ...extra }).catch(() => setBusy(false))
         }}
       >
         {t('teacher.save')}

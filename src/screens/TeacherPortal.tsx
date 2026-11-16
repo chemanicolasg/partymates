@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import {
   accountClaim,
   accountClasses,
@@ -20,6 +20,7 @@ import { weekStart } from '../core/scoring'
 import { getState, setTeacherClasses, teacherCreateClass, useApp, type TeacherClass } from '../core/store'
 import { useT } from '../i18n'
 import { Matty } from '../ui/Matty'
+import { FamilyView } from './FamilyView'
 import { ClassView } from './TeacherPanel'
 import { LangPicker } from './WelcomeScreen'
 
@@ -28,17 +29,21 @@ import { LangPicker } from './WelcomeScreen'
  * figures, and each class's full panel. Without a cloud behind it (a tablet with no internet,
  * development) there is no account and it simply shows the classes kept on this device.
  */
-export function TeacherPortal() {
+export function TeacherPortal({ audience = 'teacher' }: { audience?: 'teacher' | 'family' }) {
   const { t } = useT()
+  const family = audience === 'family'
+  const kind = family ? 'family' : 'class'
   const cloud = accountsAvailable()
   // undefined while the saved session is being read.
   const [user, setUser] = useState<AccountUser | null | undefined>(cloud ? undefined : null)
   const [recovery, setRecovery] = useState(false)
   const [open, setOpen] = useState<string | null>(null)
-  const classes = useApp((s) => s.teacher)
+  const all = useApp((s) => s.teacher)
+  const classes = all.filter((c) => c.kind === kind)
+  const autoOpened = useRef(false)
 
   useEffect(() => {
-    document.title = `Matty · ${t('portal.title')}`
+    document.title = `Matty · ${t(family ? 'portal.family' : 'portal.title')}`
     if (!cloud) return
     let stop = () => {}
     void currentUser().then(setUser).catch(() => setUser(null))
@@ -64,6 +69,13 @@ export function TeacherPortal() {
     })().catch(() => {})
   }, [user])
 
+  // A family has one group: there is no list to choose from, so it opens by itself the first time.
+  useEffect(() => {
+    if (!family || autoOpened.current || open || classes.length !== 1) return
+    autoOpened.current = true
+    setOpen(classes[0].code)
+  }, [family, classes, open])
+
   const leave = async () => {
     await signOut().catch(() => {})
     // On a shared computer nothing of hers stays behind.
@@ -75,10 +87,10 @@ export function TeacherPortal() {
   return (
     <div className="portal">
       <header className="portal-top">
-        <a className="portal-brand" href="/docente" onClick={(e) => (e.preventDefault(), setOpen(null))}>
+        <a className="portal-brand" href={family ? '/familia' : '/docente'} onClick={(e) => (e.preventDefault(), setOpen(null))}>
           <Matty pose="happy" size={44} />
           <span>
-            Matt<b>y</b> <small>{t('portal.title')}</small>
+            Matt<b>y</b> <small>{t(family ? 'portal.family' : 'portal.title')}</small>
           </span>
         </a>
         <span className="portal-spacer" />
@@ -102,18 +114,20 @@ export function TeacherPortal() {
         ) : recovery ? (
           <NewPassword onDone={() => setRecovery(false)} />
         ) : cloud && !user ? (
-          <SignIn />
+          <SignIn family={family} />
+        ) : cls && family ? (
+          <FamilyView cls={cls} onBack={() => setOpen(null)} />
         ) : cls ? (
           <ClassView cls={cls} onBack={() => setOpen(null)} />
         ) : (
-          <ClassList classes={classes} signedIn={!!user} onOpen={setOpen} />
+          <ClassList classes={classes} signedIn={!!user} family={family} onOpen={setOpen} />
         )}
       </main>
     </div>
   )
 }
 
-function SignIn() {
+function SignIn({ family }: { family: boolean }) {
   const { t } = useT()
   const [mode, setMode] = useState<'in' | 'up' | 'reset'>('in')
   const [email, setEmail] = useState('')
@@ -145,10 +159,10 @@ function SignIn() {
     <div className="portal-sign">
       <div className="portal-pitch">
         <Matty pose="hi" size={120} />
-        <h1>{t('portal.pitchTitle')}</h1>
+        <h1>{t(family ? 'family.pitchTitle' : 'portal.pitchTitle')}</h1>
         <ul>
           {(['1', '2', '3', '4'] as const).map((n) => (
-            <li key={n}>{t(`portal.pitch${n}`)}</li>
+            <li key={n}>{t(family ? `family.pitch${n}` : `portal.pitch${n}`)}</li>
           ))}
         </ul>
       </div>
@@ -185,7 +199,7 @@ function SignIn() {
             {t('account.forgot')}
           </button>
         )}
-        <small className="sign-privacy"><span className="emoji">🔐 </span>{t('account.privacy')}</small>
+        <small className="sign-privacy"><span className="emoji">🔐 </span>{t(family ? 'family.privacy' : 'account.privacy')}</small>
       </form>
     </div>
   )
@@ -216,9 +230,10 @@ function NewPassword({ onDone }: { onDone: () => void }) {
   )
 }
 
-function ClassList({ classes, signedIn, onOpen }: { classes: TeacherClass[]; signedIn: boolean; onOpen: (code: string) => void }) {
+function ClassList({ classes, signedIn, family, onOpen }: { classes: TeacherClass[]; signedIn: boolean; family: boolean; onOpen: (code: string) => void }) {
   const { t } = useT()
-  const [name, setName] = useState('')
+  const kind = family ? 'family' : 'class'
+  const [name, setName] = useState(family ? t('family.defaultName') : '')
   const [busy, setBusy] = useState(false)
   const [failed, setFailed] = useState(false)
 
@@ -228,10 +243,10 @@ function ClassList({ classes, signedIn, onOpen }: { classes: TeacherClass[]; sig
     setFailed(false)
     try {
       if (signedIn) {
-        const made = await accountCreateClass(name.trim())
-        setTeacherClasses([...getState().teacher, { code: made.code, key: made.teacherKey, name: name.trim() }])
+        const made = await accountCreateClass(name.trim(), kind)
+        setTeacherClasses([...getState().teacher, { code: made.code, key: made.teacherKey, name: name.trim(), kind }])
         onOpen(made.code)
-      } else onOpen((await teacherCreateClass(name)).code)
+      } else onOpen((await teacherCreateClass(name, kind)).code)
       setName('')
     } catch {
       setFailed(true)
@@ -242,29 +257,29 @@ function ClassList({ classes, signedIn, onOpen }: { classes: TeacherClass[]; sig
   return (
     <div className="portal-classes">
       <div className="portal-head">
-        <h1><span className="emoji">🏫 </span>{t('portal.classes')}</h1>
-        {signedIn ? null : <p className="portal-local">{t('portal.local')}</p>}
+        <h1><span className="emoji">🏫 </span>{t(family ? 'family.mine' : 'portal.classes')}</h1>
+        {signedIn ? null : <p className="portal-local">{t(family ? 'family.local' : 'portal.local')}</p>}
       </div>
       <div className="class-cards">
         {classes.map((c) => (
-          <ClassCard key={c.code} cls={c} onOpen={() => onOpen(c.code)} />
+          <ClassCard key={c.code} cls={c} family={family} onOpen={() => onOpen(c.code)} />
         ))}
         <form className="card class-card new" onSubmit={(e) => void create(e)}>
-          <h2><span className="emoji">➕ </span>{t('class.create')}</h2>
-          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t('class.namePh')} aria-label={t('class.name')} />
+          <h2><span className="emoji">➕ </span>{t(family ? 'family.create' : 'class.create')}</h2>
+          <input value={name} onChange={(e) => setName(e.target.value)} maxLength={40} placeholder={t(family ? 'family.defaultName' : 'class.namePh')} aria-label={t('class.name')} />
           <button className="btn btn-primary" disabled={busy || !name.trim()}>
-            {t('class.createBtn')}
+            {t(family ? 'family.createBtn' : 'class.createBtn')}
           </button>
           {failed ? <p className="error">{t('class.error')}</p> : null}
         </form>
       </div>
-      {classes.length === 0 ? <p className="portal-empty">{t('portal.empty')}</p> : null}
+      {classes.length === 0 ? <p className="portal-empty">{t(family ? 'family.empty' : 'portal.empty')}</p> : null}
     </div>
   )
 }
 
 /** One class on the list, with this week's figures fetched in the background. */
-function ClassCard({ cls, onOpen }: { cls: TeacherClass; onOpen: () => void }) {
+function ClassCard({ cls, family, onOpen }: { cls: TeacherClass; family: boolean; onOpen: () => void }) {
   const { t } = useT()
   const [members, setMembers] = useState<MemberReport[] | null>(null)
   useEffect(() => {
@@ -287,7 +302,7 @@ function ClassCard({ cls, onOpen }: { cls: TeacherClass; onOpen: () => void }) {
       <span className="class-card-kpis">
         <span>
           <b>{k ? k.pupils : '…'}</b>
-          <small>{t('kpi.pupils')}</small>
+          <small>{t(family ? 'family.children' : 'kpi.pupils')}</small>
         </span>
         <span>
           <b>{k ? `${k.active}/${k.pupils}` : '…'}</b>

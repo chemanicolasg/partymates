@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from 'react'
 import { setSoundEnabled } from './audio'
-import { getBackend, type ClassInfo, type Homework, type MemberStats, type MemberUpsert, type Screening } from './backend'
+import { getBackend, type ClassInfo, type Goal, type GroupKind, type Homework, type MemberStats, type MemberUpsert, type Screening } from './backend'
+import { PLAN } from './insights'
 import { DOJO, DOJO_START, JOURNEY, levelKey, STOPS_PER_ZONE, type Stop } from './curriculum'
 import { DEFAULT_LOOK, encodeLook, FREE_ITEMS, ITEM_BY_ID, itemName, ITEMS, LEGACY_SKINS, type ItemType, type KidPatch, type Look } from './look'
 import { setMusicEnabled } from './music'
@@ -15,6 +16,17 @@ export interface LevelRecord {
   stars: number
   plays: number
 }
+
+/** A player's link to their family's group. It has its own member id, apart from the one their class sees. */
+export interface FamilyLink {
+  code: string
+  memberId: string
+  info: ClassInfo | null
+  hw: { id: string; stars: number; plays: number } | null
+}
+
+/** Where a mission or a world comes from. */
+export type GroupSrc = 'class' | 'family'
 
 export interface WorldRecord {
   stars: number[]
@@ -50,6 +62,8 @@ export interface Profile {
   classInfo: ClassInfo | null
   /** Stars earned on the current homework. */
   hw: { id: string; stars: number; plays: number } | null
+  /** The family this player is linked to, if a parent connected them: its missions, world and goal. */
+  family: FamilyLink | null
   /** Extra worlds (the teacher's, the seasons'): per stop, best stars, visits and the exercises missed last time. */
   worlds: Record<string, WorldRecord>
   /** Latest number-sense mission the child completed. */
@@ -66,6 +80,8 @@ export interface TeacherClass {
   code: string
   key: string
   name: string
+  /** A class of pupils, or a family run by a parent. */
+  kind: GroupKind
   names: Record<string, string>
   /** Her notes next to each list number. Like the names, on this device unless she keeps them online. */
   notes: Record<string, string>
@@ -133,6 +149,7 @@ export function upgradeProfile(raw: Record<string, unknown>): Profile {
     classCode: old.classNum ? old.classCode : null,
     classInfo: old.classNum ? (old.classInfo ?? null) : null,
     hw: old.hw ?? null,
+    family: old.family ?? null,
     worlds: old.worlds ?? {},
     screen: old.screen ?? null,
     gift: old.gift ?? null,
@@ -150,7 +167,7 @@ function load(): AppState {
           ...s,
           music: s.music ?? true,
           season: s.season ?? 'auto',
-          teacher: (s.teacher ?? []).map((c) => ({ ...c, notes: c.notes ?? {} })),
+          teacher: (s.teacher ?? []).map((c) => ({ ...c, notes: c.notes ?? {}, kind: c.kind ?? 'class' })),
           rosterOnline: s.rosterOnline ?? false,
           profiles: s.profiles.map((p) => upgradeProfile(p as unknown as Record<string, unknown>)),
         }
@@ -230,19 +247,27 @@ function sumWeek(days: Record<string, number>, now = Date.now()): number {
   return Object.entries(days).reduce((s, [day, v]) => (day >= start ? s + v : s), 0)
 }
 export const weekXp = (p: Profile) => sumWeek(p.stats.days)
-export const weekMinutes = (p: Profile) => Math.round(sumWeek(p.stats.ms) / 60000)
+/** Minutes played this week. Any play counts as a minute started, so a short session never reads as none. */
+export const weekMinutes = (p: Profile) => Math.ceil(sumWeek(p.stats.ms) / 60000)
 /** Days played since Monday. */
 export const weekDays = (p: Profile, now = Date.now()) => {
   const start = weekStart(now)
   return Object.entries(p.stats.ms).filter(([day, ms]) => day >= start && ms > 0).length
 }
 
-/** The class homework, if there is one and its week has not ended. */
-export function activeHomework(p: Profile, now = Date.now()): Homework | null {
-  const hw = p.classInfo?.homework
+const groupInfo = (p: Profile, src: GroupSrc) => (src === 'class' ? p.classInfo : (p.family?.info ?? null))
+const hwRecord = (p: Profile, src: GroupSrc) => (src === 'class' ? p.hw : (p.family?.hw ?? null))
+
+/** The class homework — or the family's mission — if there is one and its week has not ended. */
+export function activeHomework(p: Profile, now = Date.now(), src: GroupSrc = 'class'): Homework | null {
+  const hw = groupInfo(p, src)?.homework
   return hw && hw.until >= dayKey(now) ? hw : null
 }
-export const homeworkStars = (p: Profile, hw: Homework) => (p.hw?.id === hw.id ? p.hw.stars : 0)
+export const homeworkStars = (p: Profile, hw: Homework, src: GroupSrc = 'class') => (hwRecord(p, src)?.id === hw.id ? (hwRecord(p, src)?.stars ?? 0) : 0)
+export const homeworkPlays = (p: Profile, hw: Homework | null, src: GroupSrc = 'class') => (hw && hwRecord(p, src)?.id === hw.id ? (hwRecord(p, src)?.plays ?? 0) : 0)
+
+/** The weekly routine this player aims for: their family's, else their class's, else the recommended one. */
+export const weeklyGoal = (p: Profile): Goal => p.family?.info?.goal ?? p.classInfo?.goal ?? PLAN
 
 /** The class's number-sense mission, while it is open and this child has not done it yet. */
 export function pendingScreening(p: Profile, now = Date.now()): Screening | null {
@@ -257,6 +282,8 @@ export const setSeason = (season: SeasonSetting) => set({ ...state, season })
 
 /** The world the teacher made for this child's class. */
 export const classWorld = (p: Profile): World | null => cleanWorld(p.classInfo?.world)
+/** The world this child's family made. */
+export const familyWorld = (p: Profile): World | null => cleanWorld(p.family?.info?.world)
 /** The running season's world for this child's age. */
 export const seasonWorldOf = (p: Profile, season: Season | null = activeSeason()): World | null => (season ? seasonWorld(season, p.band) : null)
 
@@ -306,6 +333,7 @@ export function createProfile(name: string, look: Look, band: Band): Profile {
     classNum: null,
     classInfo: null,
     hw: null,
+    family: null,
     worlds: {},
     screen: null,
     gift: null,
@@ -389,19 +417,21 @@ export function claimGift(): number {
 }
 
 /** One homework activity: the stars add up towards the teacher's goal. */
-export function finishHomework(hw: Homework, kind: string, result: GameResult): Rewards & { progress: number } {
+export function finishHomework(hw: Homework, kind: string, result: GameResult, src: GroupSrc = 'class'): Rewards & { progress: number } {
   const p = activeProfile()
   if (!p) throw new Error('No active profile')
   const rewards = rewardsFor(result, 3)
-  const before = p.hw?.id === hw.id ? p.hw : { id: hw.id, stars: 0, plays: 0 }
+  const had = hwRecord(p, src)
+  const before = had?.id === hw.id ? had : { id: hw.id, stars: 0, plays: 0 }
   const progress = before.stars + rewards.stars
+  const record = { id: hw.id, stars: progress, plays: before.plays + 1 }
   patchProfile(p.id, (cur) => ({
     ...cur,
     coins: cur.coins + rewards.coins,
     xp: cur.xp + rewards.xp,
     facts: review(cur.facts, result.facts),
     stats: played(cur, kind, result, rewards.xp),
-    hw: { id: hw.id, stars: progress, plays: before.plays + 1 },
+    ...(src === 'class' ? { hw: record } : { family: cur.family ? { ...cur.family, hw: record } : null }),
   }))
   void syncClass()
   return { ...rewards, progress }
@@ -557,10 +587,11 @@ export function styleKid(patch: KidPatch) {
   void syncClass()
 }
 
-// ───────────── Class (child side) ─────────────
+// ───────────── Class and family (child side) ─────────────
 
-export function memberStats(p: Profile): MemberStats {
-  const world = classWorld(p)
+export function memberStats(p: Profile, src: GroupSrc = 'class'): MemberStats {
+  const world = src === 'class' ? classWorld(p) : familyWorld(p)
+  const hw = hwRecord(p, src)
   return {
     week: weekStart(),
     weekMin: weekMinutes(p),
@@ -569,36 +600,52 @@ export function memberStats(p: Profile): MemberStats {
     byKind: p.stats.byKind,
     dojo: p.dojo.step,
     weak: memoryStats(p.facts).weak.slice(0, 6),
-    hw: p.hw ? { id: p.hw.id, stars: p.hw.stars } : null,
+    hw: hw ? { id: hw.id, stars: hw.stars } : null,
     world: world ? { id: world.id, ...(({ stars, miss }) => ({ stars, miss }))(worldRecord(p, world)) } : null,
-    screen: p.screen,
+    // Only the school sees the number-sense mission: it means nothing outside a group to compare with.
+    screen: src === 'class' ? p.screen : null,
   }
 }
 
-export function memberOf(p: Profile): MemberUpsert {
-  return { id: p.id, name: p.name, num: p.classNum ?? 1, look: encodeLook(p.look), stars: totalStars(p), xp: p.xp, stats: memberStats(p) }
+export function memberOf(p: Profile, src: GroupSrc = 'class'): MemberUpsert {
+  return {
+    id: src === 'class' ? p.id : (p.family?.memberId ?? p.id),
+    name: p.name,
+    num: src === 'class' ? (p.classNum ?? 1) : 1,
+    look: encodeLook(p.look),
+    stars: totalStars(p),
+    xp: p.xp,
+    stats: memberStats(p, src),
+  }
 }
 
-/** Pushes the active player's progress to their class. Failures are silent: the game never blocks on the network. */
+/** Pushes the active player's progress to their class and to their family. Failures are silent: the game never blocks on the network. */
 export async function syncClass(): Promise<void> {
   const p = activeProfile()
-  if (!p?.classCode) return
+  if (!p || (!p.classCode && !p.family)) return
   try {
     const backend = await getBackend()
-    await backend.upsertMember(p.classCode, memberOf(p), p.secret)
+    if (p.classCode) await backend.upsertMember(p.classCode, memberOf(p), p.secret).catch(() => {})
+    if (p.family) await backend.upsertMember(p.family.code, memberOf(p, 'family'), p.secret).catch(() => {})
   } catch {
     /* offline: the next sync will catch up */
   }
 }
 
-/** Fetches the class (name, homework, shared stars) and remembers it. Null when the class is gone. */
+/** Fetches the class and the family (missions, worlds, goals) and remembers them. Returns the class, null when it is gone. */
 export async function refreshClass(): Promise<ClassInfo | null> {
   const p = activeProfile()
-  if (!p?.classCode) return null
+  if (!p || (!p.classCode && !p.family)) return null
   const backend = await getBackend()
   await syncClass()
-  const info = await backend.getClass(p.classCode)
-  patchProfile(p.id, (cur) => ({ ...cur, classInfo: info }))
+  const info = p.classCode ? await backend.getClass(p.classCode) : null
+  const home = p.family ? await backend.getClass(p.family.code).catch(() => p.family?.info ?? null) : null
+  patchProfile(p.id, (cur) => ({
+    ...cur,
+    classInfo: cur.classCode ? info : cur.classInfo,
+    // A family that no longer exists is simply let go of.
+    family: cur.family ? (home ? { ...cur.family, info: home } : null) : null,
+  }))
   return info
 }
 
@@ -608,6 +655,8 @@ export async function joinClass(code: string, num: number): Promise<boolean> {
   const backend = await getBackend()
   const info = await backend.getClass(code)
   if (!info) return false
+  // A family's code typed where a class code goes still does the right thing.
+  if (info.kind === 'family') return joinFamily(code)
   await backend.upsertMember(code, { ...memberOf(p), num }, p.secret)
   patchProfile(p.id, (cur) => ({ ...cur, classCode: code, classNum: num, classInfo: info }))
   return true
@@ -621,12 +670,33 @@ export async function leaveClass(): Promise<void> {
   patchProfile(p.id, (cur) => ({ ...cur, classCode: null, classNum: null, classInfo: null }))
 }
 
+/** Links the active player to a family with the code their parent gave them. False if it is not a family's code. */
+export async function joinFamily(code: string): Promise<boolean> {
+  const p = activeProfile()
+  if (!p) return false
+  const backend = await getBackend()
+  const info = await backend.getClass(code)
+  if (!info || info.kind !== 'family') return false
+  const link: FamilyLink = p.family?.code === code ? { ...p.family, info } : { code, memberId: crypto.randomUUID(), info, hw: null }
+  await backend.upsertMember(code, { ...memberOf({ ...p, family: link }, 'family') }, p.secret)
+  patchProfile(p.id, (cur) => ({ ...cur, family: link }))
+  return true
+}
+
+export async function leaveFamily(): Promise<void> {
+  const p = activeProfile()
+  if (!p?.family) return
+  const backend = await getBackend()
+  await backend.leaveClass(p.family.code, p.family.memberId, p.secret).catch(() => {})
+  patchProfile(p.id, (cur) => ({ ...cur, family: null }))
+}
+
 // ───────────── Class (teacher side) ─────────────
 
-export async function teacherCreateClass(name: string): Promise<TeacherClass> {
+export async function teacherCreateClass(name: string, kind: GroupKind = 'class'): Promise<TeacherClass> {
   const backend = await getBackend()
-  const { code, teacherKey } = await backend.createClass(name.trim())
-  const entry: TeacherClass = { code, key: teacherKey, name: name.trim(), names: {}, notes: {} }
+  const { code, teacherKey } = await backend.createClass(name.trim(), kind)
+  const entry: TeacherClass = { code, key: teacherKey, name: name.trim(), kind, names: {}, notes: {} }
   set({ ...state, teacher: [...state.teacher, entry] })
   return entry
 }
@@ -641,7 +711,7 @@ export async function teacherOpenClass(code: string, key: string): Promise<boole
   }
   const info = await backend.getClass(code)
   if (!info) return false
-  const entry: TeacherClass = { code, key, name: info.name, names: {}, notes: {} }
+  const entry: TeacherClass = { code, key, name: info.name, kind: info.kind ?? 'class', names: {}, notes: {} }
   set({ ...state, teacher: [...state.teacher.filter((c) => c.code !== code), entry] })
   return true
 }
@@ -708,7 +778,24 @@ export async function setRosterOnline(on: boolean): Promise<void> {
 }
 
 /** Replaces the classes this device manages with the ones of the signed-in account, keeping local names and notes. */
-export function setTeacherClasses(classes: { code: string; key: string; name: string }[]) {
+export function setTeacherClasses(classes: { code: string; key: string; name: string; kind?: GroupKind }[]) {
   const before = new Map(state.teacher.map((c) => [c.code, c]))
-  set({ ...state, teacher: classes.map((c) => ({ ...c, names: before.get(c.code)?.names ?? {}, notes: before.get(c.code)?.notes ?? {} })) })
+  set({
+    ...state,
+    teacher: classes.map((c) => ({
+      code: c.code,
+      key: c.key,
+      name: c.name,
+      kind: c.kind ?? before.get(c.code)?.kind ?? 'class',
+      names: before.get(c.code)?.names ?? {},
+      notes: before.get(c.code)?.notes ?? {},
+    })),
+  })
+}
+
+/** Sets (or clears, with null) the weekly routine of a group this device manages. */
+export async function teacherSetGoal(code: string, goal: Goal | null): Promise<void> {
+  const cls = state.teacher.find((c) => c.code === code)
+  if (!cls) return
+  await (await getBackend()).setGoal(cls.code, cls.key, goal)
 }

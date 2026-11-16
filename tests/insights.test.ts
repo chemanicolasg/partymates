@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { MemberReport } from '../src/core/backend'
-import { classKpis, csvReport, fmtMinutes, joinLink, PLAN, pupilLine, readJoinLink } from '../src/core/insights'
+import { classKpis, csvReport, familyLink, fmtMinutes, joinLink, PLAN, pupilLine, readJoinLink } from '../src/core/insights'
+import { readFamilyLink } from '../src/core/invite'
 import { accountError } from '../src/core/account'
 
 const WEEK = '2026-11-16'
@@ -88,6 +89,13 @@ describe('getting in', () => {
     expect(readJoinLink('?clase=ABC123&n=700')).toEqual({ code: 'ABC123', num: null })
     expect(readJoinLink('?clase=<script>')).toBeNull()
     expect(readJoinLink('')).toBeNull()
+  })
+
+  it('builds and reads the link that connects a child to their family', () => {
+    expect(familyLink('https://x.app', 'FAM123')).toBe('https://x.app/?familia=FAM123')
+    expect(readFamilyLink('?familia=fam123')).toBe('FAM123')
+    expect(readFamilyLink('?familia=nope')).toBeNull()
+    expect(readFamilyLink('?clase=ABC123')).toBeNull()
   })
 
   it('shows minutes the way a person says them', () => {

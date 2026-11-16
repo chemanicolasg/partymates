@@ -1,6 +1,6 @@
 import { createClient, type SupabaseClient } from '@supabase/supabase-js'
 import type { World } from '../worlds'
-import type { Backend, ClassInfo, Homework, MemberReport, MemberUpsert, Roster, RosterEntry, Screening } from './index'
+import type { Backend, ClassInfo, Goal, GroupKind, Homework, MemberReport, MemberUpsert, Roster, RosterEntry, Screening } from './index'
 
 /**
  * The client a signed-in teacher uses. It lives here so that everything that needs the cloud
@@ -29,8 +29,11 @@ export class SupabaseBackend implements Backend {
     return data as T
   }
 
-  createClass(name: string) {
-    return this.rpc<{ code: string; teacherKey: string }>('pm_class_create', { p_name: name })
+  createClass(name: string, kind: GroupKind = 'class') {
+    // Classes keep using the older function, so this works on a database that has no families yet.
+    return kind === 'class'
+      ? this.rpc<{ code: string; teacherKey: string }>('pm_class_create', { p_name: name })
+      : this.rpc<{ code: string; teacherKey: string }>('pm_group_create', { p_name: name, p_kind: kind })
   }
 
   getClass(code: string) {
@@ -69,6 +72,10 @@ export class SupabaseBackend implements Backend {
 
   async setWorld(code: string, teacherKey: string, world: World | null) {
     await this.rpc('pm_class_set_world', { p_code: code, p_key: teacherKey, p_world: world })
+  }
+
+  async setGoal(code: string, teacherKey: string, goal: Goal | null) {
+    await this.rpc('pm_class_set_goal', { p_code: code, p_key: teacherKey, p_goal: goal })
   }
 
   async removeMember(code: string, teacherKey: string, memberId: string) {

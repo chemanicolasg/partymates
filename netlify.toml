@@ -21,3 +21,14 @@
   from = "/docente/*"
   to = "/index.html"
   status = 200
+
+# The families' panel, likewise.
+[[redirects]]
+  from = "/familia"
+  to = "/index.html"
+  status = 200
+
+[[redirects]]
+  from = "/familia/*"
+  to = "/index.html"
+  status = 200

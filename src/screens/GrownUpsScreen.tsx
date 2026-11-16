@@ -170,6 +170,20 @@ function Report() {
       </section>
 
       <section className="card">
+        <h2>❤️ {t('gu.family.connect')}</h2>
+        <p>{t('gu.family.about')}</p>
+        {p.family ? <p className="hw-current">{t('gu.family.linked', { name: p.family.info?.name ?? p.family.code })}</p> : null}
+        <div className="btn-row">
+          <button className="btn btn-primary" onClick={() => go({ id: 'family' })}>
+            {t(p.family ? 'family.title' : 'family.code')}
+          </button>
+          <a className="btn" href="/familia" target="_blank" rel="noreferrer">
+            {t('gu.family.open')}
+          </a>
+        </div>
+      </section>
+
+      <section className="card">
         <h2>{t('gu.methods')}</h2>
         {METHODS.map((m) => (
           <details key={m}>

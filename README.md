@@ -101,6 +101,24 @@ verlos desde cualquier dispositivo y los borra del servidor al desactivarlo.
 
 Sin nube configurada (tableta sin internet, desarrollo) `/docente` funciona sin cuenta con las clases del dispositivo.
 
+## Portal de familias (`/familia`)
+
+Madres, padres y tutores tienen su propio sitio en `…/familia`, con la misma cuenta y contraseña que usarían
+como docentes. Por dentro una familia es un grupo pequeño como una clase, así que comparte toda su maquinaria;
+un niño puede estar a la vez en su clase y en su familia.
+
+- **Conectar**: la familia tiene un código y un QR. El niño lo escanea (o lo escribe en «Adultos → Familia») y su
+  juego queda conectado, sin cuenta ni datos personales.
+- **Misión de casa**: un tema y unas estrellas que conseguir, con unas palabras de ánimo y, si quieren, un premio.
+  El niño la ve en su mapa con el mensaje de su familia.
+- **Objetivo semanal**: días por semana y minutos al día; el niño lo ve como puntos que se van llenando.
+- **Mundo de la familia**: el mismo editor que usan las profes, para los deberes del cole o lo que más cuesta.
+- **Resumen de la semana**: un párrafo por hijo en lenguaje llano (días jugados, minutos, acierto, punto fuerte,
+  qué le cuesta, cómo va la misión) y una idea para practicar en casa. Se puede copiar para compartirlo.
+
+El resumen se lee en el portal. Enviarlo por correo cada semana queda pendiente de tener un dominio de correo
+propio (lo mismo que hace falta para confirmar cuentas y recuperar contraseñas).
+
 ## Zona de profes dentro del juego
 
 La misma gestión de una clase está también en «Adultos → Profes», sin cuenta, con el código y la clave de la clase:

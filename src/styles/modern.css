@@ -549,3 +549,117 @@
 .race-stage .platform {
   min-height: 88px;
 }
+
+
+/* ───────────── Family ───────────── */
+
+.hw-banner.family {
+  background: linear-gradient(90deg, #ffe1e8, #fff0d6);
+}
+.family-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+}
+.family-head > div {
+  flex: 1;
+  min-width: 0;
+}
+.plan-dots.big i {
+  width: 14px;
+  height: 14px;
+}
+.family-mission small {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.family-note {
+  padding: 10px 14px;
+  border-radius: 16px;
+  background: #fff0f3;
+  font-size: 1.1rem;
+  font-style: italic;
+  line-height: 1.35;
+}
+.family-prize {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  padding: 4px 14px;
+  border-radius: 999px;
+  background: #fff6d6;
+  font-weight: 600;
+}
+.family-prize.won {
+  background: var(--ok-soft);
+}
+.family-screen .hw-card h2 {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* Parents' portal */
+.family-connect-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+.family-connect-row .access-qr {
+  width: 132px;
+  height: 132px;
+}
+.family-connect-row ol {
+  margin: 4px 0 12px;
+  padding-left: 1.2em;
+  display: grid;
+  gap: 4px;
+  color: var(--p-muted, var(--ink-soft));
+}
+.family-connect-row .class-code {
+  display: inline-grid;
+  gap: 2px;
+}
+.child-card {
+  display: flex;
+  gap: 14px;
+  padding: 14px 0;
+  border-top: 1px solid var(--edge);
+}
+.child-card:first-of-type {
+  border-top: 0;
+}
+.child-card > div {
+  flex: 1;
+  min-width: 0;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.child-card h3 {
+  margin: 0 !important;
+  font-size: 1.05rem !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--ink) !important;
+}
+.child-card p {
+  color: var(--ink);
+  line-height: 1.5;
+}
+.family-idea {
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: var(--p-accent-soft, #efedfb);
+}
+.portal .report > .family-summary {
+  column-span: all;
+}
+.portal .hw-current em {
+  font-style: italic;
+}

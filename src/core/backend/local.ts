@@ -1,5 +1,5 @@
 import type { World } from '../worlds'
-import { newCode, type Backend, type ClassInfo, type Homework, type MemberReport, type MemberUpsert, type Roster, type RosterEntry, type Screening } from './index'
+import { newCode, type Backend, type ClassInfo, type Goal, type GroupKind, type Homework, type MemberReport, type MemberUpsert, type Roster, type RosterEntry, type Screening } from './index'
 
 const KEY = 'matty.classes.v2'
 
@@ -10,6 +10,8 @@ interface Stored {
   screening?: Screening | null
   world?: World | null
   roster?: Roster
+  kind?: GroupKind
+  goal?: Goal | null
   members: Record<string, MemberReport>
 }
 
@@ -33,12 +35,12 @@ export class LocalBackend implements Backend {
     return all
   }
 
-  async createClass(name: string) {
+  async createClass(name: string, kind: GroupKind = 'class') {
     const all = this.read()
     let code = newCode()
     while (all[code]) code = newCode()
     const teacherKey = newCode(8)
-    all[code] = { name, teacherKey, homework: null, members: {} }
+    all[code] = { name, teacherKey, homework: null, members: {}, kind }
     this.write(all)
     return { code, teacherKey }
   }
@@ -47,7 +49,7 @@ export class LocalBackend implements Backend {
     const c = this.read()[code]
     if (!c) return null
     const members = Object.values(c.members)
-    return { code, name: c.name, homework: c.homework, screening: c.screening ?? null, world: c.world ?? null, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
+    return { code, name: c.name, kind: c.kind ?? 'class', goal: c.goal ?? null, homework: c.homework, screening: c.screening ?? null, world: c.world ?? null, members: members.length, stars: members.reduce((s, m) => s + m.stars, 0) }
   }
 
   async upsertMember(code: string, member: MemberUpsert) {
@@ -85,6 +87,12 @@ export class LocalBackend implements Backend {
   async setWorld(code: string, teacherKey: string, world: World | null) {
     const all = this.teacher(code, teacherKey)
     all[code].world = world
+    this.write(all)
+  }
+
+  async setGoal(code: string, teacherKey: string, goal: Goal | null) {
+    const all = this.teacher(code, teacherKey)
+    all[code].goal = goal
     this.write(all)
   }
 
