@@ -3,8 +3,10 @@ import {
   accountClaim,
   accountClasses,
   accountCreateClass,
+  accountPlan,
   accountsAvailable,
   currentUser,
+  isFull,
   onAccountChange,
   sendReset,
   setPassword,
@@ -16,6 +18,7 @@ import {
 } from '../core/account'
 import { getBackend, type MemberReport } from '../core/backend'
 import { classKpis, fmtMinutes } from '../core/insights'
+import { FREE_PLAN, type AccountPlan } from '../core/plans'
 import { weekStart } from '../core/scoring'
 import { getState, setTeacherClasses, teacherCreateClass, useApp, type TeacherClass } from '../core/store'
 import { useT } from '../i18n'
@@ -30,13 +33,14 @@ import { LangPicker } from './WelcomeScreen'
  * development) there is no account and it simply shows the classes kept on this device.
  */
 export function TeacherPortal({ audience = 'teacher' }: { audience?: 'teacher' | 'family' }) {
-  const { t } = useT()
+  const { t, lang } = useT()
   const family = audience === 'family'
   const kind = family ? 'family' : 'class'
   const cloud = accountsAvailable()
   // undefined while the saved session is being read.
   const [user, setUser] = useState<AccountUser | null | undefined>(cloud ? undefined : null)
   const [recovery, setRecovery] = useState(false)
+  const [plan, setPlan] = useState<AccountPlan>(FREE_PLAN)
   const [open, setOpen] = useState<string | null>(null)
   const all = useApp((s) => s.teacher)
   const classes = all.filter((c) => c.kind === kind)
@@ -57,7 +61,8 @@ export function TeacherPortal({ audience = 'teacher' }: { audience?: 'teacher' |
 
   // Signed in: the account says which classes are hers. Classes this device already had join it.
   useEffect(() => {
-    if (!user) return
+    if (!user) return setPlan(FREE_PLAN)
+    void accountPlan().then(setPlan)
     void (async () => {
       let mine = await accountClasses()
       const loose = getState().teacher.filter((c) => !mine.some((m) => m.code === c.code))
@@ -98,6 +103,12 @@ export function TeacherPortal({ audience = 'teacher' }: { audience?: 'teacher' |
         {user ? (
           <span className="portal-user">
             <small>{user.email}</small>
+            {plan.plan === 'free' ? null : (
+              <span className="portal-plan">
+                {t(`plan.${plan.plan}`)}
+                {plan.until ? ` · ${t('plan.until', { day: new Date(plan.until).toLocaleDateString(lang, { day: 'numeric', month: 'short', year: 'numeric' }) })}` : ''}
+              </span>
+            )}
             <button className="btn btn-small" onClick={() => void leave()}>
               {t('account.signOut')}
             </button>
@@ -120,7 +131,7 @@ export function TeacherPortal({ audience = 'teacher' }: { audience?: 'teacher' |
         ) : cls ? (
           <ClassView cls={cls} onBack={() => setOpen(null)} />
         ) : (
-          <ClassList classes={classes} signedIn={!!user} family={family} onOpen={setOpen} />
+          <ClassList classes={classes} signedIn={!!user} family={family} limit={plan.groups} onOpen={setOpen} />
         )}
       </main>
     </div>
@@ -230,17 +241,30 @@ function NewPassword({ onDone }: { onDone: () => void }) {
   )
 }
 
-function ClassList({ classes, signedIn, family, onOpen }: { classes: TeacherClass[]; signedIn: boolean; family: boolean; onOpen: (code: string) => void }) {
+function ClassList({
+  classes,
+  signedIn,
+  family,
+  limit,
+  onOpen,
+}: {
+  classes: TeacherClass[]
+  signedIn: boolean
+  family: boolean
+  /** How many classes and families the account's plan lets it keep. */
+  limit: number
+  onOpen: (code: string) => void
+}) {
   const { t } = useT()
   const kind = family ? 'family' : 'class'
   const [name, setName] = useState(family ? t('family.defaultName') : '')
   const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
+  const [failed, setFailed] = useState<'error' | 'full' | null>(null)
 
   const create = async (e: FormEvent) => {
     e.preventDefault()
     setBusy(true)
-    setFailed(false)
+    setFailed(null)
     try {
       if (signedIn) {
         const made = await accountCreateClass(name.trim(), kind)
@@ -248,8 +272,8 @@ function ClassList({ classes, signedIn, family, onOpen }: { classes: TeacherClas
         onOpen(made.code)
       } else onOpen((await teacherCreateClass(name, kind)).code)
       setName('')
-    } catch {
-      setFailed(true)
+    } catch (err) {
+      setFailed(isFull(err) ? 'full' : 'error')
     }
     setBusy(false)
   }
@@ -270,7 +294,7 @@ function ClassList({ classes, signedIn, family, onOpen }: { classes: TeacherClas
           <button className="btn btn-primary" disabled={busy || !name.trim()}>
             {t(family ? 'family.createBtn' : 'class.createBtn')}
           </button>
-          {failed ? <p className="error">{t('class.error')}</p> : null}
+          {failed ? <p className="error">{failed === 'full' ? t('plan.full', { n: limit }) : t('class.error')}</p> : null}
         </form>
       </div>
       {classes.length === 0 ? <p className="portal-empty">{t(family ? 'family.empty' : 'portal.empty')}</p> : null}

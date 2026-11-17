@@ -642,4 +642,9 @@ export const es: Dict = {
   'gu.family.about': 'Desde el portal de familias puedes enviar misiones, marcar un objetivo semanal, crear un mundo y leer un resumen de la semana.',
   'gu.family.open': 'Abrir el portal de familias',
   'gu.family.linked': 'Conectado a: {name}',
+  'plan.family': 'Plan Familia',
+  'plan.teacher': 'Plan Docente',
+  'plan.school': 'Plan Escuela',
+  'plan.until': 'hasta el {day}',
+  'plan.full': 'Esta cuenta ya tiene {n} clases y familias, el máximo de su plan. Borra alguna que ya no uses para crear otra.',
 }

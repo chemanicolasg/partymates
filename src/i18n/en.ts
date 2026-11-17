@@ -641,4 +641,9 @@ export const en: Dict = {
   'gu.family.about': 'From the families’ portal you can send missions, set a weekly goal, build a world and read a weekly summary.',
   'gu.family.open': 'Open the families’ portal',
   'gu.family.linked': 'Connected to: {name}',
+  'plan.family': 'Family plan',
+  'plan.teacher': 'Teacher plan',
+  'plan.school': 'School plan',
+  'plan.until': 'until {day}',
+  'plan.full': 'This account already keeps {n} classes and families, the most its plan allows. Delete one you no longer use to make another.',
 }

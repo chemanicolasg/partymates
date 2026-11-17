@@ -179,6 +179,29 @@ funciones `pm_*`. El dispositivo de un niño solo puede leer el nombre de su cla
 que suma la clase entera; el informe por alumno exige la clave de profe. Cada jugador se identifica con un
 secreto que nunca sale de su dispositivo.
 
+## Planes (preparado; hoy todo es gratis)
+
+Los niños nunca pagan ni ven un precio: si algún día se cobra, se cobra a adultos (familias, docentes, centros)
+desde la web, nunca dentro del juego. El terreno está preparado así:
+
+- Cada cuenta de adulto tiene un plan (`free`, `family`, `teacher`, `school`) en la tabla `pm_accounts`
+  (`supabase/migrations/0008_plans.sql`). La app no puede leer ni escribir esa tabla: solo pregunta por su propio
+  plan con `pm_account()`. Un plan caducado vuelve a ser `free` sin borrar nada.
+- Lo que permite cada plan se decide en un solo sitio, la función `pm_plan_limits`. Hoy todos los planes permiten
+  lo mismo que antes (40 clases y familias por cuenta).
+- Un plan se asigna desde el servidor. Mientras no haya pasarela de pago, a mano (un centro que paga con factura):
+
+  ```sql
+  select pm_admin_set_plan('profe@colegio.es', 'school', '2027-09-01', 'manual', 'Factura 2026-001');
+  ```
+
+  El día que se conecte una pasarela, su aviso de pago llama a esa misma función.
+- En la app, `src/core/plans.ts` interpreta el plan (cualquier cosa desconocida o caducada es `free`, para que
+  una copia antigua nunca deje a nadie fuera) y el portal lo muestra junto al correo cuando no es el gratuito.
+
+Cuando se decida qué es de pago, el bloqueo real de una función va en su función `pm_*` del servidor (mirando el
+plan de la cuenta dueña de la clase), no solo en la pantalla.
+
 ## Publicación
 
 `netlify.toml` define la compilación (`npm run build` → `dist/`). El sitio de Netlify publica la rama `main` y

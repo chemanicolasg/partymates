@@ -640,4 +640,9 @@ export const ca = {
   'gu.family.about': 'Des del portal de famílies pots enviar missions, marcar un objectiu setmanal, crear un món i llegir un resum de la setmana.',
   'gu.family.open': 'Obre el portal de famílies',
   'gu.family.linked': 'Connectat a: {name}',
+  'plan.family': 'Pla Família',
+  'plan.teacher': 'Pla Docent',
+  'plan.school': 'Pla Escola',
+  'plan.until': 'fins al {day}',
+  'plan.full': 'Aquest compte ja té {n} classes i famílies, el màxim del seu pla. Esborra’n alguna que ja no facis servir per crear-ne una altra.',
 }

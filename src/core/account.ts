@@ -1,5 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { cloudConfig, type GroupKind } from './backend'
+import { FREE_PLAN, readPlan, type AccountPlan } from './plans'
 
 /**
  * Teacher accounts (e-mail and password, through Supabase Auth). An account is a keyring: it
@@ -102,3 +103,12 @@ export const accountCreateClass = (name: string, kind: GroupKind = 'class') =>
     : rpc<{ code: string; teacherKey: string }>('pm_teacher_group_create', { p_name: name, p_kind: kind })
 export const accountClaim = (code: string, key: string) => rpc<void>('pm_teacher_claim', { p_code: code, p_key: key })
 export const accountRelease = (code: string) => rpc<void>('pm_teacher_release', { p_code: code })
+
+/** The account's plan. A database that knows nothing of plans yet, or a failed call, is the free one. */
+export const accountPlan = (): Promise<AccountPlan> =>
+  rpc<unknown>('pm_account')
+    .then((raw) => readPlan(raw))
+    .catch(() => FREE_PLAN)
+
+/** True when making a class or family failed because the account already keeps as many as its plan allows. */
+export const isFull = (e: unknown) => e instanceof Error && e.message.includes('too-many-classes')

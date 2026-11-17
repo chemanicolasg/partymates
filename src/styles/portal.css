@@ -714,6 +714,16 @@ button.class-card:hover {
 .portal .portal-user small {
   color: var(--p-muted);
 }
+/* The account's plan, shown only once it is not the free one. */
+.portal .portal-plan {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--p-accent-soft);
+  color: var(--p-accent);
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
 
 /* Buttons */
 .portal .btn,
