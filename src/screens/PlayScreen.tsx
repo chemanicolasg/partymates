@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { sfx } from '../core/audio'
 import { eventSpecs, getLevel, JOURNEY } from '../core/curriculum'
+import { LAUNCH } from '../core/launch'
 import { playMusic, type TrackId } from '../core/music'
 import { back, go, type WorldSrc } from '../core/nav'
 import { playerLevel } from '../core/scoring'
@@ -36,6 +37,7 @@ import { ArenaGame } from '../games/ArenaGame'
 import { BayGame } from '../games/BayGame'
 import { BridgeGame } from '../games/BridgeGame'
 import { DodgeGame } from '../games/DodgeGame'
+import { LaunchGame } from '../games/LaunchGame'
 import { PairsGame } from '../games/PairsGame'
 import { QuizGame } from '../games/QuizGame'
 import { RaceGame } from '../games/RaceGame'
@@ -53,7 +55,7 @@ import { HOW_ICONS, ZONE_ICON } from './art'
 const WARM_UP_STOPS = 3
 const WARM_UP_ROUNDS = 4
 
-const MUSIC: Record<PlayKind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party', quiz: 'bay' }
+const MUSIC: Record<PlayKind, TrackId> = { blocks: 'blocks', party: 'party', arena: 'arena', bay: 'bay', stones: 'blocks', pairs: 'party', quiz: 'bay', launch: 'party' }
 
 interface Outcome {
   result: GameResult
@@ -81,6 +83,8 @@ function Game({ cfg, ...props }: { cfg: PlayCfg; profile: Profile; hints: boolea
       return <PairsGame cfg={cfg} {...props} />
     case 'quiz':
       return <QuizGame cfg={cfg} {...props} />
+    case 'launch':
+      return <LaunchGame cfg={cfg} {...props} />
   }
 }
 
@@ -346,14 +350,14 @@ export function StopScreen({ index }: { index: number }) {
   const { t } = useT()
   const profile = useProfile()
   const stop = JOURNEY[index]
-  const full = getLevel(stop.kind, profile.band, stop.level)
+  const full = stop.opener ? LAUNCH[profile.band] : getLevel(stop.kind, profile.band, stop.level)
   // The very first visits to the first stops are short: a quick win before the full-length levels.
   const [warmUp] = useState(() => index < WARM_UP_STOPS && stopPlays(profile, stop) === 0)
   const cfg = warmUp && 'rounds' in full ? { ...full, rounds: Math.min(full.rounds, WARM_UP_ROUNDS) } : full
   const [event, setEvent] = useState(() => rollEvent())
   // Decided once on arrival, so finishing the level does not change how it is presented.
   const [startWithHints] = useState(() => stopPlays(profile, stop) > 0 && stopStars(profile, stop) === 0)
-  const [firstTime] = useState(() => isNewKind(profile, stop.kind))
+  const [firstTime] = useState(() => (stop.opener ? stopPlays(profile, stop) === 0 : isNewKind(profile, stop.kind)))
 
   useEffect(() => {
     if (event) playMusic('arena')

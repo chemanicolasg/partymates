@@ -192,8 +192,8 @@ export function MapScreen() {
                     here={stop.index === here}
                     boss={stop.boss}
                     stars={stopStars(p, stop)}
-                    icon={<KindIcon kind={stop.kind} />}
-                    label={`${t(`mission.${stop.kind}`)} ${stop.index + 1}`}
+                    icon={<KindIcon kind={stop.opener ? 'launch' : stop.kind} />}
+                    label={`${t(`mission.${stop.opener ? 'launch' : stop.kind}`)} ${stop.index + 1}`}
                     hero={p}
                     onClick={open(() => go({ id: 'play', stop: stop.index }))}
                   />

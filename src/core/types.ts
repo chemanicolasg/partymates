@@ -131,8 +131,26 @@ export interface QuizCfg {
   kind: 'quiz'
   items: [q: string, a: string][]
 }
-export type PlayCfg = LevelCfg | QuizCfg
-export type PlayKind = Kind | 'quiz'
+/**
+ * The opening game of the journey: fill the rocket's tank exactly with bubbles of stars. Not part
+ * of the ladders; everything is counted in whole units so that nothing depends on rounding.
+ */
+export interface LaunchCfg {
+  kind: 'launch'
+  /** What one unit is worth on screen: 1, 5, 0.25… */
+  unit: number
+  /** Sizes of the bubbles, in units. Always includes 1, so a tank can never get stuck. */
+  sizes: number[]
+  /** Smallest and largest tank, in units: they grow from the first rocket to the last. */
+  tank: [number, number]
+  /** Draw every star instead of writing a number, for children who still count. */
+  pips: boolean
+  /** How many bubbles float at once. */
+  bubbles: number
+  rounds: number
+}
+export type PlayCfg = LevelCfg | QuizCfg | LaunchCfg
+export type PlayKind = Kind | 'quiz' | 'launch'
 
 export interface DojoStep {
   id: string

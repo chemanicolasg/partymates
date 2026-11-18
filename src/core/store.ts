@@ -240,7 +240,9 @@ export function frontier(p: Profile): number {
   return i
 }
 /** First time with this kind of activity on any level: the game shows where to tap. */
-export const isNewKind = (p: Profile, kind: string) => !Object.keys(p.levels).some((k) => k.startsWith(`${kind}-`))
+/** The opening game is saved in the dice race's first slot, but it is not a dice race: it does not count here. */
+export const isNewKind = (p: Profile, kind: string) =>
+  !Object.keys(p.levels).some((k) => k.startsWith(`${kind}-`) && k !== stopKey(p, JOURNEY[0]))
 
 function sumWeek(days: Record<string, number>, now = Date.now()): number {
   const start = weekStart(now)
@@ -395,7 +397,7 @@ export function finishStop(index: number, result: GameResult): Rewards & { previ
     xp: cur.xp + rewards.xp,
     levels: { ...cur.levels, [key]: { stars: Math.max(previous, rewards.stars), plays: (cur.levels[key]?.plays ?? 0) + 1 } },
     facts: review(cur.facts, result.facts),
-    stats: played(cur, stop.kind, result, rewards.xp),
+    stats: played(cur, stop.opener ? 'launch' : stop.kind, result, rewards.xp),
     sinceEvent: cur.sinceEvent + 1,
   }))
   void syncClass()

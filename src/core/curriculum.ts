@@ -407,6 +407,8 @@ export interface Stop {
   /** Level of that kind's ladder. */
   level: number
   boss: boolean
+  /** The very first stop: the opening game (src/core/launch.ts) instead of its kind's level. */
+  opener: boolean
 }
 
 export const STOPS_PER_ZONE = 10
@@ -417,7 +419,8 @@ export const STOPS_PER_ZONE = 10
  */
 export const JOURNEY: Stop[] = ZONES.flatMap((zone, z) => {
   const order: [Kind, number][] = [
-    // The dice race opens every zone: it is the most game-like way in.
+    // The dice race opens every zone: it is the most game-like way in. (The journey's very first
+    // stop keeps this slot and its saved stars, but plays the opening game: see `opener`.)
     ['party', 2 * z],
     ['blocks', 2 * z],
     ['stones', z],
@@ -435,6 +438,7 @@ export const JOURNEY: Stop[] = ZONES.flatMap((zone, z) => {
     kind,
     level,
     boss: i === STOPS_PER_ZONE - 1,
+    opener: z === 0 && i === 0,
   }))
 })
 

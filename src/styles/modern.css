@@ -663,3 +663,382 @@
 .portal .hw-current em {
   font-style: italic;
 }
+
+/* ───────────── The opening game: stars for the rocket ───────────── */
+
+.launch-stage {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 10px 12px 0;
+  border-radius: 26px;
+  overflow: hidden;
+  box-shadow: var(--lift-sm);
+}
+.launch-stage .terrain {
+  z-index: 0;
+}
+.launch-stage > :not(.terrain) {
+  position: relative;
+  z-index: 1;
+}
+.launch-buddy {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  gap: 4px;
+  min-height: 70px;
+}
+.launch-buddy .matty-bubble {
+  margin-bottom: 18px;
+  padding: 7px 12px;
+  font-size: 0.98rem;
+  line-height: 1.25;
+  animation: pop 0.25s ease-out;
+}
+.launch-buddy .matty-bubble::before {
+  left: -6px;
+  bottom: 9px;
+  width: 14px;
+  height: 14px;
+}
+
+/* The bubbles */
+.launch-sky {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-content: center;
+  justify-content: center;
+  gap: clamp(8px, 2.4vw, 18px) clamp(10px, 3vw, 22px);
+  padding: 4px 0;
+}
+.star-bubble {
+  --size: clamp(70px, 19vw, 104px);
+  position: relative;
+  flex: none;
+  width: var(--size);
+  height: var(--size);
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle at 30% 26%, rgba(255, 255, 255, 0.95) 0 9%, rgba(255, 255, 255, 0) 24%),
+    radial-gradient(circle at 50% 55%, rgba(255, 255, 255, 0.5), var(--tint, #9fdcff) 78%);
+  box-shadow:
+    inset 0 -8px 14px rgba(40, 70, 160, 0.18),
+    inset 0 0 0 3px rgba(255, 255, 255, 0.75),
+    0 10px 16px rgba(20, 50, 110, 0.22);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+  animation:
+    pop 0.3s cubic-bezier(0.3, 1.5, 0.5, 1),
+    bubble-float calc(3.2s + var(--i) * 0.35s) ease-in-out calc(var(--i) * -0.7s) infinite;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+.star-bubble.hue-1 {
+  --tint: #ffc9ea;
+}
+.star-bubble.hue-2 {
+  --tint: #c9f5c2;
+}
+.star-bubble.hue-3 {
+  --tint: #ffe59a;
+}
+.star-bubble.hue-4 {
+  --tint: #d6c9ff;
+}
+.star-bubble:nth-child(2n) {
+  margin-top: 22px;
+}
+.star-bubble:active:not(:disabled) {
+  transform: scale(0.94);
+}
+.star-bubble:disabled {
+  cursor: default;
+}
+.star-bubble.popped {
+  animation: bubble-burst 0.36s ease-out forwards;
+}
+.star-bubble.too {
+  opacity: 0.38;
+  filter: grayscale(0.6);
+}
+.star-bubble.nudge {
+  animation:
+    pop 0.3s cubic-bezier(0.3, 1.5, 0.5, 1),
+    pulse 1.4s infinite;
+}
+.bubble-pips {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 2px;
+  max-width: 62%;
+}
+.bubble-pips .icon {
+  width: clamp(20px, 5.4vw, 28px);
+  height: clamp(20px, 5.4vw, 28px);
+  filter: drop-shadow(0 2px 0 rgba(160, 100, 0, 0.35));
+}
+.bubble-num {
+  display: grid;
+  justify-items: center;
+  font-size: clamp(1.5rem, 6vw, 2.1rem);
+  font-weight: 700;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+.bubble-num .icon {
+  margin-top: 2px;
+}
+
+/* The launch pad: the player, the rocket and its tank */
+.launch-pad {
+  flex: none;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  --gap: clamp(8px, 3vw, 22px);
+  gap: var(--gap);
+  padding-bottom: 12px;
+}
+.launch-me {
+  flex: none;
+  padding-bottom: 4px;
+}
+.launch-me.hop .character {
+  animation: bob 0.5s ease-in-out 3;
+}
+.launch-rocket {
+  flex: none;
+  line-height: 0;
+  animation: rocket-in 0.45s cubic-bezier(0.3, 1.3, 0.5, 1);
+  filter: drop-shadow(0 8px 6px rgba(20, 40, 90, 0.25));
+}
+/* The engine is only lit on the way up. */
+.launch-rocket:not(.go) .sprite > path:first-child {
+  opacity: 0;
+}
+.launch-rocket.go {
+  animation: rocket-go 1.7s cubic-bezier(0.55, 0, 0.8, 0.4) forwards;
+}
+.launch-rocket.cough {
+  animation: shake 0.45s 2;
+}
+.tank {
+  flex: none;
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 4px;
+}
+.tank-mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 10px;
+  border-radius: 999px;
+  background: var(--accent);
+  box-shadow: 0 3px 0 #5a35c9;
+  color: #fff;
+  font-size: 1.1rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.tank-glass {
+  position: relative;
+  width: 58px;
+  height: clamp(120px, 24vh, 170px);
+  border: 4px solid #fff;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow:
+    0 8px 14px rgba(20, 50, 110, 0.22),
+    inset 0 0 0 1px rgba(60, 80, 150, 0.12);
+  overflow: hidden;
+}
+.tank-fill {
+  position: absolute;
+  inset: auto 0 0;
+  background: linear-gradient(#fff3b0, #ffc21a 40%, #ff9d1a);
+  transition: height 0.38s cubic-bezier(0.3, 1.4, 0.5, 1);
+}
+.tank-fill::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.75);
+}
+/* For the youngest the tank is a stack of places, one per star. */
+.tank.cells .tank-glass::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    to top,
+    transparent 0 calc(100% / var(--cells) - 2px),
+    rgba(60, 60, 120, 0.3) calc(100% / var(--cells) - 2px) calc(100% / var(--cells))
+  );
+  pointer-events: none;
+}
+.tank-level {
+  position: absolute;
+  left: 50%;
+  z-index: 1;
+  min-width: 30px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background: #fff;
+  box-shadow: 0 2px 0 rgba(120, 80, 0, 0.3);
+  color: var(--ink);
+  font-size: 1rem;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+  transform: translate(-50%, 50%);
+  transition: bottom 0.38s cubic-bezier(0.3, 1.4, 0.5, 1);
+  animation: pop 0.25s ease-out;
+  animation-fill-mode: backwards;
+}
+.tank.full .tank-glass {
+  border-color: #b9f3cf;
+  box-shadow:
+    0 0 0 4px rgba(63, 191, 127, 0.55),
+    0 8px 14px rgba(20, 50, 110, 0.22);
+}
+.tank.spill .tank-glass {
+  border-color: #ff8fa3;
+  animation: shake 0.45s 2;
+}
+.tank.spill .tank-fill {
+  background: linear-gradient(#ffd0d8, #ef4660);
+}
+.tank.spill::before,
+.tank.spill::after {
+  content: '⭐';
+  position: absolute;
+  top: 22px;
+  left: 50%;
+  z-index: 2;
+  font-size: 1.1rem;
+  animation: tank-spill 0.9s ease-in 2;
+  pointer-events: none;
+}
+.tank.spill::after {
+  animation-name: tank-spill-r;
+  animation-delay: 0.15s;
+}
+/* The pipe from the tank to the rocket. */
+.tank-hose {
+  flex: none;
+  align-self: flex-end;
+  width: 34px;
+  height: 12px;
+  /* Tucked under the rocket's fin on one side and into the tank on the other. */
+  margin: 0 calc(var(--gap) * -1 - 4px) 16px calc(var(--gap) * -1 - 16px);
+  border-radius: 6px;
+  background: linear-gradient(#f4f6fb, #b9c0d6);
+  box-shadow: 0 3px 4px rgba(20, 40, 90, 0.2);
+}
+.game-launch .status-line {
+  /* Matty says it in the scene; this stays for screen readers. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  opacity: 0;
+}
+@keyframes bubble-float {
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+  33% {
+    transform: translate(5px, -9px);
+  }
+  66% {
+    transform: translate(-5px, 5px);
+  }
+}
+@keyframes bubble-burst {
+  40% {
+    transform: scale(1.25);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(1.6);
+    opacity: 0;
+  }
+}
+@keyframes rocket-in {
+  from {
+    transform: translateY(40px) scale(0.7);
+    opacity: 0;
+  }
+}
+@keyframes rocket-go {
+  0%,
+  22% {
+    transform: translate(0, 0);
+  }
+  6%,
+  14% {
+    transform: translate(-3px, 1px);
+  }
+  10%,
+  18% {
+    transform: translate(3px, -1px);
+  }
+  100% {
+    transform: translate(0, -760px) scale(0.8);
+  }
+}
+@keyframes tank-spill {
+  from {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(-190%, 70px) rotate(-90deg);
+    opacity: 0;
+  }
+}
+@keyframes tank-spill-r {
+  from {
+    transform: translate(-50%, 0);
+    opacity: 1;
+  }
+  to {
+    transform: translate(90%, 70px) rotate(90deg);
+    opacity: 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .star-bubble,
+  .star-bubble.nudge {
+    animation: none;
+  }
+  .star-bubble.popped {
+    animation: none;
+    opacity: 0;
+  }
+  .launch-rocket,
+  .launch-rocket.cough,
+  .tank.spill .tank-glass,
+  .launch-me.hop .character {
+    animation: none;
+  }
+  .launch-rocket.go {
+    animation: none;
+    opacity: 0;
+  }
+}

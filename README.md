@@ -40,7 +40,11 @@ Además:
   nariz, boca y mejillas; más de un millón de combinaciones, todas gratis) o se elige un animal. Encima van
   sombreros, gafas, ropa y mascotas, que se consiguen con puntos de juego o con estrellas. No hay dinero real.
 - **Primeros minutos pensados para enganchar**: Matty cuenta por qué importa el viaje (su cohete funciona con
-  estrellas), cada zona empieza con la carrera de dados, las tres primeras paradas son cortas la primera vez,
+  estrellas) y la primera parada es justo eso: **Estrellas para el cohete**, un juego sin operaciones escritas en
+  el que se explotan burbujas de estrellas para llenar el depósito exactamente hasta la marca (una de más y se
+  desborda). Las cuentas están en el depósito —cuánto hay, cuánto falta— y cambian con la edad: contar hasta 8,
+  sumar hasta 20, cincos y dieces hasta 150, cuartos y medios hasta 5 (`src/core/launch.ts`). Cada zona empieza
+  con la carrera de dados, las tres primeras paradas son cortas la primera vez,
   las respuestas seguidas encienden una racha y la primera estrella trae un regalo que se pone con un toque.
 - **Sin rankings**: no hay posiciones ni comparación entre niños; solo estrellas y puntos propios.
 - **Nadie se queda atascado**: una parada se abre con una estrella en la anterior o tras tres intentos.

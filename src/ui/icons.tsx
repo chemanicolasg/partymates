@@ -251,7 +251,7 @@ export function Icon({ name, size = 22 }: { name: IconName; size?: number }) {
   )
 }
 
-const KIND: Record<PlayKind, IconName> = { blocks: 'bricks', party: 'dice', arena: 'bolt', bay: 'gem', stones: 'stones', pairs: 'cards', quiz: 'pencil' }
+const KIND: Record<PlayKind, IconName> = { blocks: 'bricks', party: 'dice', arena: 'bolt', bay: 'gem', stones: 'stones', pairs: 'cards', quiz: 'pencil', launch: 'rocket' }
 
 /** The badge of a kind of activity, as it shows on the map and on the briefing. */
 export function KindIcon({ kind, size = 40 }: { kind: PlayKind; size?: number }) {
